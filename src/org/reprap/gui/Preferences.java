@@ -278,7 +278,7 @@ public class Preferences extends JFrame {
 			JPanel panel  = new JPanel();
 			String[] configfiles =  { "reprap.properties" };
 			
-			File dir = new File( org.reprap.Preferences.getPropsFolderPath()); 
+			File dir = new File( org.reprap.Preferences.getUsersRootDir()); 
 			
 			if (dir.list() != null)
 			{
@@ -308,7 +308,7 @@ public class Preferences extends JFrame {
 	            	if ("comboBoxChanged".equals(e.getActionCommand())) 
 	            	{
 		            	String configName = (String)configfileList.getSelectedItem() + ".properties";
-		            	String configPath = org.reprap.Preferences.getPropsFolderPath() + configName;
+		            	String configPath = org.reprap.Preferences.getUsersRootDir() + configName;
 		            	if((new File(configPath)).exists())
 		            	{
 		            		Debug.d("loading config " + configName);
@@ -332,7 +332,7 @@ public class Preferences extends JFrame {
 		         {
 					
 					String configName = (String)configfileList.getSelectedItem() + ".properties";
-					String configPath = org.reprap.Preferences.getPropsFolderPath() + configName;
+					String configPath = org.reprap.Preferences.getUsersRootDir() + configName;
 					File configFileObj = new File(configPath);
 					
 					if(!configFileObj.exists())
@@ -356,7 +356,7 @@ public class Preferences extends JFrame {
 		            	String configName = (String)configfileList.getSelectedItem() + ".properties";
 		            	if(!configName.equals("reprap.properties"))
 		            	{
-			            	String configPath = org.reprap.Preferences.getPropsFolderPath() + configName;
+			            	String configPath = org.reprap.Preferences.getUsersRootDir() + configName;
 			            	File configFileObj = new File(configPath);
 			            	if(configFileObj.exists())
 			            	{

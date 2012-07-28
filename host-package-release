@@ -1,25 +1,29 @@
 #!/bin/bash
-# host-package-release -- Packages Reprap host software into a .zip file and .deb package
-
+# host-package-release -- Packages Reprap host software into a self-sufficient directory 
+# whence it can be executed
 
 # init
 
-MACHINE="mendel"
+MACHINE="reprappro"
 
 RELEASE=${1:-`date -u +%Y%m%d`}
 
 RELEASENAME="reprap-$MACHINE-$RELEASE"
 
-FILELIST="jar/reprap.jar lib/*.jar lib/mendel-base.stl lib/huxley-base.stl lib/rr-logo-green-url.png\
+FILELIST="jar/reprap.jar lib/*.jar lib/rr-logo-green-url.png\
     lib/reprap-icon.png lib/reprap.properties.dist lib/system-dependent/linux-i386/*\
     lib/system-dependent/windows-i586/* lib/system-dependent/macosx/RepRap-Mac-Drivers.mpkg.zip\
-    lib/prologue.gcode lib/epilogue.gcode LICENSE"
+    LICENSE"
+
+MACHINE_CONFIG_DIRS="Huxley_Configuration Mendel_Configuration"
+MACHINE_CONFIG_FILES="prologue.gcode epilogue.gcode base.stl"
 
 SRCFILELIST="src/* build.xml build-user.xml .classpath .project \
 	host-package-release readme"
 
 LIBFILES="lib/*"
 
+# THIS NEXT BIT HAS BEEN SUPERCEEDED BY GITHUB
 # Where are all the other non-host-software files we need to include?
 DESIGNFILES=""
 #for i in ../$MACHINE ../electronics ../firmware
@@ -51,11 +55,10 @@ export CLASSPATH
 # Recompile java files and create Reprap.jar
 ant clean jar || exit 1
 
-
 #Delete any old release
-rm -f "../release/*.zip"
+rm -f "./executable/*.zip"
 
-BASENAME="../release/$RELEASENAME"
+BASENAME="./executable/$RELEASENAME"
 mkdir "$BASENAME"
 SRCFILENAME="$BASENAME/src"
 mkdir "$SRCFILENAME"

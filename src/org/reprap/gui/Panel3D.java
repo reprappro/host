@@ -113,8 +113,10 @@ abstract public class Panel3D extends JPanel {
 		// All this needs to go into Preferences.java
 		try
 		{
-		wv_location = Preferences.loadGlobalString("BuildBaseSTL(name)");
+		wv_location = Preferences.getUsersRootDir() + Preferences.loadGlobalString("Configuration_directory") + File.separatorChar + 
+			Preferences.loadGlobalString("BuildBaseSTL(name)");
 
+		//System.out.println(wv_location);
 		// Translate and zoom scaling factors
 		
 		mouse_tf = 50; //Preferences.loadGlobalDouble("MouseTranslationFactor");
@@ -517,17 +519,18 @@ abstract public class Panel3D extends JPanel {
 //		throw new Exception("Cannot locate background STL file");
 //	}
 	
-	protected String getStlBackground() throws Exception {
-		
-		URL u = ClassLoader.getSystemResource(wv_location);
-		if(u != null)
-		{
-			String name = u.toString();
-			//System.out.println("**- " + name);
-			return name;
-		}
-		
-		throw new Exception("Cannot locate background STL file");
+	protected String getStlBackground() throws Exception 
+	{
+		return "File:" + wv_location;
+//		URL u = ClassLoader.getSystemResource(wv_location);
+//		if(u != null)
+//		{
+//			String name = u.toString();
+//			//System.out.println("**- " + name);
+//			return name;
+//		}
+//		
+//		throw new Exception("Cannot locate background STL file");
 	}
 	
 //	protected String getStlBackground(String subdir) {

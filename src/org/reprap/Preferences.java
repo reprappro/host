@@ -1,10 +1,21 @@
 package org.reprap;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
 import java.util.Enumeration;
@@ -14,24 +25,28 @@ import javax.media.j3d.Appearance;
 import javax.media.j3d.Material;
 import javax.vecmath.Color3f;
 import org.reprap.utilities.Debug;
+import org.reprap.utilities.RepRapUtils;
 
 /**
- * A single centralised repository of the current preference settings.  This also
+ * A single centralised repository of the user's current preference settings.  This also
  * implements (almost) a singleton for easy global access.  If there are no current
- * preferences fallback distribution defaults are used. 
+ * preferences the system-wide ones are copied to the user's space. 
  */
 public class Preferences {
 	
 	private static String propsFile = "reprap.properties";
 	private static final String propsFolder = ".reprap";
-	private static final String propsFileDist = "reprap.properties.dist";
-	private static final String cannedDefault = "Canned_G_Codes";
+	private static final String MachineFile = "Machine";
+	private static final String propsDirDist = "reprap-configurations";
 	private static final String prologueFile = "prologue.gcode";
 	private static final String epilogueFile = "epilogue.gcode";
+	private static final String baseFile = "base.stl";
+	private static final char activeFlag = '*';
 	
-	private static Preferences globalPrefs = null; 
+	private static Preferences globalPrefs = null;
+	private static String[] allMachines = null;
 	
-	Properties fallbackPreferences;
+	//Properties fallbackPreferences;
 	Properties mainPreferences;
 	
 	/*
@@ -40,8 +55,8 @@ public class Preferences {
 	 */
 	
 	// standard file names for the top and tail for G Code files
-	public static final String prologue = "prologue.gcode";
-	public static final String epilogue = "epilogue.gcode";
+	//public static final String prologue = "prologue.gcode";
+	//public static final String epilogue = "epilogue.gcode";
 	
 	private static final int grid = 100;             // Click outline polygons to a...
 	public static int grid() { return grid; }
@@ -84,61 +99,214 @@ public class Preferences {
 	private static String repRapMachine="GCodeRepRap";
 	public static String RepRapMachine() { return repRapMachine; }
 	public static void setRepRapMachine(String s) { repRapMachine = s; }
-
-	public static Appearance unselectedApp()
-	{
-		Color3f unselectedColour = null;
-		try
-		{
-			unselectedColour = new Color3f((float)0.3, (float)0.3, (float)0.3);
-		} catch (Exception ex)
-		{
-			ex.printStackTrace();
-		}
-		Appearance unselectedApp = new Appearance();
-		unselectedApp.setMaterial(new 
-				Material(unselectedColour, black, unselectedColour, black, 0f));
-		return unselectedApp;
-	}
-	
-	public static String getPropsFolderPath()
-	{
-		return System.getProperty("user.home") + File.separatorChar + propsFolder + File.separatorChar;
-	}
 	
 	// Main preferences constructor
 	
-	public Preferences() throws IOException {
-		fallbackPreferences = new Properties();
+	public Preferences() throws IOException 
+	{
+		// Construct location of user's properties file
+		File mainDir = new File(getUsersRootDir());
+		// If it's not there copy the system one
+		if(!mainDir.exists())
+			copySystemConfigurations(mainDir);
+		 
+		
 		mainPreferences = new Properties();
-		URL fallbackUrl = ClassLoader.getSystemResource(propsFileDist);
-		//Debug.a("++++ " + fallbackUrl.toString());
 
 		// Construct URL of user properties file
-		String path = getPropsFolderPath() + propsFile;
+		String path = getPropertiesPath();
 		File mainFile = new File(path);
 		URL mainUrl = mainFile.toURI().toURL();
-		
-		if (fallbackUrl == null && !mainFile.exists())
-			//throw new IOException("Cannot load RepRap properties file or default "+propsFileDist);
-			Debug.e("Cannot load RepRap properties file or default "+propsFileDist);
-		
-		if (fallbackUrl != null)
-			fallbackPreferences.load(fallbackUrl.openStream());
 		
 		if (mainFile.exists())
 		{
 			mainPreferences.load(mainUrl.openStream());
-			if(fallbackUrl != null)
-				comparePreferences();
+			comparePreferences();
 		} else
 		{
-			// If we don't have a local preferences file copy the default
-			// file into it.
-			mainPreferences.load(fallbackUrl.openStream());
-			save(true);
+			Debug.e("Can't find your RepRap configurations: " + getPropertiesPath());
 		}
 
+	}
+	
+	/**
+	 * Where are the system-wide master copies?
+	 * @return
+	 */
+	public static String getSystemConfigurationDir()
+	{
+		URL sysConfig = ClassLoader.getSystemResource(propsDirDist);
+		if (sysConfig == null)
+			Debug.e("Can't find system RepRap configurations: " + propsDirDist);
+		return sysConfig.getFile() + File.separator;
+	}
+	
+	/**
+	 * Copy the standard RepRap configurations to the user's space
+	 * @param usersDir
+	 */
+	private static void copySystemConfigurations(File usersDir)
+	{
+		if(usersDir.exists())
+			Debug.e("WARNING - copying system RepRap configurations to existing directory: " + usersDir.toString());
+		String sysConfig = getSystemConfigurationDir();
+		try
+		{
+			RepRapUtils.copyTree(new File(sysConfig), usersDir);
+		} catch (Exception e)
+		{
+			Debug.e("Error copying RepRap configurations to user's directory: " + usersDir.toString());
+			e.printStackTrace();
+		}
+		
+	}
+	
+	/**
+	 * Where the user stores all their configuration files
+	 * @return
+	 */
+	public static String getUsersRootDir()
+	{
+		return System.getProperty("user.home") + File.separatorChar + propsFolder + File.separatorChar;
+	}
+	
+	/**
+	 * The master file that lists the user's machines and flags the active one
+	 * with a * character at the start of its name.
+	 * @return
+	 */
+	public static String getMachineFilePath()
+	{
+		return getUsersRootDir() + MachineFile;
+	}
+	
+	/**
+	 * List of all the available RepRap machine types
+	 * @return
+	 */
+	private static String[] getAllMachines()
+	{
+		File mf = new File(getMachineFilePath());
+		String [] result = null;
+		try 
+		{
+			result = new String[RepRapUtils.countLines(mf)];
+			FileInputStream fstream = new FileInputStream(mf);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			int i = 0;
+			String s;
+			while ((s = br.readLine()) != null)
+			{
+				result[i] = s;
+				i++;  
+			}
+			in.close();
+		} catch (IOException e) 
+		{
+			Debug.e("Can't read configuration file: " + mf.toString());
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	/**
+	 * The path to the directory containing the user's active machine configuration
+	 * @return
+	 */
+	public static String getActiveMachineName()
+	{
+		if(allMachines == null)
+			allMachines = getAllMachines();
+		for (String machine : allMachines)
+		{
+			if(machine.charAt(0) == activeFlag)
+				return machine.substring(1, machine.length());
+		}
+		Debug.e("No active RepRap set (add " + activeFlag + " to the start of a line in the file: " + getMachineFilePath() + ").");
+		return "";
+	}
+	
+	/**
+	 * The directory containing all the user's configuration files for their active machine
+	 * @return
+	 */
+	public static String getActiveMachineDir()
+	{
+		return getUsersRootDir() + getActiveMachineName() + File.separatorChar;
+	}
+	
+	/**
+	 * Set the active machine to the one named
+	 * @param newActiveMachine
+	 */
+	public static void setActiveMachine(String newActiveMachine)
+	{
+		if(allMachines == null)
+			allMachines = getAllMachines();
+		try
+		{
+			FileWriter outFile = new FileWriter(getMachineFilePath());
+			PrintWriter out = new PrintWriter(outFile);
+			for(int i = 0; i < allMachines.length; i++)
+			{
+				if(allMachines[i].charAt(0) == activeFlag)
+					allMachines[i] = allMachines[i].substring(1, allMachines[i].length());
+				if(allMachines[i].contentEquals(newActiveMachine))
+					allMachines[i] = activeFlag + newActiveMachine;
+				out.println(allMachines[i]);
+				i++;
+			}
+			outFile.close();
+		} catch (Exception e)
+		{
+			Debug.e("Can't write to file: " + getMachineFilePath());
+		}
+	}
+	
+	/**
+	 * Where the user's properties file is
+	 * @return
+	 */
+	public static String getPropertiesPath()
+	{
+		return getActiveMachineDir() + propsFile;
+	}
+	
+	/**
+	 * Where the system version of the user's properties file is
+	 * @return
+	 */
+	public static String getSystemPropertiesDir()
+	{
+		return getSystemConfigurationDir() + getActiveMachineName() + File.separator;
+	}
+	
+	/**
+	 * Where the user's build-base STL file is
+	 * @return
+	 */
+	public static String getBasePath()
+	{
+		return getActiveMachineDir() + baseFile;
+	}
+	
+	/**
+	 * Where the user's GCode prologue file is
+	 * @return
+	 */
+	public static String getProloguePath()
+	{
+		return getActiveMachineDir() + prologueFile;
+	}
+	
+	/**
+	 * Where the user's GCode epilogue file is
+	 * @return
+	 */
+	public static String getEpiloguePath()
+	{
+		return getActiveMachineDir() + epilogueFile;
 	}
 	
 	/**
@@ -148,7 +316,35 @@ public class Preferences {
 	private void comparePreferences()
 	{
 		Enumeration<?> usersLot = mainPreferences.propertyNames();
-		Enumeration<?> distLot = fallbackPreferences.propertyNames();
+		
+		String sysProps = getSystemPropertiesDir() + propsFile;
+		File sysFile = new File(sysProps);
+		URL sysUrl;
+		try 
+		{
+			sysUrl = sysFile.toURI().toURL();
+		} catch (MalformedURLException e) 
+		{
+			Debug.e("System preferences location wrong: " + sysProps);
+			e.printStackTrace();
+			return;
+		}
+		Properties sysPreferences = new Properties();
+		if (sysFile.exists())
+		{
+			try {
+				sysPreferences.load(sysUrl.openStream());
+			} catch (IOException e) 
+			{
+				Debug.e("System preferences input error: " + sysProps);
+				e.printStackTrace();
+			}
+		} else
+		{
+			Debug.e("Can't find your System's RepRap configurations: " + sysProps);
+		}
+	
+		Enumeration<?> distLot = sysPreferences.propertyNames();
 		
 		String result = "";
 		int count = 0;
@@ -157,7 +353,7 @@ public class Preferences {
 		while(usersLot.hasMoreElements())
 		{
 			String next = (String)usersLot.nextElement();
-			if (!fallbackPreferences.containsKey(next))
+			if (!sysPreferences.containsKey(next))
 			{
 				result += " " + next + "\n";
 				count++;
@@ -202,28 +398,15 @@ public class Preferences {
 		if(noDifference)
 			Debug.d("The distribution preferences file and yours match.  This is good.");
 	}
+	
+	
 
-	public void save(boolean startUp) throws FileNotFoundException, IOException {
-		String savePath = getPropsFolderPath() + propsFile;
-		//File f = new File(savePath + File.separatorChar + propsFile);
+	public void save(boolean startUp) throws FileNotFoundException, IOException 
+	{
+		String savePath = getPropertiesPath();
 		File f = new File(savePath);
-		if (!f.exists()) {
-			// No properties file exists, so we will create one and try again
-			// We'll put the properties file in the .reprap folder,
-			// under the user's home folder.
-			String canned = getPropsFolderPath() + loadString(cannedDefault) + File.separatorChar;
-			File p = new File(canned);
-			if (!p.isDirectory())		// Create .reprap folder and those under it if necessary
-				   p.mkdirs();
-			URL sourceUrl = ClassLoader.getSystemResource(prologueFile);
-			File source = new File(sourceUrl.getFile());
-			File dest = new File(canned + prologueFile);
-			org.reprap.utilities.RepRapUtils.copyFile(source, dest);
-			sourceUrl = ClassLoader.getSystemResource(epilogueFile);
-			source = new File(sourceUrl.getFile());
-			dest = new File(canned + epilogueFile);
-			org.reprap.utilities.RepRapUtils.copyFile(source, dest);
-		}
+		if (!f.exists()) 
+			f.createNewFile();
 		
 		OutputStream output = new FileOutputStream(f);
 		mainPreferences.store(output, "RepRap machine parameters. See http://reprap.org/wiki/Java_Software_Preferences_File");
@@ -235,9 +418,7 @@ public class Preferences {
 	public String loadString(String name) {
 		if (mainPreferences.containsKey(name))
 			return mainPreferences.getProperty(name);
-		if (fallbackPreferences.containsKey(name))
-			return fallbackPreferences.getProperty(name);
-		Debug.e("RepRap preference: " + name + " not found in either preference file.");
+		Debug.e("RepRap preference: " + name + " not found in your preference file: " + getPropertiesPath());
 		return null;
 	}
 	
@@ -400,6 +581,22 @@ public class Preferences {
 			result[i] = (String)r.get(i);
 		
 		return result;
+	}
+	
+	public static Appearance unselectedApp()
+	{
+		Color3f unselectedColour = null;
+		try
+		{
+			unselectedColour = new Color3f((float)0.3, (float)0.3, (float)0.3);
+		} catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
+		Appearance unselectedApp = new Appearance();
+		unselectedApp.setMaterial(new 
+				Material(unselectedColour, black, unselectedColour, black, 0f));
+		return unselectedApp;
 	}
 	
 }

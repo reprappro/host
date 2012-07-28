@@ -96,7 +96,7 @@ public abstract class GenericRepRap implements CartesianPrinter
 	/**
 	 * Scale for each axis in steps/mm.
 	 */
-	protected double scaleX, scaleY, scaleZ;
+	//protected double scaleX, scaleY, scaleZ;
 	
 	/**
 	 * Current X, Y and Z position of the extruder 
@@ -270,15 +270,15 @@ public abstract class GenericRepRap implements CartesianPrinter
 		{
 			//load axis prefs
 			int axes = 3;//Preferences.loadGlobalInt("AxisCount");
-			if (axes != 3)
-				throw new Exception("A Cartesian Bot must contain 3 axes");
+			//if (axes != 3)
+			//	throw new Exception("A Cartesian Bot must contain 3 axes");
 			
 			xYReZeroInterval =  -1; //Preferences.loadGlobalDouble("XYReZeroInterval(mm)");
 
 			// TODO This should be from calibration
-			scaleX = 7.99735; //Preferences.loadGlobalDouble("XAxisScale(steps/mm)");
-			scaleY = 7.99735; //Preferences.loadGlobalDouble("YAxisScale(steps/mm)");
-			scaleZ = 320; //Preferences.loadGlobalDouble("ZAxisScale(steps/mm)");
+			//scaleX = 7.99735; //Preferences.loadGlobalDouble("XAxisScale(steps/mm)");
+			//scaleY = 7.99735; //Preferences.loadGlobalDouble("YAxisScale(steps/mm)");
+			//scaleZ = 320; //Preferences.loadGlobalDouble("ZAxisScale(steps/mm)");
 
 			// Load our maximum feedrate variables
 			double maxFeedrateX = Preferences.loadGlobalDouble("MaximumFeedrateX(mm/minute)");
@@ -305,6 +305,13 @@ public abstract class GenericRepRap implements CartesianPrinter
 			//finishY = Preferences.loadGlobalDouble("FinishY(mm)");
 			
 			bedTemperatureTarget = Preferences.loadGlobalDouble("BedTemperature(C)");
+			int extruderCount = Preferences.loadGlobalInt("NumberOfExtruders");
+			if (extruderCount < 1)
+				throw new Exception("A Reprap printer must contain at least one extruder.");
+
+			//load our actual extruders.
+			extruders = new GenericExtruder[extruderCount];
+			loadExtruders();
 		}
 		catch (Exception ex)
 		{

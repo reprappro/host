@@ -511,7 +511,7 @@ public class GCodeRepRap extends GenericRepRap {
 		gcode.queue(";#!RECTANGLE: " + lc.getBox());
 		if(Debug.d())
 			gcode.queue("; Prologue:");
-		gcode.copyFile(Preferences.getPropsFolderPath() + Preferences.loadGlobalString("Canned_G_Codes") + File.separatorChar + Preferences.prologue);
+		gcode.copyFile(Preferences.getProloguePath());
 		if(Debug.d())
 			gcode.queue("; ------");
 		/*
@@ -587,7 +587,7 @@ public class GCodeRepRap extends GenericRepRap {
 			
 			if(Debug.d())
 				gcode.queue("; Epilogue:");
-			gcode.copyFile(Preferences.getPropsFolderPath() + Preferences.loadGlobalString("Canned_G_Codes") + File.separatorChar + Preferences.epilogue);
+			gcode.copyFile(Preferences.getEpiloguePath());
 			if(Debug.d())
 				gcode.queue("; ------");
 			/*
