@@ -17,6 +17,7 @@ import javax.swing.JOptionPane;
 
 import org.reprap.Extruder;
 import org.reprap.Main;
+import org.reprap.Preferences;
 import org.reprap.Printer;
 import org.reprap.pcb.PCB;
 
@@ -154,9 +155,7 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
     private void initComponents(boolean pref) {
         buttonGroup1 = new javax.swing.ButtonGroup();
         
- //       if(pref)
- //       {
-            //preferencesButton = new java.awt.Button();
+ 
             preferencesButton = new javax.swing.JButton();
             preferencesButton.setActionCommand("preferences");
             preferencesButton.setBackground(new java.awt.Color(255, 102, 255));
@@ -165,10 +164,7 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
                     preferences(evt);
                 }
             });
-            //preferencesButton.setLabel("Preferences");    
             preferencesButton.setText("Preferences"); 
-  //          return;
-  //      }
         
             // If this isn't here it falls over.  God knows why... 
             dummyButton = new java.awt.Button();
@@ -182,6 +178,18 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
             dummyButton.setLabel(" ");      
         
         
+            changeMachineButton = new javax.swing.JButton();
+            changeMachineButton.setActionCommand("changeMachine");
+            changeMachineButton.setBackground(new java.awt.Color(255, 255, 255));
+            changeMachineButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                	changeMachine(evt);
+                }
+            });   
+            changeMachineButton.setText("Change"); 
+            
+            
+            
         printButton = new javax.swing.JButton();
         pcbButton = new javax.swing.JButton();
         pauseButton = new javax.swing.JButton();
@@ -190,20 +198,8 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
         loadSTL = new javax.swing.JButton();
         loadGCode = new javax.swing.JButton();
         loadRFO = new javax.swing.JButton();
-//        preferencesButton = new javax.swing.JButton();
         saveRFO = new javax.swing.JButton();
         saveSCAD = new javax.swing.JButton();
-        
- //       printButton = new java.awt.Button();
- //       pcbButton = new java.awt.Button();
- //       pauseButton = new java.awt.Button();
- //       stopButton = new java.awt.Button();
- //       exitButton = new java.awt.Button();
- //       loadSTL = new java.awt.Button();
- //       loadGCode = new java.awt.Button();
- //       loadRFO = new java.awt.Button();
-
-//        saveRFO = new java.awt.Button();
         
         
         printButton.setText("Print/slice");
@@ -220,12 +216,12 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
         
         layerPauseCheck = new javax.swing.JCheckBox();
         layerPause(false);
-        //toSNAPRepRapRadioButton = new javax.swing.JRadioButton();
         getWebPage = new javax.swing.JButton();
         expectedBuildTimeLabel = new javax.swing.JLabel();
         hoursMinutesLabel1 = new javax.swing.JLabel();
         expectedBuildTime = new javax.swing.JLabel();
         expectedFinishTimeLabel = new javax.swing.JLabel();
+        changeMachineLabel = new javax.swing.JLabel();
         expectedFinishTime = new javax.swing.JLabel();
         progressLabel = new javax.swing.JLabel();
         currentLayerOutOfN = new javax.swing.JLabel();
@@ -311,6 +307,9 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
 
         expectedFinishTime.setFont(new java.awt.Font("Tahoma", 0, 12));
         expectedFinishTime.setText("    -"); // NOI18N
+        
+        changeMachineLabel.setFont(new java.awt.Font("Tahoma", 0, 12));
+        changeMachineLabel.setText("RepRap: " + Preferences.getActiveMachineName()); // NOI18N
 
         progressLabel.setFont(new java.awt.Font("Tahoma", 0, 12));
         progressLabel.setText("Layer progress:"); // NOI18N
@@ -392,29 +391,7 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
                 saveSCAD(evt);
             }
         });
-        
-        
-        
-        
-
-        
-        
-        
-        
- //       printButton.setLabel("Print");
- //       pcbButton.setLabel("PCB");
- //       pauseButton.setLabel("Pause");       
-//        stopButton.setLabel("STOP !");       
-//        exitButton.setLabel("Exit");       
-//        loadSTL.setLabel("Load STL");
-//        loadGCode.setLabel("Load GCode"); 
-//        loadRFO.setLabel("Load RFO");
-   
-//        saveRFO.setLabel("Save RFO"); 
-      
-
-        
-        
+ 
         
         displayPathsCheck.setText("Show paths when slicing");
         displayPathsCheck.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -962,6 +939,10 @@ private void preferences(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pref
 	prefs.setVisible(true);	// prefs.show();
 }//GEN-LAST:event_preferences
 
+private void changeMachine(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_preferences
+		
+}//GEN-LAST:event_preferences
+
 private void dummy(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_preferences
 	
 }//GEN-LAST:event_preferences
@@ -1066,6 +1047,7 @@ private void enableGLoad()
     private javax.swing.JLabel expectedFinishTimeLabel;
     private javax.swing.JLabel fileNameBox;
     private javax.swing.JRadioButton gCodeToFileRadioButton;
+    private javax.swing.JLabel changeMachineLabel;
 
     private javax.swing.JLabel hoursMinutesLabel1;
     private javax.swing.JCheckBox layerPauseCheck;
@@ -1083,7 +1065,7 @@ private void enableGLoad()
     private javax.swing.JButton saveRFO;
     private javax.swing.JButton saveSCAD;
     private javax.swing.JButton stopButton;
-    
+    private javax.swing.JButton changeMachineButton;
     
     
  //   private java.awt.Button loadGCode;

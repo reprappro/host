@@ -69,6 +69,8 @@ public class Debug {
 	{
 		initialiseIfNeedBe();
 		System.err.println("ERROR: " + s + Timer.stamp());
+		Exception e = new Exception();
+		e.printStackTrace();
 		System.err.flush();
 	}
 	

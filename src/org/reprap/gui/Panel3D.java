@@ -113,8 +113,7 @@ abstract public class Panel3D extends JPanel {
 		// All this needs to go into Preferences.java
 		try
 		{
-		wv_location = Preferences.getUsersRootDir() + Preferences.loadGlobalString("Configuration_directory") + File.separatorChar + 
-			Preferences.loadGlobalString("BuildBaseSTL(name)");
+			wv_location = Preferences.getBasePath();
 
 		//System.out.println(wv_location);
 		// Translate and zoom scaling factors

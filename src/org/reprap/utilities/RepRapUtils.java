@@ -93,7 +93,7 @@ public class RepRapUtils
             int readChars = 0;
             while ((readChars = is.read(c)) != -1) {
                 for (int i = 0; i < readChars; ++i) {
-                    if (c[i] == '\n')
+                    if (c[i] == System.getProperty("line.separator").charAt(0))
                         ++count;
                 }
             }

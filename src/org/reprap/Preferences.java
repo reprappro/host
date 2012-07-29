@@ -129,17 +129,7 @@ public class Preferences {
 
 	}
 	
-	/**
-	 * Where are the system-wide master copies?
-	 * @return
-	 */
-	public static String getSystemConfigurationDir()
-	{
-		URL sysConfig = ClassLoader.getSystemResource(propsDirDist);
-		if (sysConfig == null)
-			Debug.e("Can't find system RepRap configurations: " + propsDirDist);
-		return sysConfig.getFile() + File.separator;
-	}
+
 	
 	/**
 	 * Copy the standard RepRap configurations to the user's space
@@ -148,7 +138,10 @@ public class Preferences {
 	private static void copySystemConfigurations(File usersDir)
 	{
 		if(usersDir.exists())
-			Debug.e("WARNING - copying system RepRap configurations to existing directory: " + usersDir.toString());
+		{
+			Debug.e("Attempt to copy system RepRap configurations to existing directory: " + usersDir.toString());
+			return;
+		}
 		String sysConfig = getSystemConfigurationDir();
 		try
 		{
@@ -156,7 +149,6 @@ public class Preferences {
 		} catch (Exception e)
 		{
 			Debug.e("Error copying RepRap configurations to user's directory: " + usersDir.toString());
-			e.printStackTrace();
 		}
 		
 	}
@@ -211,7 +203,7 @@ public class Preferences {
 	}
 
 	/**
-	 * The path to the directory containing the user's active machine configuration
+	 * The name of the user's active machine configuration (without the leading *)
 	 * @return
 	 */
 	public static String getActiveMachineName()
@@ -274,6 +266,21 @@ public class Preferences {
 	}
 	
 	/**
+	 * Where are the system-wide master copies?
+	 * @return
+	 */
+	public static String getSystemConfigurationDir()
+	{
+		URL sysConfig = ClassLoader.getSystemResource(propsDirDist);
+		if (sysConfig == null)
+		{
+			Debug.e("Can't find system RepRap configurations: " + propsDirDist);
+			return null;
+		}
+		return sysConfig.getFile() + File.separator;
+	}
+	
+	/**
 	 * Where the system version of the user's properties file is
 	 * @return
 	 */
@@ -326,7 +333,6 @@ public class Preferences {
 		} catch (MalformedURLException e) 
 		{
 			Debug.e("System preferences location wrong: " + sysProps);
-			e.printStackTrace();
 			return;
 		}
 		Properties sysPreferences = new Properties();
@@ -337,7 +343,6 @@ public class Preferences {
 			} catch (IOException e) 
 			{
 				Debug.e("System preferences input error: " + sysProps);
-				e.printStackTrace();
 			}
 		} else
 		{
