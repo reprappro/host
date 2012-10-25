@@ -644,7 +644,6 @@ public class AllSTLsToBuild
 	
 	/**
 	 * Find the top of the highest object.
-	 * Calling this freezes the list.
 	 * @return
 	 */
 	public double maxZ()
@@ -966,8 +965,8 @@ public class AllSTLsToBuild
 					
 					b = new BooleanGridList();
 					b.add(bridge);
-					result.insides = BooleanGridList.differences(result.insides, b);
-					result.surfaces = BooleanGridList.differences(result.surfaces, b);
+					result.insides = BooleanGridList.differences(result.insides, b, false);
+					result.surfaces = BooleanGridList.differences(result.surfaces, b, false);
 				} else
 				{
 					// Wipe this land from the land pattern
@@ -1014,13 +1013,13 @@ public class AllSTLsToBuild
 					
 					b = new BooleanGridList();
 					b.add(bridge);
-					result.insides = BooleanGridList.differences(result.insides, b);
-					result.surfaces = BooleanGridList.differences(result.surfaces, b);
+					result.insides = BooleanGridList.differences(result.insides, b, false);
+					result.surfaces = BooleanGridList.differences(result.surfaces, b, false);
 				}
 				// remove the bridge from the bridge patterns.
 				b = new BooleanGridList();
 				b.add(bridge);
-				result.bridges = BooleanGridList.differences(result.bridges, b);
+				result.bridges = BooleanGridList.differences(result.bridges, b, false);
 			}
 		}
 		
@@ -1123,16 +1122,16 @@ public class AllSTLsToBuild
 	
 		// The bit of the slice with nothing above it needs fine infill...
 		
-		BooleanGridList nothingabove = BooleanGridList.differences(slice, above);
+		BooleanGridList nothingabove = BooleanGridList.differences(slice, above, false);
 		
 		// ...as does the bit with nothing below.
 		
-		BooleanGridList nothingbelow = BooleanGridList.differences(slice, below);
+		BooleanGridList nothingbelow = BooleanGridList.differences(slice, below, false);
 
 		// Find the region that is not surface.
 		
-		infill.insides = BooleanGridList.differences(slice, nothingbelow);
-		infill.insides = BooleanGridList.differences(infill.insides, nothingabove);
+		infill.insides = BooleanGridList.differences(slice, nothingbelow, false);
+		infill.insides = BooleanGridList.differences(infill.insides, nothingabove, false);
 		
 		// Parts with nothing under them that have no support material
 		// need to have bridges constructed to do the best for in-air infill.
@@ -1142,7 +1141,7 @@ public class AllSTLsToBuild
 		// The remainder with nothing under them will be supported by support material
 		// and so needs no special treatment.
 		
-		nothingbelow = nothingbelow.cullSupport();
+		//nothingbelow = nothingbelow.cullSupport(); //!!! Check if support calcs go awry...
 		
 		// All the parts of this slice that need surface infill
 		

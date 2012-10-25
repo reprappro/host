@@ -34,7 +34,6 @@ import org.reprap.gui.botConsole.BotConsoleFrame;
 import org.reprap.utilities.ExtensionFileFilter;
 import org.reprap.utilities.RrDeleteOnExit;
 import org.reprap.utilities.Debug;
-
 /**
  *
  * mainpage RepRap Host Controller Software
@@ -47,6 +46,10 @@ import org.reprap.utilities.Debug;
 
 
 public class Main {
+	
+    public static Main gui;
+    
+    private static final int localNodeNumber = 0;
 	
 	public static RrDeleteOnExit ftd = null;
 
@@ -508,7 +511,7 @@ public class Main {
 			"mm^3.  Elapsed time=" + time + "s";
 	}
 	
-	public void dispose() 
+	public void dispose() // throws RepRapException
 	{
 		Debug.d("Main dispose()");
 		ftd.killThem();
@@ -516,38 +519,40 @@ public class Main {
 
 		
 		System.exit(0);
+		//throw new RepRapException(1);
 	}
 	
-	public static void main(String[] args) {
-            
-            Thread.currentThread().setName("Main");
-            javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            
-            public void run() {
+	public static void main(String[] args) 
+	{
 
+		Thread.currentThread().setName("Main");
+		javax.swing.SwingUtilities.invokeLater(new Runnable() 
+		{
 
-                
-                try {
-                        Thread.currentThread().setName("RepRap");
-                                gui = new Main();
-                                gui.createAndShowGUI();
-                }
-                catch (Exception ex) {
-                        JOptionPane.showMessageDialog(null, "Error in the main GUI: " + ex);
-                                ex.printStackTrace();
-                }
-                
-                gui.mainFrame.setFocusable(true);
-                gui.mainFrame.requestFocus();
-                BotConsoleFrame.main(null);
+			public void run() 
+			{
+				try {
+					Thread.currentThread().setName("RepRap");
+					gui = new Main();
+					gui.createAndShowGUI();
+				}
+				catch (Exception ex) {
+					JOptionPane.showMessageDialog(null, "Error in the main GUI: " + ex);
+					ex.printStackTrace();
+				}
 
-            }
-        });
+				gui.mainFrame.setFocusable(true);
+				gui.mainFrame.requestFocus();
+				BotConsoleFrame.main(null);
+
+			}
+		}
+		);
 
 	}
         
         
-        public static Main gui;
+ 
         
 
         
@@ -566,5 +571,5 @@ public class Main {
 //            return communicator;
 //        }
 
-        private static final int localNodeNumber = 0;
+
     }

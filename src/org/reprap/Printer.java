@@ -5,6 +5,7 @@ import java.io.PrintStream;
 
 import javax.swing.JCheckBoxMenuItem;
 import org.reprap.geometry.LayerRules;
+import org.reprap.geometry.polygons.Point2D;
 
 
 public interface Printer {
@@ -35,11 +36,11 @@ public interface Printer {
 	 * Range between [0..???]
 	 * @param startUp ?
 	 * @param endUp ?
-	 * @throws ReprapException
+	 * @throws RepRapException
 	 * @throws IOException 
 	 * @throws Exception 
 	 */
-	public void moveTo(double x, double y, double z, double feedrate, boolean startUp, boolean endUp) throws ReprapException, IOException, Exception;
+	public void moveTo(double x, double y, double z, double feedrate, boolean startUp, boolean endUp) throws RepRapException, IOException, Exception;
 	
 	/**
 	 * Single move for when we're moving about giong places rather than making
@@ -60,11 +61,11 @@ public interface Printer {
 	 * @param z absolute z position in millimters relative to the home position.
 	 * Range between [0..???]
 	 * @param lastOne True if extruder should be turned off at end of this segment.
-	 * @throws ReprapException
+	 * @throws RepRapException
 	 * @throws IOException 
 	 * @throws Exception 
 	 */
-	public void printTo(double x, double y, double z, double feedrate, boolean stopExtruder, boolean closeValve) throws ReprapException, IOException, Exception;
+	public void printTo(double x, double y, double z, double feedrate, boolean stopExtruder, boolean closeValve) throws RepRapException, IOException, Exception;
 	
 	/**
 	 * Get the feedrate currently being used
@@ -79,9 +80,10 @@ public interface Printer {
 	public void printStartDelay(boolean firstOneInLayer);	
 	
 	/**
-	 * Maybe reverse the extruder at the end of a track
+	 * Maybe reverse the extruder at the end of a track; return
+	 * the amount reversed.
 	 */
-	public void printEndReverse();
+	public double printEndReverse();
 	
 	/**
 	 * Home all axes
@@ -92,50 +94,50 @@ public interface Printer {
 	
 	/**
 	 * Sync to zero X location.
-	 * @throws ReprapException
+	 * @throws RepRapException
 	 * @throws IOException
 	 * @throws Exception 
 	 */
-	public void homeToZeroX() throws ReprapException, IOException, Exception;
+	public void homeToZeroX() throws RepRapException, IOException, Exception;
 	
 	/**
 	 * Sync to zero Y location.
-	 * @throws ReprapException
+	 * @throws RepRapException
 	 * @throws IOException
 	 * @throws Exception 
 	 */
-	public void homeToZeroY() throws ReprapException, IOException, Exception; 
+	public void homeToZeroY() throws RepRapException, IOException, Exception; 
 	
 	
 	/**
 	 * Home XY and zero all extruders
-	 * @throws ReprapException
+	 * @throws RepRapException
 	 * @throws IOException
 	 * @throws Exception 
 	 */
-	public void homeToZeroXYE(boolean really) throws ReprapException, IOException, Exception; 
+	public void homeToZeroXYE(boolean really) throws RepRapException, IOException, Exception; 
 	
 	/**
 	 * Sync to zero Z location.
-	 * @throws ReprapException
+	 * @throws RepRapException
 	 * @throws IOException
 	 * @throws Exception 
 	 */
-	public void homeToZeroZ() throws ReprapException, IOException, Exception; 
+	public void homeToZeroZ() throws RepRapException, IOException, Exception; 
 	
 	/**
 	 * Select a specific material to print with
 	 * @param attributes with name of the material
 	 * @throws Exception 
 	 */
-	public void selectExtruder(Attributes att) throws Exception;
+	public void selectExtruder(Attributes att, Point2D next) throws Exception;
 	
 	/**
 	 * Select a specific material to print with
 	 * @param extr identifier of the material
 	 * @throws Exception 
 	 */
-	public void selectExtruder(int extr, boolean really) throws Exception;
+	public void selectExtruder(int extr, boolean really, boolean update, Point2D next) throws Exception;
 	
 	/**
 	 * Start a production run (as opposed to moving the machine about

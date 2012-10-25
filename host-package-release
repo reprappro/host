@@ -56,12 +56,11 @@ export CLASSPATH
 ant clean jar || exit 1
 
 #Delete any old release
-rm -f "./executable/*.zip"
+rm -f "./*.zip"
 
-BASENAME="./executable/$RELEASENAME"
+BASENAME="./$RELEASENAME"
 mkdir "$BASENAME"
-SRCFILENAME="$BASENAME/src"
-mkdir "$SRCFILENAME"
+mkdir "$BASENAME"/src
 
 # Copy files into binary package directory
 for F in $FILELIST
@@ -84,13 +83,13 @@ echo "READMEs created."
 # Now create the src archive
 for F in $SRCFILELIST
 do
-  cp -rp $F "$SRCFILENAME"
+  cp -rp $F "$BASENAME"/src
 done
 
 mkdir -p "$SRCFILENAME"/lib
 for F in $LIBFILES
 do
-  cp -rp $F "$SRCFILENAME"/lib
+  cp -rp $F "$BASENAME"/lib
 done
 
 echo "Sources copied."
@@ -102,13 +101,13 @@ done
 
 #Remove local configuration files
 
-rm -f "$BASENAME"/firmware/FiveD_GCode/Extruder/configuration.h
-rm -f "$BASENAME"/firmware/FiveD_GCode/FiveD_GCode_Interpreter/configuration.h
+#rm -f "$BASENAME"/firmware/FiveD_GCode/Extruder/configuration.h
+#rm -f "$BASENAME"/firmware/FiveD_GCode/FiveD_GCode_Interpreter/configuration.h
 
 echo "Design files copied."
 
 # Omit all .git subdirs
-cd "$BASENAME"
+cd "./$BASENAME"
 find . -type d -name .git |xargs rm -rf
 cd ..
 
@@ -116,7 +115,7 @@ echo "Git references removed."
 
 # Make sure executable permissions are right
 
-chmod 755 "$RELEASENAME"/reprap
+chmod 755 /reprap
 
 # Create zip archive
 

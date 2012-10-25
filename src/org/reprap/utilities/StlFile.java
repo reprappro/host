@@ -57,6 +57,13 @@ import org.reprap.utilities.StlFileParser;      // File parser
  *    the program will block.
  *    3.-Improve the way for detecting the kind of stl file?
  *    Can give us problems if the comment of the binary file begins by "solid"
+ *    
+ *    ----
+ *    
+ *    Modified by Adrian Bowyer to compute normals from triangles, rather than rely
+ *    on the read-in values (which seem to be all wrong...).  See the function
+ *     
+ *    private SceneBase makeScene()
  */
 
 public class StlFile implements Loader
@@ -759,12 +766,13 @@ public class StlFile implements Loader
       normArray = objectToVectorArray(normList);
     }
     
-    //for(int i = 0; i < normArray.length; i++)
-    //	normArray[i].negate();
 
     gi.setCoordinates(coordArray);
-    gi.setNormals(normArray);
-    gi.setStripCounts(stripCounts);  
+    gi.setStripCounts(stripCounts); 
+    NormalGenerator ng = new NormalGenerator();  // Added by AB
+    ng.generateNormals(gi);						 // Added by AB
+    //gi.setNormals(normArray);					 // Removed by AB
+    //gi.setStripCounts(stripCounts);  			 // Removed by AB
 
     // Put geometry into Shape3d
     Shape3D shape = new Shape3D();

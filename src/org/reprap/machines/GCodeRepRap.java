@@ -109,9 +109,9 @@ public class GCodeRepRap extends GenericRepRap {
 			if(extruders[extruder].get5D())
 			{
 				if(Preferences.loadGlobalBool("ExtrusionRelative"))
-					se = " E" + round(extrudeLength, 2);
+					se = " E" + round(extrudeLength, 3);
 				else
-					se = " E" + round(extruders[extruder].getExtruderState().length(), 2);
+					se = " E" + round(extruders[extruder].getExtruderState().length(), 3);
 			}
 		}
 		
@@ -192,9 +192,9 @@ public class GCodeRepRap extends GenericRepRap {
 			if(extruders[extruder].get5D())
 			{
 				if(Preferences.loadGlobalBool("ExtrusionRelative"))
-					s += " E" + round(extrudeLength, 2);
+					s += " E" + round(extrudeLength, 3);
 				else
-					s += " E" + round(extruders[extruder].getExtruderState().length(), 2);
+					s += " E" + round(extruders[extruder].getExtruderState().length(), 3);
 			}
 		}
 		
@@ -240,8 +240,8 @@ public class GCodeRepRap extends GenericRepRap {
 		} catch (Exception e)
 		{}
 
-		x = round(x, 1);
-		y = round(y, 1);
+		x = round(x, 2);
+		y = round(y, 2);
 		z = round(z, 4);
 		feedrate = round(feedrate, 1);
 		
@@ -314,8 +314,8 @@ public class GCodeRepRap extends GenericRepRap {
 		double x0 = getX();
 		double y0 = getY();
 		double z0 = getZ();
-		x = round(x, 1);
-		y = round(y, 1);
+		x = round(x, 2);
+		y = round(y, 2);
 		z = round(z, 4);
 		double dx = x - x0;
 		double dy = y - y0;
@@ -514,27 +514,6 @@ public class GCodeRepRap extends GenericRepRap {
 		gcode.copyFile(Preferences.getProloguePath());
 		if(Debug.d())
 			gcode.queue("; ------");
-		/*
-		String s = "M110";
-		if(Debug.d())
-			s += " ; Reset the line numbers";
-		gcode.queue(s);
-		//take us to fun, safe metric land.
-		s = "G21";
-		if(Debug.d())
-			s += " ; metric is good!";
-		gcode.queue(s);
-		
-		// Set absolute positioning, which is what we use.
-		s = "G90";
-		if(Debug.d())
-			s += " ; absolute positioning";		
-		gcode.queue(s);
-		
-		// Set the bed temperature
-		
-		setBedTemperature(bedTemperatureTarget);
-		*/
 		currentX = 0;
 		currentY = 0;
 		currentZ = 0;
@@ -547,7 +526,6 @@ public class GCodeRepRap extends GenericRepRap {
 		} catch (Exception E) {
 			Debug.d("Initialization error: " + E.toString());
 		}
-		//gcode.queue(";HERE!");
 	}
 	
 	public void startingLayer(LayerRules lc) throws Exception
@@ -578,8 +556,8 @@ public class GCodeRepRap extends GenericRepRap {
 			// Fan off
 			//getExtruder().setCooler(false);
 			Point2D p = lc.getLastPoint(topLayer);
-			currentX = round(p.x(),1);
-			currentY = round(p.y(),1);
+			currentX = round(p.x(),2);
+			currentY = round(p.y(),2);
 			//System.out.println("final XY: " + currentX + ", " + currentY);
 			currentZ = round(lc.getLayerZ(topLayer),1);
 			//gcode.queue("; Moving to finish:");
@@ -683,9 +661,9 @@ public class GCodeRepRap extends GenericRepRap {
 			if(extruders[extruder].get5D())
 			{
 				if(Preferences.loadGlobalBool("ExtrusionRelative"))
-					s = "G1 E" + round(extrudeLength, 2);
+					s = "G1 E" + round(extrudeLength, 3);
 				else
-					s = "G1 E" + round(extruders[extruder].getExtruderState().length(), 2);
+					s = "G1 E" + round(extruders[extruder].getExtruderState().length(), 3);
 				if(Debug.d())
 				{
 					if(extruders[extruder].getReversing())
@@ -902,10 +880,10 @@ public class GCodeRepRap extends GenericRepRap {
 		int extruderNow = extruder;
 		for(int i = 0; i < extruders.length; i++)
 		{
-			selectExtruder(i, really);
+			selectExtruder(i, really, false, null);
 			extruders[i].zeroExtrudedLength(really);
 		}
-		selectExtruder(extruderNow, really);
+		selectExtruder(extruderNow, really, false, null);
 		XYEAtZero = true;
 		super.homeToZeroXYE(really);
 	}
@@ -1043,15 +1021,28 @@ public class GCodeRepRap extends GenericRepRap {
 	
 
 	
-	public void selectExtruder(int materialIndex, boolean really) throws Exception
+	public void selectExtruder(int materialIndex, boolean really, boolean update, Point2D next) throws Exception
 	{
 		int oldPhysicalExtruder = getExtruder().getPhysicalExtruderNumber();
-		super.selectExtruder(materialIndex, true);
-		int newPhysicalExtruder = getExtruder().getPhysicalExtruderNumber();
+		Extruder oldExtruder = getExtruder();
+		int newPhysicalExtruder = extruders[materialIndex].getPhysicalExtruderNumber();
+		
 		if(newPhysicalExtruder != oldPhysicalExtruder || forceSelection)
 		{
 			if(really)
 			{
+				oldExtruder.stopExtruding();
+				if(next != null)
+				{
+					double x = next.x() - currentX;
+					x = currentX + 0.5*x;
+					double y = next.y() - currentY;
+					y = currentY + 0.5*y;
+					singleMove(x, y, currentZ, getFastXYFeedrate(), true);
+				}
+				super.selectExtruder(materialIndex, true, update, next);
+				if(update)physicalExtruderUsed[newPhysicalExtruder] = true;
+				getExtruder().stopExtruding(); // Make sure we are off
 				String s = "T" + newPhysicalExtruder;
 				if(Debug.d())
 					s += " ; select new extruder";
@@ -1063,12 +1054,6 @@ public class GCodeRepRap extends GenericRepRap {
 					if(Debug.d())
 						s += " ; set extruder PWM";
 					gcode.queue(s);
-				}else
-				{
-//					s = "M113";
-//					if(Debug.d())
-//						s += " ; set extruder to use pot for PWM";
-//					gcode.queue(s);
 				}
 			}
 			forceSelection = false;

@@ -253,14 +253,16 @@ public class STLObject
     {
     	BranchGroup bgResult = null;
     	CSG3D csgResult = null;
-        STLLoader loader = new STLLoader();
-    	//StlFile loader = new StlFile();
+    	
+    	//STLLoader loader = new STLLoader();
+    	StlFile loader = new StlFile();
+    	
         Scene scene;
         double volume = 0;
         try 
         {
         	
-        	//location=location.substring(5);
+        	location=location.substring(5);
         	//System.out.println(location);
             scene = loader.load(location);
         	CSGReader csgr = new CSGReader(location);

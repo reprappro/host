@@ -38,7 +38,8 @@ public class BotConsoleFrame extends javax.swing.JFrame {
     private static int exPanelNumber;
     
     /** Creates new form BotConsoleFrame */
-    public BotConsoleFrame() {
+    public BotConsoleFrame()
+    {
         try {
             checkPrefs();
         }
@@ -59,7 +60,7 @@ public class BotConsoleFrame extends javax.swing.JFrame {
         exPanelNumber = 0;
         pollThread = new Thread() 
         {
-        	public void run() 
+        	public void run()
         	{
         		Thread.currentThread().setName("GUI Poll");
         		while(true)
@@ -95,13 +96,13 @@ public class BotConsoleFrame extends javax.swing.JFrame {
     	int currentExtruder = org.reprap.Main.gui.getPrinter().getExtruder().getID();
     	
     	try {
-			org.reprap.Main.gui.getPrinter().selectExtruder(exPanelNumber, true);
+			org.reprap.Main.gui.getPrinter().selectExtruder(exPanelNumber, true, false, null);
 		} catch (Exception e) {
 			handleException(e);
 		}
     	extruderPanels[exPanelNumber].refreshTemperature();
     	try {
-			org.reprap.Main.gui.getPrinter().selectExtruder(currentExtruder, true);
+			org.reprap.Main.gui.getPrinter().selectExtruder(currentExtruder, true, false, null);
 		} catch (Exception e) {
 			handleException(e);
 		}

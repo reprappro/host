@@ -73,7 +73,7 @@ public class Preferences {
 	private static final double swell = 1.01;        // Quad tree swell factor
 	public static double swell() { return swell; }	
 	
-	private static final double machineResolution = 0.1; // RepRap step size in mm
+	private static final double machineResolution = 0.05; // RepRap step size in mm
 	public static double machineResolution() { return machineResolution; }
 	
 	private static final double absoluteZero = -273;

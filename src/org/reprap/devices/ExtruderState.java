@@ -14,7 +14,8 @@ public class ExtruderState
 {
 	private double l;  // Extruded length
 	private double tt; // Set temperature
-	private double ct; // Current temperature	
+	private double ct; // Current temperature
+	private double rt; // How much are we retracted?
 	private double s;  // Motor speed
 	private boolean r; // Are we going backwards?
 	private boolean e; // Are we extrudeing
@@ -25,6 +26,7 @@ public class ExtruderState
 		l = 1;
 		tt = 0;
 		ct = 0;
+		rt = 0;
 		s = 0;
 		r = false;
 		e = false;
@@ -99,5 +101,15 @@ public class ExtruderState
 	public void setExtruding(boolean ex)
 	{
 		e = ex;
+	}
+	
+	public void setRetraction(double r)
+	{
+		rt = r;
+	}
+	
+	public double retraction()
+	{
+		return rt;
 	}
 }

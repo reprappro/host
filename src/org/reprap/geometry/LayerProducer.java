@@ -348,7 +348,7 @@ public class LayerProducer {
 	 * @return
 	 * @throws Exception 
 	 */
-	private void plot(Polygon p, boolean firstOneInLayer) throws Exception
+	private void plot(Polygon p, boolean firstOneInLayer, boolean firstOneThisMaterial) throws Exception
 	{
 		Attributes att = p.getAttributes();
 		PolygonAttributes pAtt = p.getPolygonAttribute();
@@ -392,7 +392,7 @@ public class LayerProducer {
 				printer.singleMove(p.point(0).x(), p.point(0).y(), currentZ, printer.getFastXYFeedrate(), false);
 			printer.forceNextExtruder();
 		}
-		printer.selectExtruder(att);
+		printer.selectExtruder(att, p.point(0));
 		
 		
 		if (printer.isCancelled()) return;
@@ -424,7 +424,8 @@ public class LayerProducer {
 		if(liftZ > 0)
 			printer.singleMove(printer.getX(), printer.getY(), currentZ + liftZ, printer.getFastFeedrateZ(), true);
 	
-		currentFeedrate = att.getExtruder().getFastXYFeedrate();
+		//currentFeedrate = att.getExtruder().getFastXYFeedrate();
+		currentFeedrate = printer.getFastXYFeedrate();
 		singleMove(p.point(0));
 		
 		if(liftZ > 0)
@@ -512,15 +513,17 @@ public class LayerProducer {
 	public void plot() throws Exception
 	{
 		boolean firstOneInLayer = true;
+		boolean firstOneThisMaterial = true;
 		
 		for(int i = 0; i < allPolygons.length; i++)
 		{
-			firstOneInLayer = true;
+			firstOneThisMaterial = true;
 			PolygonList pl = allPolygons[i];
 			for(int j = 0; j < pl.size(); j++)
 			{
-				plot(pl.polygon(j), firstOneInLayer);
+				plot(pl.polygon(j), firstOneInLayer, firstOneThisMaterial);
 				firstOneInLayer = false;
+				firstOneThisMaterial = false;
 			}
 		}
 	}		

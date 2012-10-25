@@ -308,8 +308,8 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
         expectedFinishTime.setFont(new java.awt.Font("Tahoma", 0, 12));
         expectedFinishTime.setText("    -"); // NOI18N
         
-        changeMachineLabel.setFont(new java.awt.Font("Tahoma", 0, 12));
-        changeMachineLabel.setText("RepRap: " + Preferences.getActiveMachineName()); // NOI18N
+        changeMachineLabel.setFont(new java.awt.Font("Tahoma", 0, 15));
+        changeMachineLabel.setText("RepRap in use: " + Preferences.getActiveMachineName()); // NOI18N
 
         progressLabel.setFont(new java.awt.Font("Tahoma", 0, 12));
         progressLabel.setText("Layer progress:"); // NOI18N
@@ -423,7 +423,7 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
                             .add(toGCodeRepRapRadioButton)
                             .add(gCodeToFileRadioButton)
                             .add(fromSDCardRadioButton)
-                            .add(layerPauseCheck)
+                            .add(layerPauseCheck).add(changeMachineLabel)//**77
                             .add(displayPathsCheck))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
@@ -499,7 +499,7 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(layerPauseCheck)
+                                .add(layerPauseCheck).add(changeMachineLabel) //**77
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(displayPathsCheck))
                             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
@@ -1051,7 +1051,6 @@ private void enableGLoad()
 
     private javax.swing.JLabel hoursMinutesLabel1;
     private javax.swing.JCheckBox layerPauseCheck;
-  
     private javax.swing.JButton getWebPage;
     
     private javax.swing.JButton loadGCode;

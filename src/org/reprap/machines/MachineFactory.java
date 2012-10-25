@@ -1,7 +1,7 @@
 package org.reprap.machines;
 
 import org.reprap.Printer;
-import org.reprap.ReprapException;
+import org.reprap.RepRapException;
 
 /**
  * Returns an appropriate Printer object based on the current properties
@@ -32,7 +32,7 @@ public class MachineFactory {
 		else if (machine.compareToIgnoreCase("simulator") == 0)
 		    return new Simulator();		
 		else
-			throw new ReprapException("Invalid RepRap machine in properties file: " + machine);
+			throw new RepRapException("Invalid RepRap machine in properties file: " + machine);
 	}
 	
 }

@@ -133,7 +133,7 @@ public class BooleanGridList
 		 * @param multiplier
 		 * @return
 		 */
-		public BooleanGridList offset(LayerRules lc, boolean outline, double multiplier)
+		public BooleanGridList offset(LayerRules lc, boolean outline, double multiplier) //, int shellOverride)
 		{
 			boolean foundation = lc.getLayingSupport();
 			if(outline && foundation)
@@ -159,6 +159,8 @@ public class BooleanGridList
 						e = att.getExtruder();
 						shells = e.getShells();					
 					}
+//					if(shellOverride > 0)
+//						shells = shellOverride;
 					if(outline)
 					{
 						int shell = 0;
@@ -428,9 +430,10 @@ public class BooleanGridList
 		
 		/**
 		 * Return a list of differences between the entries in a and b.
-		 * Only pairs with the same attribute are subtracted.  If an element
-		 * of a has no corresponding element in b, then an entry equal to a is returned
-		 * for that.
+		 * Only pairs with the same attribute are subtracted unless ignoreAttributes is true,
+		 * whereupon everything in b is subtracted from everything in a.  If attributes are
+		 * considered and an element of a has no corresponding element in b, then an entry 
+		 * equal to a is returned for that.
 		 * 
 		 * If onlyNullSupport is true then only entries in a with support equal to null are
 		 * considered.  Otherwise ordinary set difference is returned.
@@ -440,7 +443,7 @@ public class BooleanGridList
 		 * @param onlyNullSupport
 		 * @return
 		 */
-		public static BooleanGridList differences(BooleanGridList a, BooleanGridList b)
+		public static BooleanGridList differences(BooleanGridList a, BooleanGridList b, boolean ignoreAttributes)
 		{
 			BooleanGridList result = new BooleanGridList();
 
@@ -461,14 +464,17 @@ public class BooleanGridList
 				boolean aMatched = false;
 				for(int j = 0; j < b.size(); j++)
 				{
-					if(abg.attribute().getExtruder().getID() == b.attribute(j).getExtruder().getID())
+					if(ignoreAttributes || (abg.attribute().getExtruder().getID() == b.attribute(j).getExtruder().getID()))
 					{
-						result.add(BooleanGrid.difference(abg, b.get(j)));
-						aMatched = true;
-						break;
+						result.add(BooleanGrid.difference(abg, b.get(j), abg.attribute()));
+						if(!ignoreAttributes)
+						{
+							aMatched = true;
+							break;
+						}
 					}
 				}
-				if(!aMatched)
+				if(!aMatched && !ignoreAttributes)
 					result.add(abg);
 					
 			}

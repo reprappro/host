@@ -69,9 +69,10 @@ public class Debug {
 	{
 		initialiseIfNeedBe();
 		System.err.println("ERROR: " + s + Timer.stamp());
+		System.err.flush();
+		if(!db.debug) return;
 		Exception e = new Exception();
 		e.printStackTrace();
-		System.err.flush();
 	}
 	
 	/**

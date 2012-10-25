@@ -7,7 +7,7 @@ import javax.swing.JFrame;
 import org.reprap.Attributes;
 import org.reprap.CartesianPrinter;
 import org.reprap.Preferences;
-import org.reprap.ReprapException;
+import org.reprap.RepRapException;
 import org.reprap.devices.NullExtruder;
 import org.reprap.devices.GenericExtruder;
 //import org.reprap.devices.GenericStepperMotor;
@@ -19,6 +19,7 @@ import org.reprap.gui.StatusMessage;
 import org.reprap.Extruder;
 import org.reprap.utilities.Debug;
 import org.reprap.utilities.Timer;
+import org.reprap.geometry.polygons.Point2D;
 import org.reprap.geometry.polygons.Rectangle;
 import org.reprap.geometry.polyhedra.AllSTLsToBuild;
 
@@ -39,6 +40,11 @@ public abstract class GenericRepRap implements CartesianPrinter
 	//protected boolean accelerating;
 	
 	protected boolean XYEAtZero;
+	
+	/**
+	 * Have we actually used this extruder?
+	 */
+	protected boolean physicalExtruderUsed[];
 	
 	/**
 	 * 
@@ -235,6 +241,7 @@ public abstract class GenericRepRap implements CartesianPrinter
 	public void loadExtruders() throws Exception
 	{
 		int pe;
+		int physExCount = -1;
 		
 		for(int i = 0; i < extruders.length; i++)
 		{
@@ -244,6 +251,8 @@ public abstract class GenericRepRap implements CartesianPrinter
 			// ExtrudedLength instance
 			
 			pe = extruders[i].getPhysicalExtruderNumber();
+			if(pe > physExCount)
+				physExCount = pe;
 			for(int j = 0; j < i; j++)
 			{
 				if(extruders[j].getPhysicalExtruderNumber() == pe)
@@ -255,7 +264,9 @@ public abstract class GenericRepRap implements CartesianPrinter
 			
 			extruders[i].setPrinter(this);
 		}
-		
+		physicalExtruderUsed = new boolean[physExCount + 1];
+		for(int i = 0; i <= physExCount; i++)
+			physicalExtruderUsed[i] = false;
 		extruder = 0;
 	}
 	
@@ -325,29 +336,51 @@ public abstract class GenericRepRap implements CartesianPrinter
 	}
 	
 	/**
-	 * Plot a rectangle round the build on layer 0
+	 * Plot rectangles round the build on layer 0
 	 * @param lc
 	 */
-	private void plotOutline(LayerRules lc)
+	private void plotOutlines(LayerRules lc)
 	{
-		Rectangle r = lc.getBox();
-		r = r.offset(2);
+		boolean started = false;
+		
 		try 
 		{
-			singleMove(r.x().low(), r.y().low(), currentZ, getExtruder().getFastXYFeedrate(), true);
+			Rectangle r = null;
+
+			for(int e = extruders.length - 1; e >= 0 ; e--)  // count down so we end with the one most likely to start the print
+			{
+				int pe = extruders[e].getPhysicalExtruderNumber();
+				if(physicalExtruderUsed[pe])
+				{
+					if(!started)
+					{
+						singleMove(0.5*Preferences.loadGlobalDouble("WorkingX(mm)"), 0.5*Preferences.loadGlobalDouble("WorkingY(mm)"), currentZ, getFastXYFeedrate(), true);
+						selectExtruder(e, true, false, null);
+						r = lc.getBox();
+						r = r.offset(4*getExtruder().getExtrusionSize());
+						singleMove(currentX, currentY, currentZ+getExtruder().getExtrusionHeight(), getFastXYFeedrate(), true);
+						started = true;
+					} else
+						selectExtruder(e, true, false, new Point2D(r.x().low(), r.y().low()));
+					singleMove(r.x().low(), r.y().low(), currentZ, getExtruder().getFastXYFeedrate(), true);
+					printStartDelay(true);
+					//getExtruder().zeroExtrudedLength(true);
+					getExtruder().setExtrusion(getExtruder().getExtruderSpeed(), false);
+					singleMove(r.x().high(), r.y().low(), currentZ, getExtruder().getFastXYFeedrate(), true);
+					singleMove(r.x().high(), r.y().high(), currentZ, getExtruder().getFastXYFeedrate(), true);
+					singleMove(r.x().low(), r.y().high(), currentZ, getExtruder().getFastXYFeedrate(), true);
+					singleMove(r.x().low(), r.y().low(), currentZ, getExtruder().getFastXYFeedrate(), true);
+					currentX = r.x().low();
+					currentY = r.y().low();
+					printEndReverse();
+					getExtruder().stopExtruding();
+					getExtruder().setValve(false);
+					r = r.offset(2*getExtruder().getExtrusionSize());
+					physicalExtruderUsed[pe] = false; // Stop us doing it again
+				}
+			}
 			//getExtruder().zeroExtrudedLength(true);
-			getExtruder().setExtrusion(getExtruder().getExtruderSpeed(), false);
-			singleMove(r.x().high(), r.y().low(), currentZ, getExtruder().getFastXYFeedrate(), true);
-			singleMove(r.x().high(), r.y().high(), currentZ, getExtruder().getFastXYFeedrate(), true);
-			singleMove(r.x().low(), r.y().high(), currentZ, getExtruder().getFastXYFeedrate(), true);
-			singleMove(r.x().low(), r.y().low(), currentZ, getExtruder().getFastXYFeedrate(), true);
-			currentX = r.x().low();
-			currentY = r.y().low();
-			printEndReverse();
-			getExtruder().stopExtruding();
-			getExtruder().setValve(false);
-			//getExtruder().zeroExtrudedLength(true);
-		} catch (ReprapException e) {
+		} catch (RepRapException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -360,32 +393,18 @@ public abstract class GenericRepRap implements CartesianPrinter
 	}
 
 	
-	/* (non-Javadoc)
-	 * @see org.reprap.Printer#startRun()
+	/**
+	 * Despite its name, this gets called at the end...
+	 * That's because the layers are computed top to
+	 * bottom.
 	 */
 	public void startRun(LayerRules lc) throws Exception
-	{
-		//if (previewer != null)
-			//previewer.reset();
-
-		//Debug.d("Selecting material 0");
-		//selectExtruder(0, true);
-		//getExtruder().zeroExtrudedLength(true);
-		
-		//Debug.d("Homing machine in X and Y");
-		//homeToZeroX();
-		//homeToZeroY();
-
-		//Debug.d("Setting temperature");
-		//getExtruder().heatOn(true);
-		
+	{		
 		// plot the outline, or move to the purge point, home Z and purge the extruder
 		if(Preferences.loadGlobalBool("StartRectangle"))
-			plotOutline(lc);
+			plotOutlines(lc);
 		else
 			getExtruder().purge(0);
-		
-		//System.out.println(getExtruder().)
 	}
 	
 	/**
@@ -580,7 +599,7 @@ public abstract class GenericRepRap implements CartesianPrinter
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#selectMaterial(int)
 	 */
-	public void selectExtruder(int materialIndex, boolean really) throws Exception
+	public void selectExtruder(int materialIndex, boolean really, boolean update, Point2D next) throws Exception
 	{
 		if (isCancelled())
 			return;
@@ -591,30 +610,17 @@ public abstract class GenericRepRap implements CartesianPrinter
 			extruder = 0;
 		} else
 			extruder = materialIndex;
-
-
-		
-		//todo: move back to cartesian snap
-		//layerPrinter.changeExtruder(getExtruder());
-
-//		if (previewer != null)
-//			previewer.setExtruder(getExtruder());
-
-		if (isCancelled())
-			return;
-		// TODO Select new material
-		// TODO Load new x/y/z offsets for the new extruder
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#selectMaterial(int)
 	 */
-	public void selectExtruder(Attributes att) throws Exception {
+	public void selectExtruder(Attributes att, Point2D next) throws Exception {
 		for(int i = 0; i < extruders.length; i++)
 		{
 			if(att.getMaterial().equals(extruders[i].getMaterial()))
 			{
-				selectExtruder(i, true);
+				selectExtruder(i, true, true, next);
 				return;
 			}
 		}
@@ -769,12 +775,13 @@ public abstract class GenericRepRap implements CartesianPrinter
 	{
 		try
 		{		
-			double rDelay = getExtruder().getExtrusionReverseDelay();
+			double rDelay = getExtruder().getExtruderState().retraction(); 
 
 			if(rDelay > 0)
 			{
 				getExtruder().setMotor(true);
 				machineWait(rDelay, true, true);
+				getExtruder().getExtruderState().setRetraction(0);
 			}
 
 			// Extrude motor and valve delays (ms)
@@ -814,24 +821,32 @@ public abstract class GenericRepRap implements CartesianPrinter
 	
 	/**
 	 * Extrude backwards for the given time in milliseconds, so that polymer is stopped flowing
-	 * at the end of a track.
+	 * at the end of a track.  Return the amount reversed.
 	 */
-	public void printEndReverse() 
+	public double printEndReverse() 
 	{
 		// Extrude motor and valve delays (ms)
 		
 		double delay = getExtruder().getExtrusionReverseDelay();
 		
 		if(delay <= 0)
-			return;
+			return 0;
 		
 		try
 		{
 			getExtruder().setExtrusion(getExtruder().getExtruderSpeed(), true);
 			machineWait(delay, true, true);
 			getExtruder().stopExtruding();
+			getExtruder().getExtruderState().setRetraction(getExtruder().getExtruderState().retraction() + delay);
 		} catch (Exception e)
 		{}
+		try {
+			return getExtruder().getExtruderState().retraction();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return 0;
 	}
 	
 	/**
@@ -841,7 +856,7 @@ public abstract class GenericRepRap implements CartesianPrinter
 	 * @param endX
 	 * @param endY
 	 * @param endZ
-	 * @throws ReprapException
+	 * @throws RepRapException
 	 * @throws IOException
 	 * @throws Exception 
 	 */
@@ -868,7 +883,7 @@ public abstract class GenericRepRap implements CartesianPrinter
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#moveTo(double, double, double, boolean, boolean)
 	 */
-	public void moveTo(double x, double y, double z, double feedRate, boolean startUp, boolean endUp) throws ReprapException, IOException, Exception
+	public void moveTo(double x, double y, double z, double feedRate, boolean startUp, boolean endUp) throws RepRapException, IOException, Exception
 	{
 		if (isCancelled()) return;
 		
@@ -1042,22 +1057,22 @@ public abstract class GenericRepRap implements CartesianPrinter
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#homeToZeroX()
 	 */
-	public void homeToZeroX() throws ReprapException, IOException, Exception{
+	public void homeToZeroX() throws RepRapException, IOException, Exception{
 		currentX = 0.0;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#homeToZeroY()
 	 */
-	public void homeToZeroY() throws ReprapException, IOException, Exception {
+	public void homeToZeroY() throws RepRapException, IOException, Exception {
 		currentY = 0.0;
 	}
 	
-	public void homeToZeroZ() throws ReprapException, IOException, Exception {
+	public void homeToZeroZ() throws RepRapException, IOException, Exception {
 		currentZ = 0.0;
 	}
 	
-	public void homeToZeroXYE(boolean really) throws ReprapException, IOException, Exception
+	public void homeToZeroXYE(boolean really) throws RepRapException, IOException, Exception
 	{}
 	
 	public void home() throws Exception{

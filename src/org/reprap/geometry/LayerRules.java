@@ -611,7 +611,7 @@ public class LayerRules
 
 		try
 		{
-			getPrinter().startRun(this); // Sets current X, Y, Z to 0
+			getPrinter().startRun(this); // Sets current X, Y, Z to 0 and optionally plots an outline
 			int top = realTopLayer();
 			for(machineLayer = 1; machineLayer <= top; machineLayer++)
 			{
