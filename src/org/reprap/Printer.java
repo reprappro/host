@@ -611,4 +611,10 @@ public interface Printer {
 	 * * @return true if success; false otherwise
 	 */
 	public boolean printSDFile(String string);
+	
+	/**
+	 * Plot rectangles round the build on layer 0 or above
+	 * @param lc
+	 */
+	public void plotOutlines(LayerRules lc, boolean started);
 }

@@ -68,7 +68,8 @@ abstract public class Panel3D extends JPanel {
 
 	protected Color3f bgColour = new Color3f(0.9f, 0.9f, 0.9f);
 	protected Color3f selectedColour = new Color3f(0.6f, 0.2f, 0.2f);
-	protected Color3f machineColour = new Color3f(0.3f, 0.4f, 0.3f);
+	//protected Color3f machineColour = new Color3f(0.3f, 0.4f, 0.3f);
+	protected Color3f machineColour = new Color3f(0.7f, 0.7f, 0.7f);
 	protected Color3f unselectedColour = new Color3f(0.3f, 0.3f, 0.3f);
 //	protected Color3f shellColour = new Color3f(0.1f, 0.6f, 0.1f);
 	
@@ -159,8 +160,9 @@ abstract public class Panel3D extends JPanel {
 		
 		selectedColour = new Color3f((float)0.6, (float)0.2, (float)0.2);
 
-		machineColour = new Color3f((float)0.3, (float)0.4, (float)0.3);
-			
+		//machineColour = new Color3f((float)0.3, (float)0.4, (float)0.3);
+		machineColour = new Color3f((float)0.3, (float)0.3, (float)0.3);
+		
 		unselectedColour = new Color3f((float)0.3, (float)0.3, (float)0.3);
 		} catch (Exception ex)
 		{
@@ -520,7 +522,8 @@ abstract public class Panel3D extends JPanel {
 	
 	protected String getStlBackground() throws Exception 
 	{
-		return "File:" + wv_location;
+		//return "File:" + wv_location;
+		return wv_location;
 //		URL u = ClassLoader.getSystemResource(wv_location);
 //		if(u != null)
 //		{

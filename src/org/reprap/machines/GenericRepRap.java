@@ -336,13 +336,11 @@ public abstract class GenericRepRap implements CartesianPrinter
 	}
 	
 	/**
-	 * Plot rectangles round the build on layer 0
+	 * Plot rectangles round the build on layer 0 or above
 	 * @param lc
 	 */
-	private void plotOutlines(LayerRules lc)
-	{
-		boolean started = false;
-		
+	public void plotOutlines(LayerRules lc, boolean started)
+	{	
 		try 
 		{
 			Rectangle r = null;
@@ -402,7 +400,7 @@ public abstract class GenericRepRap implements CartesianPrinter
 	{		
 		// plot the outline, or move to the purge point, home Z and purge the extruder
 		if(Preferences.loadGlobalBool("StartRectangle"))
-			plotOutlines(lc);
+			plotOutlines(lc, false);
 		else
 			getExtruder().purge(0);
 	}

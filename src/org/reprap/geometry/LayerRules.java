@@ -613,10 +613,13 @@ public class LayerRules
 		{
 			getPrinter().startRun(this); // Sets current X, Y, Z to 0 and optionally plots an outline
 			int top = realTopLayer();
+			boolean started = false;
 			for(machineLayer = 1; machineLayer <= top; machineLayer++)
 			{
 				machineZ = layerZ[machineLayer];
 				getPrinter().startingLayer(this);
+				getPrinter().plotOutlines(this, started);
+				started = true;
 				getPrinter().singleMove(getFirstPoint(machineLayer).x(), getFirstPoint(machineLayer).y(), machineZ, getPrinter().getFastXYFeedrate(), true);
 				copyFile(fileOutStream, getLayerFileName(machineLayer));
 				//System.out.println("Layer: " + machineLayer + " z: " + machineZ +

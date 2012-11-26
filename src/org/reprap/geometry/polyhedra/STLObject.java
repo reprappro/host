@@ -262,7 +262,7 @@ public class STLObject
         try 
         {
         	
-        	location=location.substring(5);
+        	//location=location.substring(5);
         	//System.out.println(location);
             scene = loader.load(location);
         	CSGReader csgr = new CSGReader(location);

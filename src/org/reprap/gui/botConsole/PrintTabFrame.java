@@ -541,10 +541,13 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
         //pack(); //AB99
     }// </editor-fold>//GEN-END:initComponents
     
-public void printLive()
+public void printLive(boolean p)
 {
 	printing = true;
-	printButton.setText("Printing...");
+	if(p)
+		printButton.setText("Printing...");
+	else
+		printButton.setText("Slicing...");
 	printButton.setBackground(Color.gray);    	
 }
 
@@ -561,7 +564,7 @@ public void printDone()
 	restorePrintButton();
 	String[] options = { "Exit" };
 	//int r = 
-		JOptionPane.showOptionDialog(null, "The file has been printed.", "Message",
+		JOptionPane.showOptionDialog(null, "The file has been processed.", "Message",
 			JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
 			null, options, options[0]);
 	org.reprap.Main.gui.dispose();
@@ -572,7 +575,7 @@ private void printButtonActionPerformed(java.awt.event.ActionEvent evt)
 	if(printing)
 		return;
 	
-	printLive();
+	printLive(!gCodeToFileRadioButton.isSelected());
 	
 	parentBotConsoleFrame.suspendPolling();
     parentBotConsoleFrame.setFractionDone(-1, -1, -1);
@@ -584,7 +587,7 @@ private void printButtonActionPerformed(java.awt.event.ActionEvent evt)
     		sp = loadedFiles.length();
     	if(sp <= 0)
     	{
-    		JOptionPane.showMessageDialog(null, "There are no STLs/RFOs loaded to print to file.");
+    		JOptionPane.showMessageDialog(null, "There are no STLs/RFOs loaded to slice to file.");
     		restorePrintButton();
     		return;
     	}

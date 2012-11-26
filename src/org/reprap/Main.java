@@ -384,7 +384,8 @@ public class Main {
         if(returnVal == JFileChooser.APPROVE_OPTION) 
         {
             f = chooser.getSelectedFile();
-            result = "file:" + f.getAbsolutePath();
+            //result = "file:" + f.getAbsolutePath();
+            result = f.getAbsolutePath();
             if(extensions[0].toUpperCase().contentEquals("RFO"))
             	builder.addRFOFile(result);
             if(extensions[0].toUpperCase().contentEquals("STL"))

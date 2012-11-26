@@ -508,7 +508,7 @@ public class GCodeRepRap extends GenericRepRap {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd:HH-mm-ss");
 		String myDateString = sdf.format(myDate);
 		gcode.queue("; Created: " + myDateString);
-		gcode.queue(";#!RECTANGLE: " + lc.getBox());
+		gcode.queue(";#!RECTANGLE: " + lc.getBox() + ", height: " + lc.getMachineZMAx());
 		if(Debug.d())
 			gcode.queue("; Prologue:");
 		gcode.copyFile(Preferences.getProloguePath());

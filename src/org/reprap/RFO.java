@@ -331,7 +331,8 @@ public class RFO
 				
 			} else if(element.equalsIgnoreCase("file"))
 			{
-				org.reprap.Attributes att = stl.addSTL("file:" + rfoDir + location, null, Preferences.unselectedApp(), firstSTL);
+				//org.reprap.Attributes att = stl.addSTL("file:" + rfoDir + location, null, Preferences.unselectedApp(), firstSTL);
+				org.reprap.Attributes att = stl.addSTL(rfoDir + location, null, Preferences.unselectedApp(), firstSTL);
 				if(firstSTL == null)
 					firstSTL = stl;
 				att.setMaterial(material);
