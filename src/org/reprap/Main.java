@@ -109,7 +109,7 @@ public class Main {
 
 	private void createAndShowGUI() throws Exception {
         JFrame.setDefaultLookAndFeelDecorated(false);
-        mainFrame = new JFrame("RepRap             grid: 20 mm");
+        mainFrame = new JFrame("RepRap      left: rotate   middle: zoom   right: translate     grid: 20 mm");
         mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         // Required so menus float over Java3D

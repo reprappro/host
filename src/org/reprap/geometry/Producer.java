@@ -126,15 +126,7 @@ public class Producer {
 	}	
 	
 	public void produce() throws Exception
-	{
-//		RrRectangle gp = layerRules.getBox();
-		
-//		gp = new RrRectangle(new Rr2Point(gp.x().low() - 6, gp.y().low() - 6), 
-//				new Rr2Point(gp.x().high() + 6, gp.y().high() + 6));
-		
-		
-		//layerRules.getPrinter().startRun(layerRules);
-		
+	{		
 		if(Preferences.Subtractive())
 			produceSubtractive();
 		else
@@ -258,6 +250,7 @@ public class Producer {
 		
 		boolean firstTimeRound = true;
 		
+		allSTLs.setUpShield();
 		
 		while(layerRules.getModelLayer() > 0 ) 
 		{
@@ -282,14 +275,14 @@ public class Producer {
 			for(int physicalExtruder = 0; physicalExtruder < allPolygons.length; physicalExtruder++)
 				allPolygons[physicalExtruder] = new PolygonList();
 			
-			boolean shield = true;
+			//boolean shield = true;
 			Point2D startNearHere = new Point2D(0, 0);
 			for(int stl = 0; stl < allSTLs.size(); stl++)
 			{
 					PolygonList fills = allSTLs.computeInfill(stl);
-					PolygonList borders = allSTLs.computeOutlines(stl, fills, shield);
+					PolygonList borders = allSTLs.computeOutlines(stl, fills); //, shield);
 					fills = fills.cullShorts();
-					shield = false;
+					//shield = false;
 					PolygonList support = allSTLs.computeSupport(stl);
 					
 					for(int physicalExtruder = 0; physicalExtruder < allPolygons.length; physicalExtruder++)

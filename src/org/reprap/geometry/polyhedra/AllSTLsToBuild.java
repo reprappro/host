@@ -1,7 +1,10 @@
 package org.reprap.geometry.polyhedra;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.ArrayList;
@@ -26,6 +29,7 @@ import javax.media.j3d.Group;
 import javax.media.j3d.SceneGraphObject;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Transform3D;
+import javax.swing.JRadioButton;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Tuple3d;
@@ -1212,6 +1216,44 @@ public class AllSTLsToBuild
 		return ell;
 	}
 	
+	public void setUpShield()
+	{
+		try 
+		{
+			if(!Preferences.loadGlobalBool("Shield"))
+				return;
+		} catch (IOException e) 
+		{
+			Debug.e(e.toString());
+		}
+		
+		setBoxes();
+		
+		// Load the shield object
+		
+		STLObject s = new STLObject();
+		Attributes att = s.addSTL(Preferences.getActiveMachineDir()+"shield.stl", null, Preferences.unselectedApp(),  null);
+		
+		try 
+		{
+			att.setMaterial(Preferences.allMaterials()[0]);
+		} catch (IOException e) 
+		{
+			Debug.e(e.toString());
+		}
+		
+		
+		// Rescale it to position it correctly and match heights
+		//s.setTransform(null);
+		
+		stls.add(0,s);
+		
+		// Record the purging data
+		// setPurge(x, y, length)
+		
+		//freeze();
+	}
+	
 	/**
 	 * Compute the outline polygons for this set of patterns.
 	 * @param layerConditions
@@ -1219,7 +1261,7 @@ public class AllSTLsToBuild
 	 * @param shield
 	 * @return
 	 */
-	public PolygonList computeOutlines(int stl, PolygonList hatchedPolygons, boolean shield)
+	public PolygonList computeOutlines(int stl, PolygonList hatchedPolygons) //, boolean shield)
 	{
 		// No more additions or movements, please
 		
@@ -1250,20 +1292,20 @@ public class AllSTLsToBuild
 		}
 
 
-		// If we've got polygons to plot, amend them so they start in the middle 
+		// If we've got polygons to plot, maybe amend them so they start in the middle 
 		// of a hatch (this gives cleaner boundaries).  Also add the nose-wipe shield
 		// if it's been asked for.
 		
 		if(borderPolygons != null && borderPolygons.size() > 0)
 		{
 			borderPolygons.middleStarts(hatchedPolygons, layerRules, slice);
-			try
-			{
-				if(shield && Preferences.loadGlobalBool("Shield") || 
-						(borderPolygons.polygon(0).getAttributes().getExtruder().getPurgeTime() <= 0 && layerRules.getMachineLayer() == 0))
-					borderPolygons.add(0, shieldPolygon(borderPolygons.polygon(0).getAttributes()));
-			} catch (Exception ex)
-			{}
+//			try
+//			{
+//				if(shield && Preferences.loadGlobalBool("Shield") || 
+//						(borderPolygons.polygon(0).getAttributes().getExtruder().getPurgeTime() <= 0 && layerRules.getMachineLayer() == 0))
+//					borderPolygons.add(0, shieldPolygon(borderPolygons.polygon(0).getAttributes()));
+//			} catch (Exception ex)
+//			{}
 		}
 		
 		return borderPolygons;
