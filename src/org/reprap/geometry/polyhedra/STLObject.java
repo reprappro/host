@@ -617,6 +617,29 @@ public class STLObject
     	return c.transform(m);
     }
     
+    /**
+     * Move this object elsewhere
+     * @param s
+     * @param p
+     */
+    public void translate(Vector3d p)
+    {
+    	for(int i = 0; i < contents.size(); i++)
+    	{
+    		Contents c = contents.get(i);
+    		recursiveSetOffset(c.stl, p);
+    		if(c.csg != null)
+    		{
+    			Matrix4d m = new Matrix4d();
+    			m.setIdentity();
+    			m.m03 = p.x;
+    			m.m13 = p.y;
+    			m.m23 = p.z;
+    			c.csg = c.csg.transform(m);
+    		}
+    	}
+    }
+    
     // Shift a Shape3D permanently by p
     
     private void s3dOffset(Shape3D shape, Tuple3d p)
@@ -636,7 +659,7 @@ public class STLObject
     
     // Scale the object by s permanently (i.e. don't just apply a transform).
     
-    private void recursiveSetScale( Object value, double s) 
+    private void recursiveSetScale(Object value, double s, boolean zOnly) 
     {
         if( value instanceof SceneGraphObject != false ) 
         {
@@ -652,17 +675,17 @@ public class STLObject
                 java.util.Enumeration<?> enumKids = g.getAllChildren( );
                 
                 while(enumKids.hasMoreElements( ))
-                    recursiveSetScale( enumKids.nextElement( ), s );
+                    recursiveSetScale( enumKids.nextElement( ), s, zOnly );
             } else if ( sg instanceof Shape3D ) 
             {
-                    s3dScale((Shape3D)sg, s);
+                    s3dScale((Shape3D)sg, s, zOnly);
             }
         }
     }
     
    // Scale a Shape3D permanently by s
     
-    private void s3dScale(Shape3D shape, double s)
+    private void s3dScale(Shape3D shape, double s, boolean zOnly)
     {
         GeometryArray g = (GeometryArray)shape.getGeometry();
         Point3d p3d = new Point3d();
@@ -671,7 +694,10 @@ public class STLObject
             for(int i = 0; i < g.getVertexCount(); i++) 
             {
                 g.getCoordinate(i, p3d);
-                p3d.scale(s);
+                if(zOnly)
+                	p3d.z = s*p3d.z;
+                else
+                	p3d.scale(s);
                 g.setCoordinate(i, p3d);
             }
         }
@@ -914,46 +940,60 @@ public class STLObject
         mouse.setTransform(fromZeroT);       
     }
     
-   // Rescale the STL object (for inch -> mm conversion)
+   // Rescale the STL object (for inch -> mm conversion) and stretching heights
     
-    private void rScale(double s)
+    public void rScale(double s, boolean zOnly)
     {
-        if(mouse == null)
+        if(mouse == null && !zOnly)
             return;
-        
+    	Vector3d mouseTranslation = null;
+    	Matrix3d mouseRotation = null;
+    	
         // Get the mouse transform and split it into a rotation and a translation
         
         Transform3D mtrans = new Transform3D();
-        mouse.getTransform(mtrans);
-        Vector3d mouseTranslation = new Vector3d();
-        Matrix3d mouseRotation = new Matrix3d();
-        mtrans.get(mouseRotation, mouseTranslation);
+        if(mouse != null)
+        {
+        	mouse.getTransform(mtrans);
+        	mouseTranslation = new Vector3d();
+        	mouseRotation = new Matrix3d();
+        	mtrans.get(mouseRotation, mouseTranslation);
+        }
         
         // Subtract the part of the translation that puts the bottom left corner
         // at the origin.
         
         Vector3d zero = scale(extent, 0.5);
-        mouseTranslation = add(mouseTranslation, neg(zero));       
+        
+        if(mouse != null)
+        	mouseTranslation = add(mouseTranslation, neg(zero));       
         
         // Rescale the box
         
-       	extent.scale(s);
+        if(zOnly)
+        	extent.z = s*extent.z;
+        else
+        	extent.scale(s);
         
         // Add a new translation to put the bottom left corner
         // back at the origin.
         
         zero = scale(extent, 0.5);
-        mouseTranslation = add(mouseTranslation, zero);
         
-        // Then slide us back where we were
-        
-        Transform3D fromZeroT = new Transform3D();
-        fromZeroT.setTranslation(mouseTranslation);
-        
-        // Apply the whole new transformation
-        
-        mouse.setTransform(fromZeroT);
-        
+        if(mouse != null)
+        {
+        	mouseTranslation = add(mouseTranslation, zero);
+
+        	// Then slide us back where we were
+
+        	Transform3D fromZeroT = new Transform3D();
+        	fromZeroT.setTranslation(mouseTranslation);
+
+        	// Apply the whole new transformation
+
+        	mouse.setTransform(fromZeroT);
+        }
+
         // Rescale the object
  
         Enumeration<?> things;
@@ -962,7 +1002,7 @@ public class STLObject
         while(things.hasMoreElements()) 
         {
         	Object value = things.nextElement();
-        	recursiveSetScale(value, s);
+        	recursiveSetScale(value, s, zOnly);
         }
 
 
@@ -1014,7 +1054,7 @@ public class STLObject
         if(mouse == null)
             return;
         
-        rScale(Preferences.inchesToMillimetres());
+        rScale(Preferences.inchesToMillimetres(), false);
     }
     
     /**

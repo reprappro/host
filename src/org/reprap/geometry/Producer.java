@@ -48,6 +48,7 @@ public class Producer {
 		
 		allSTLs = bld.getSTLs();
 		layerRules = new LayerRules(pr, allSTLs, true);
+		pr.setLayerRules(layerRules);
 		
 		if(Preferences.simulate())
 		{
@@ -250,7 +251,6 @@ public class Producer {
 		
 		boolean firstTimeRound = true;
 		
-		allSTLs.setUpShield();
 		
 		while(layerRules.getModelLayer() > 0 ) 
 		{

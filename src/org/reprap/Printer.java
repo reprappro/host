@@ -617,4 +617,13 @@ public interface Printer {
 	 * @param lc
 	 */
 	public void plotOutlines(LayerRules lc, boolean started);
+	
+	/**
+	 * Return the current layer rules
+	 * @return
+	 */
+	public LayerRules getLayerRules();
+	
+	public void setLayerRules(LayerRules l);
+
 }

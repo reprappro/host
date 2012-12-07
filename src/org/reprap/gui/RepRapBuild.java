@@ -470,7 +470,10 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 			return;
 		//objectIndex++;
 		STLObject stl = new STLObject();
-		Attributes att = stl.addSTL(s, null, Preferences.unselectedApp(), lastPicked);
+		Attributes att;
+
+		att = stl.addSTL(s, null, Preferences.unselectedApp(), lastPicked);
+
 		if(att != null)
 		{
 			// New separate object, or just appended to lastPicked?
@@ -479,7 +482,23 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 				wv_and_stls.addChild(stl.top());
 				stls.add(stl);
 			}
+
 			MaterialRadioButtons.createAndShowGUI(att, this, stls.size() - 1, stl.volume());
+		}
+	}
+	
+	// Callback for when the user has a pre-loaded STL and attribute
+
+	public void anotherSTL(STLObject stl, Attributes att, int index) 
+	{
+		if (stl == null || att == null)
+			return;
+
+		// New separate object, or just appended to lastPicked?
+		if(stl.numChildren() > 0)
+		{
+			wv_and_stls.addChild(stl.top());
+			stls.add(index, stl);
 		}
 	}
 	

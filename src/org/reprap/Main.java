@@ -281,8 +281,6 @@ public class Main {
 		Debug.d("Main finalise()");
 		ftd.killThem();
 	}
-
-
 	
 	/**
 	 * Return the printer being used
@@ -290,6 +288,14 @@ public class Main {
 	public Printer getPrinter()
 	{
 		return printer;
+	}
+	
+	/**
+	 * Return the printer being used
+	 */
+	public RepRapBuild getBuilder()
+	{
+		return builder;
 	}
 	
 	/**

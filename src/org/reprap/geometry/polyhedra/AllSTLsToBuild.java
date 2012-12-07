@@ -18,6 +18,7 @@ import org.reprap.geometry.polygons.Point2D;
 import org.reprap.geometry.polygons.Polygon;
 import org.reprap.geometry.polygons.PolygonList;
 import org.reprap.geometry.polygons.Rectangle;
+import org.reprap.gui.RepRapBuild;
 import org.reprap.Attributes;
 import org.reprap.Extruder;
 import org.reprap.Preferences;
@@ -33,6 +34,7 @@ import javax.swing.JRadioButton;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Tuple3d;
+import javax.vecmath.Vector3d;
 
 /**
  * This class holds a list of STLObjects that represents everything that is to be built.
@@ -318,6 +320,17 @@ public class AllSTLsToBuild
 		if(frozen)
 			Debug.e("AllSTLsToBuild.add(): adding an item to a frozen list.");
 		stls.add(s);
+	}
+	
+	/**
+	 * Add a new STLObject somewhere in the list
+	 * @param s
+	 */
+	public void add(int index, STLObject s)
+	{
+		if(frozen)
+			Debug.e("AllSTLsToBuild.add(): adding an item to a frozen list.");
+		stls.add(index, s);
 	}
 	
 	/**
@@ -1218,6 +1231,9 @@ public class AllSTLsToBuild
 	
 	public void setUpShield()
 	{
+		if(frozen)
+			Debug.e("AllSTLsToBuild.setUpShield() called when frozen!");
+		
 		try 
 		{
 			if(!Preferences.loadGlobalBool("Shield"))
@@ -1228,11 +1244,20 @@ public class AllSTLsToBuild
 		}
 		
 		setBoxes();
-		
-		// Load the shield object
+		Rectangle buildPlan = ObjectPlanRectangle();
+		double modelZMax = maxZ();
 		
 		STLObject s = new STLObject();
 		Attributes att = s.addSTL(Preferences.getActiveMachineDir()+"shield.stl", null, Preferences.unselectedApp(),  null);
+		Vector3d shieldSize = s.extent();
+		double zScale = modelZMax/shieldSize.z;
+		
+		double xOff = 0.5*(buildPlan.se().x() + buildPlan.sw().x() - shieldSize.x);
+		double yOff = buildPlan.se().y() - shieldSize.y - 2;
+		double zOff = 0.5*(modelZMax - shieldSize.z);
+		
+		s.rScale(zScale, true);
+		s.translate(new Vector3d(xOff, yOff, zOff));
 		
 		try 
 		{
@@ -1242,16 +1267,9 @@ public class AllSTLsToBuild
 			Debug.e(e.toString());
 		}
 		
+		org.reprap.Main.gui.getBuilder().anotherSTL(s, att, 0);
 		
-		// Rescale it to position it correctly and match heights
-		//s.setTransform(null);
-		
-		stls.add(0,s);
-		
-		// Record the purging data
-		// setPurge(x, y, length)
-		
-		//freeze();
+		layerRules.setPurgePoint(0.5*(buildPlan.se().x() + buildPlan.sw().x() + shieldSize.x - layerRules.getPurgeLength()), yOff + 0.5*shieldSize.y + 1.5);
 	}
 	
 	/**

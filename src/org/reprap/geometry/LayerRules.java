@@ -4,6 +4,7 @@ package org.reprap.geometry;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.PrintStream;
 
 import org.reprap.Printer;
@@ -158,6 +159,16 @@ public class LayerRules
 	private int maxSurfaceLayers = 2;
 	
 	/**
+	 * The point at which to purge extruders
+	 */
+	private double purgeX, purgeY;
+	
+	/**
+	 * The length of the purge trail in mm
+	 */
+	private final double purgeL = 25;
+	
+	/**
 	 * 
 	 * @param p
 	 * @param modZMax
@@ -173,8 +184,18 @@ public class LayerRules
 		alreadyReversed = false;
 		notStartedYet = true;
 		
+		astls.setUpShield();
 		astls.setBoxes();
 		astls.setLayerRules(this);
+		
+		try 
+		{
+			purgeX = Preferences.loadGlobalDouble("DumpX(mm)");
+			purgeY = Preferences.loadGlobalDouble("DumpY(mm)");
+		} catch (IOException e) 
+		{	
+			Debug.e(e.toString());
+		}
 		
 		Rectangle gp = astls.ObjectPlanRectangle();
 		bBox =  new Rectangle(new Point2D(gp.x().low() - 6, gp.y().low() - 6), 
@@ -258,6 +279,22 @@ public class LayerRules
 			layerFileNames[i] = null;
 		prologueFileName = null;
 		epilogueFileName = null;
+	}
+	
+	public void setPurgePoint(double x, double y)
+	{
+		purgeX = x;
+		purgeY = y;
+	}
+	
+	public Point2D getPurgePoint()
+	{
+		return new Point2D(purgeX, purgeY);
+	}
+	
+	public double getPurgeLength()
+	{
+		return purgeL;
 	}
 	
 	public Rectangle getBox()

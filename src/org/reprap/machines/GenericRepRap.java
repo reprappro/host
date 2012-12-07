@@ -28,6 +28,8 @@ public abstract class GenericRepRap implements CartesianPrinter
 	protected boolean stlLoaded = false;
 	protected boolean gcodeLoaded = false;
 	
+	LayerRules layerRules = null;
+	
 	/**
 	 * Force an extruder to be selected on startup
 	 */
@@ -75,7 +77,7 @@ public abstract class GenericRepRap implements CartesianPrinter
 	/**
 	 * The location of the place to purge extruders
 	 */
-	protected double dumpX, dumpY;
+	//protected double dumpX, dumpY;
 	
 	/**
 	 * The location of the place to go at the end
@@ -231,6 +233,11 @@ public abstract class GenericRepRap implements CartesianPrinter
 		currentFeedrate = 0;
 	}
 	
+	public void setLayerRules(LayerRules l)
+	{
+		layerRules = l;
+	}
+	
 	public void loadMotors()
 	{
 //		motorX = new NullStepperMotor(1);
@@ -309,8 +316,8 @@ public abstract class GenericRepRap implements CartesianPrinter
 			idleZ = true; //Preferences.loadGlobalBool("IdleZAxis");
 			
 			foundationLayers = Preferences.loadGlobalInt("FoundationLayers");
-			dumpX = Preferences.loadGlobalDouble("DumpX(mm)");
-			dumpY = Preferences.loadGlobalDouble("DumpY(mm)");
+			//dumpX = Preferences.loadGlobalDouble("DumpX(mm)");
+			//dumpY = Preferences.loadGlobalDouble("DumpY(mm)");
 			
 			//finishX = Preferences.loadGlobalDouble("FinishX(mm)");
 			//finishY = Preferences.loadGlobalDouble("FinishY(mm)");
@@ -568,7 +575,8 @@ public abstract class GenericRepRap implements CartesianPrinter
 	{
 		if(liftZ > 0)
 			singleMove(currentX, currentY, currentZ + liftZ, getFastFeedrateZ(), true);
-		singleMove(dumpX, dumpY, currentZ, getExtruder().getFastXYFeedrate(), true);
+		Point2D p = layerRules.getPurgePoint();
+		singleMove(p.x(), p.y(), currentZ, getExtruder().getFastXYFeedrate(), true);
 	}
 	
 	/* (non-Javadoc)
@@ -586,13 +594,6 @@ public abstract class GenericRepRap implements CartesianPrinter
 			extruders[i].dispose();
 	}
 	
-
-
-	
-//	public Extruder extruderFactory(int count)
-//	{
-//		return new NullExtruder(count);
-//	}
 	
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#selectMaterial(int)
@@ -613,7 +614,8 @@ public abstract class GenericRepRap implements CartesianPrinter
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#selectMaterial(int)
 	 */
-	public void selectExtruder(Attributes att, Point2D next) throws Exception {
+	public void selectExtruder(Attributes att, Point2D next) throws Exception 
+	{
 		for(int i = 0; i < extruders.length; i++)
 		{
 			if(att.getMaterial().equals(extruders[i].getMaterial()))
@@ -1372,12 +1374,12 @@ public abstract class GenericRepRap implements CartesianPrinter
 	 */
 	public double getDumpX()
 	{
-		return dumpX;
+		return layerRules.getPurgePoint().x();
 	}
 	
 	public double getDumpY()
 	{
-		return dumpY;
+		return layerRules.getPurgePoint().y();
 	}
 	
 	/**
@@ -1420,5 +1422,14 @@ public abstract class GenericRepRap implements CartesianPrinter
 	public void forceNextExtruder()
 	{
 		forceSelection = true;
+	}
+	
+	/**
+	 * Return the current layer rules
+	 * @return
+	 */
+	public LayerRules getLayerRules()
+	{
+		return layerRules;
 	}
 }

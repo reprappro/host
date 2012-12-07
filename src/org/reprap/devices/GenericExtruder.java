@@ -1311,7 +1311,10 @@ public abstract class GenericExtruder implements Extruder
     {
     	if(!es.isExtruding() || valvePulseTime > 0)
     		return 0;
-    	return filamentDistance(extrudeRatio*distance);
+    	if(printer.getLayerRules().getModelLayer() == 0)
+    		return filamentDistance(distance);  // Ignore extrude ratio on the bottom layer
+    	else
+    		return filamentDistance(extrudeRatio*distance);
     }
     
     /**

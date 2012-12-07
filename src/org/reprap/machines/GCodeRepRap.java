@@ -1032,13 +1032,11 @@ public class GCodeRepRap extends GenericRepRap {
 			if(really)
 			{
 				oldExtruder.stopExtruding();
-				if(next != null)
+				if(Preferences.loadGlobalBool("Shield"))
 				{
-					double x = next.x() - currentX;
-					x = currentX + 0.5*x;
-					double y = next.y() - currentY;
-					y = currentY + 0.5*y;
-					singleMove(x, y, currentZ, getFastXYFeedrate(), true);
+					singleMove(layerRules.getPurgePoint().x(), layerRules.getPurgePoint().y() - newPhysicalExtruder, currentZ, getFastXYFeedrate(), true);
+					currentX = layerRules.getPurgePoint().x();
+					currentY = layerRules.getPurgePoint().y() - newPhysicalExtruder;
 				}
 				super.selectExtruder(materialIndex, true, update, next);
 				if(update)physicalExtruderUsed[newPhysicalExtruder] = true;
@@ -1047,14 +1045,22 @@ public class GCodeRepRap extends GenericRepRap {
 				if(Debug.d())
 					s += " ; select new extruder";
 				gcode.queue(s);
-				double pwm = getExtruder().getPWM();
-				if(pwm >= 0)
-				{
-					s = "M113 S" + pwm;
-					if(Debug.d())
-						s += " ; set extruder PWM";
-					gcode.queue(s);
-				}
+				printStartDelay(true);
+				getExtruder().setExtrusion(getExtruder().getExtruderSpeed(), false);
+				singleMove(layerRules.getPurgePoint().x() + layerRules.getPurgeLength(), layerRules.getPurgePoint().y() - newPhysicalExtruder, currentZ, getExtruder().getFastXYFeedrate(), true);
+				currentX = layerRules.getPurgePoint().x() + layerRules.getPurgeLength();
+				currentY = layerRules.getPurgePoint().y() - newPhysicalExtruder;
+				printEndReverse();
+				getExtruder().stopExtruding();
+				getExtruder().setValve(false);
+//				double pwm = getExtruder().getPWM();
+//				if(pwm >= 0)
+//				{
+//					s = "M113 S" + pwm;
+//					if(Debug.d())
+//						s += " ; set extruder PWM";
+//					gcode.queue(s);
+//				}
 			}
 			forceSelection = false;
 		}
@@ -1122,4 +1128,5 @@ public class GCodeRepRap extends GenericRepRap {
 	{
 		return gcode.getOutputFilename();
 	}
+	
 }
