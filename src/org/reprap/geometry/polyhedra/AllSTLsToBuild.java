@@ -1269,7 +1269,7 @@ public class AllSTLsToBuild
 		
 		org.reprap.Main.gui.getBuilder().anotherSTL(s, att, 0);
 		
-		layerRules.setPurgePoint(0.5*(buildPlan.se().x() + buildPlan.sw().x() + shieldSize.x - layerRules.getPurgeLength()), yOff + 0.5*shieldSize.y + 1.5);
+		layerRules.setPurgePoint(0.5*(buildPlan.se().x() + buildPlan.sw().x() - layerRules.getPurgeLength()), yOff + 0.5*shieldSize.y + 1.5);
 	}
 	
 	/**

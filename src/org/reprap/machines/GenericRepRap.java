@@ -408,8 +408,8 @@ public abstract class GenericRepRap implements CartesianPrinter
 		// plot the outline, or move to the purge point, home Z and purge the extruder
 		if(Preferences.loadGlobalBool("StartRectangle"))
 			plotOutlines(lc, false);
-		else
-			getExtruder().purge(0);
+		//else
+			//getExtruder().purge(0);
 	}
 	
 	/**

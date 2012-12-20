@@ -184,7 +184,6 @@ public class LayerRules
 		alreadyReversed = false;
 		notStartedYet = true;
 		
-		astls.setUpShield();
 		astls.setBoxes();
 		astls.setLayerRules(this);
 		
@@ -279,6 +278,14 @@ public class LayerRules
 			layerFileNames[i] = null;
 		prologueFileName = null;
 		epilogueFileName = null;
+		
+		astls.setUpShield();
+		
+		astls.setBoxes();
+
+		gp = astls.ObjectPlanRectangle();
+		bBox =  new Rectangle(new Point2D(gp.x().low() - 6, gp.y().low() - 6), 
+		new Point2D(gp.x().high() + 6, gp.y().high() + 6));
 	}
 	
 	public void setPurgePoint(double x, double y)
@@ -655,7 +662,7 @@ public class LayerRules
 			{
 				machineZ = layerZ[machineLayer];
 				getPrinter().startingLayer(this);
-				getPrinter().plotOutlines(this, started);
+				//getPrinter().plotOutlines(this, started);
 				started = true;
 				getPrinter().singleMove(getFirstPoint(machineLayer).x(), getFirstPoint(machineLayer).y(), machineZ, getPrinter().getFastXYFeedrate(), true);
 				copyFile(fileOutStream, getLayerFileName(machineLayer));
