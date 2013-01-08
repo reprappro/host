@@ -623,11 +623,7 @@ public class LayerRules
 	}
 	
 	public void reverseLayers()
-	{
-		//if(opFileArray == null || alreadyReversed)
-		//if(getPrologueFileName() == null)
-		//	return;
-		
+	{	
 		// Stop this being called twice...
 		if(alreadyReversed)
 		{
@@ -651,7 +647,6 @@ public class LayerRules
 		}
 		
 		getPrinter().forceOutputFile(fileOutStream);
-		//copyFile(fileOutStream,getPrologueFileName());
 
 		try
 		{
@@ -662,13 +657,14 @@ public class LayerRules
 			{
 				machineZ = layerZ[machineLayer];
 				getPrinter().startingLayer(this);
-				//getPrinter().plotOutlines(this, started);
 				started = true;
 				getPrinter().singleMove(getFirstPoint(machineLayer).x(), getFirstPoint(machineLayer).y(), machineZ, getPrinter().getFastXYFeedrate(), true);
 				copyFile(fileOutStream, getLayerFileName(machineLayer));
+				
 				//System.out.println("Layer: " + machineLayer + " z: " + machineZ +
 				//		" first point: " + getFirstPoint(machineLayer) + " last point: " + getLastPoint(machineLayer)
 				//		+ " " + getLayerFileName(machineLayer));
+				
 				if(Preferences.loadGlobalBool("RepRapAccelerations"))
 					getPrinter().singleMove(getLastPoint(machineLayer).x(), getLastPoint(machineLayer).y(), machineZ, getPrinter().getSlowXYFeedrate(), false);
 				else

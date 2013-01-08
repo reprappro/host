@@ -18,6 +18,7 @@ import org.reprap.gui.ContinuationMesage;
 import org.reprap.gui.StatusMessage;
 import org.reprap.Extruder;
 import org.reprap.utilities.Debug;
+import org.reprap.utilities.RrGraphics;
 import org.reprap.utilities.Timer;
 import org.reprap.geometry.polygons.Point2D;
 import org.reprap.geometry.polygons.Rectangle;
@@ -346,26 +347,26 @@ public abstract class GenericRepRap implements CartesianPrinter
 	 * Plot rectangles round the build on layer 0 or above
 	 * @param lc
 	 */
-	public void plotOutlines(LayerRules lc, boolean started)
+	private void plotOutlines(LayerRules lc, boolean started)
 	{	
 		try 
 		{
-			Rectangle r = null;
+			Rectangle r = lc.getBox();
 
-			for(int e = extruders.length - 1; e >= 0 ; e--)  // count down so we end with the one most likely to start the print
+			for(int e = extruders.length - 1; e >= 0; e--) // Count down so we end with the one most likely to start the rest
 			{
 				int pe = extruders[e].getPhysicalExtruderNumber();
 				if(physicalExtruderUsed[pe])
 				{
-					if(!started)
-					{
-						singleMove(0.5*Preferences.loadGlobalDouble("WorkingX(mm)"), 0.5*Preferences.loadGlobalDouble("WorkingY(mm)"), currentZ, getFastXYFeedrate(), true);
-						selectExtruder(e, true, false, null);
-						r = lc.getBox();
-						r = r.offset(4*getExtruder().getExtrusionSize());
-						singleMove(currentX, currentY, currentZ+getExtruder().getExtrusionHeight(), getFastXYFeedrate(), true);
-						started = true;
-					} else
+//					if(!started)
+//					{
+//						singleMove(0.5*Preferences.loadGlobalDouble("WorkingX(mm)"), 0.5*Preferences.loadGlobalDouble("WorkingY(mm)"), currentZ, getFastXYFeedrate(), true);
+//						selectExtruder(e, true, false, null);
+//						r = lc.getBox();
+//						r = r.offset(4*getExtruder().getExtrusionSize());
+//						singleMove(currentX, currentY, currentZ+getExtruder().getExtrusionHeight(), getFastXYFeedrate(), true);
+//						started = true;
+//					} else
 						selectExtruder(e, true, false, new Point2D(r.x().low(), r.y().low()));
 					singleMove(r.x().low(), r.y().low(), currentZ, getExtruder().getFastXYFeedrate(), true);
 					printStartDelay(true);
@@ -405,11 +406,9 @@ public abstract class GenericRepRap implements CartesianPrinter
 	 */
 	public void startRun(LayerRules lc) throws Exception
 	{		
-		// plot the outline, or move to the purge point, home Z and purge the extruder
+		// plot the outline
 		if(Preferences.loadGlobalBool("StartRectangle"))
 			plotOutlines(lc, false);
-		//else
-			//getExtruder().purge(0);
 	}
 	
 	/**
@@ -627,54 +626,6 @@ public abstract class GenericRepRap implements CartesianPrinter
 		Debug.e("selectExtruder() - extruder not found for: " + att.getMaterial());
 	}
 	
-//	/**
-//	 * FIXME: Why don't these use round()? - AB.
-//	 * @param n
-//	 * @return
-//	 */
-//	protected int convertToStepX(double n) {
-//		return (int)((n + getExtruder().getOffsetX()) * scaleX);
-//	}
-//
-//	/**
-//	 * @param n
-//	 * @return
-//	 */
-//	protected int convertToStepY(double n) {
-//		return (int)((n + getExtruder().getOffsetY()) * scaleY);
-//	}
-//
-//	/**
-//	 * @param n
-//	 * @return
-//	 */
-//	protected int convertToStepZ(double n) {
-//		return (int)((n + getExtruder().getOffsetZ()) * scaleZ);
-//	}
-//
-//	/**
-//	 * @param n
-//	 * @return
-//	 */
-//	protected double convertToPositionX(int n) {
-//		return n / scaleX - getExtruder().getOffsetX();
-//	}
-//
-//	/**
-//	 * @param n
-//	 * @return
-//	 */
-//	protected double convertToPositionY(int n) {
-//		return n / scaleY - getExtruder().getOffsetY();
-//	}
-//
-//	/**
-//	 * @param n
-//	 * @return
-//	 */
-//	protected double convertToPositionZ(int n) {
-//		return n / scaleZ - getExtruder().getOffsetZ();
-//	}
 	
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#getX()
@@ -1431,5 +1382,14 @@ public abstract class GenericRepRap implements CartesianPrinter
 	public LayerRules getLayerRules()
 	{
 		return layerRules;
+	}
+	
+	/**
+	 * Return the diagnostic graphics window (or null if there isn't one)
+	 * @return
+	 */
+	public RrGraphics getGraphics()
+	{
+		return org.reprap.Main.gui.getGraphics();
 	}
 }

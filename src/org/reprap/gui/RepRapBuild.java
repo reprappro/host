@@ -130,6 +130,7 @@ import org.reprap.Preferences;
 import org.reprap.geometry.polyhedra.AllSTLsToBuild;
 import org.reprap.geometry.polyhedra.STLObject;
 import org.reprap.utilities.Debug;
+import org.reprap.utilities.RrGraphics;
 
 /**
  * Little class to put up a radiobutton menu so you can set
@@ -294,12 +295,14 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 	private AllSTLsToBuild stls;
 	//private int objectIndex = 0; // Counter for STLs as they are loaded
 	private boolean reordering;
+	private RrGraphics graphics;
 
 	// Constructors
 	public RepRapBuild() throws Exception {
 		initialise();
 		stls = new AllSTLsToBuild();
 		reordering = false;
+		graphics = null;
 	}
 	
 	public AllSTLsToBuild getSTLs()
@@ -696,6 +699,16 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 		}
 		mouseToWorld();
 		lastPicked = null;
+	}
+	
+	public void setGraphics(RrGraphics g)
+	{
+		graphics = g;
+	}
+	
+	public RrGraphics getRrGraphics()
+	{
+		return graphics;
 	}
 
 }

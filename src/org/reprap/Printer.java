@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import javax.swing.JCheckBoxMenuItem;
 import org.reprap.geometry.LayerRules;
 import org.reprap.geometry.polygons.Point2D;
+import org.reprap.utilities.RrGraphics;
 
 
 public interface Printer {
@@ -616,7 +617,7 @@ public interface Printer {
 	 * Plot rectangles round the build on layer 0 or above
 	 * @param lc
 	 */
-	public void plotOutlines(LayerRules lc, boolean started);
+	//public void plotOutlines(LayerRules lc, boolean started);
 	
 	/**
 	 * Return the current layer rules
@@ -625,5 +626,11 @@ public interface Printer {
 	public LayerRules getLayerRules();
 	
 	public void setLayerRules(LayerRules l);
+	
+	/**
+	 * Return the diagnostic graphics window (or null if there isn't one)
+	 * @return
+	 */
+	public RrGraphics getGraphics();
 
 }

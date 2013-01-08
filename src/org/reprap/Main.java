@@ -34,6 +34,7 @@ import org.reprap.gui.botConsole.BotConsoleFrame;
 import org.reprap.utilities.ExtensionFileFilter;
 import org.reprap.utilities.RrDeleteOnExit;
 import org.reprap.utilities.Debug;
+import org.reprap.utilities.RrGraphics;
 /**
  *
  * mainpage RepRap Host Controller Software
@@ -574,9 +575,10 @@ public class Main {
         }
 
         
-//        public static Communicator getCommunicator() {
-//            return communicator;
-//        }
+        public RrGraphics getGraphics()
+        {
+        	return builder.getRrGraphics();
+        }
 
 
     }

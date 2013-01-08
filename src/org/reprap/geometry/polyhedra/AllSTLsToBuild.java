@@ -1,5 +1,6 @@
 package org.reprap.geometry.polyhedra;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -24,13 +25,18 @@ import org.reprap.Extruder;
 import org.reprap.Preferences;
 import org.reprap.RFO;
 import org.reprap.utilities.Debug;
+import org.reprap.utilities.RrGraphics;
+
+import javax.media.j3d.Appearance;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.GeometryArray;
 import javax.media.j3d.Group;
+import javax.media.j3d.Material;
 import javax.media.j3d.SceneGraphObject;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Transform3D;
 import javax.swing.JRadioButton;
+import javax.vecmath.Color3f;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Tuple3d;
@@ -111,6 +117,7 @@ public class AllSTLsToBuild
 			Zint.expand(b.Zint);
 			XYbox.expand(b.XYbox);
 		}
+		
 	}
 	
 	/**
@@ -610,7 +617,7 @@ public class AllSTLsToBuild
     }
 	
 	/**
-	 * Unpack the Shape3D(s) from value and find their exclosing XYZ box
+	 * Unpack the Shape3D(s) from value and find their enclosing XYZ box
 	 * @param value
 	 * @param trans
 	 * @param z
@@ -670,6 +677,45 @@ public class AllSTLsToBuild
 		return XYZbox.Zint.high();
 	}
 	
+	
+	/**
+	 * Make sure the list starts with and edge longer than 1.5mm (or the longest if not)
+	 * @param edges
+	 */
+	private void startLong(ArrayList<LineSegment> edges)
+	{
+		if(edges.size() <= 0) return;
+		double d = -1;
+		int swap = -1;
+		LineSegment temp;
+		for(int i = 0; i < edges.size(); i++)
+		{
+			double d2 = Point2D.dSquared(edges.get(i).a, edges.get(i).b);
+			if(d2 > 2.25)
+			{
+				temp = edges.get(0);
+				edges.set(0, edges.get(i));
+				edges.set(i, temp);
+				return;
+			}
+			if(d2 > d)
+			{
+				d = d2;
+				swap = i;
+			}
+		}
+		if(swap < 0)
+		{
+			Debug.e("AllSTLsToBuild.startLong(): no edges found!");
+			return;
+		}
+		temp = edges.get(0);
+		edges.set(0, edges.get(swap));
+		edges.set(swap, temp);
+		if(Math.sqrt(d) < Preferences.gridRes())
+			Debug.d("AllSTLsToBuild.startLong(): edge length: " + Math.sqrt(d) + " is the longest.");
+	}
+	
 	/**
 	 * Stitch together the some of the edges to form a polygon.
 	 * @param edges
@@ -684,6 +730,7 @@ public class AllSTLsToBuild
 		}
 		if(edges.size() <= 0)
 			return null;
+		startLong(edges);
 		LineSegment next = edges.get(0);
 		edges.remove(0);
 		Polygon result = new Polygon(next.att, true);
@@ -745,6 +792,31 @@ public class AllSTLsToBuild
 	}
 	
 	/**
+	 * Plot the edges of the slice for debugging
+	 * @param rg
+	 * @param edges
+	 */
+	private void edgePlot(ArrayList<LineSegment> edges)
+	{
+		RrGraphics rg = layerRules.getPrinter().getGraphics();
+		if(rg == null) return;
+		PolygonList pp = new PolygonList();
+		Appearance black = new Appearance();
+		Material b = new Material();
+		b.setDiffuseColor(new Color3f(0,0,0));
+		black.setMaterial(b);
+		Attributes a = new Attributes(null,null,null,black);
+		for(int i = 0; i < edges.size(); i++)
+		{
+			Polygon p = new Polygon(a, false);
+			p.add(edges.get(i).a);
+			p.add(edges.get(i).b);
+			pp.add(p);
+		}
+		rg.add(pp);
+	}
+	
+	/**
 	 * Get all the polygons represented by the edges.
 	 * @param edges
 	 * @return
@@ -758,6 +830,7 @@ public class AllSTLsToBuild
 		}
 		PolygonList result = new PolygonList();
 		Polygon next = getNextPolygon(edges);
+		//edgePlot(edges);
 		while(next != null)
 		{
 			if(next.size() >= 3)
@@ -1311,8 +1384,7 @@ public class AllSTLsToBuild
 
 
 		// If we've got polygons to plot, maybe amend them so they start in the middle 
-		// of a hatch (this gives cleaner boundaries).  Also add the nose-wipe shield
-		// if it's been asked for.
+		// of a hatch (this gives cleaner boundaries).  
 		
 		if(borderPolygons != null && borderPolygons.size() > 0)
 		{
@@ -1472,7 +1544,32 @@ public class AllSTLsToBuild
 	{
 		Point3d odd = null, even1 = null, even2 = null;
 		int pat = 0;
-		//boolean twoBelow = false;
+
+//		boolean mainlyAbove = (p.z + q.z + r.z)/3.0 > z;
+//		double zd = z - p.z;
+//		if(Math.abs(zd) < Preferences.tiny())
+//		{
+//			if(mainlyAbove && p.z >= z)
+//				p.z = z - Preferences.tiny();
+//			if(!mainlyAbove && p.z <= z)
+//				p.z = z + Preferences.tiny();			
+//		}
+//		zd = z - q.z;
+//		if(Math.abs(zd) < Preferences.tiny())
+//		{
+//			if(mainlyAbove && q.z >= z)
+//				q.z = z - Preferences.tiny();
+//			if(!mainlyAbove && q.z <= z)
+//				q.z = z + Preferences.tiny();			
+//		}
+//		zd = z - r.z;
+//		if(Math.abs(zd) < Preferences.tiny())
+//		{
+//			if(mainlyAbove && r.z >= z)
+//				r.z = z - Preferences.tiny();
+//			if(!mainlyAbove && r.z <= z)
+//				r.z = z + Preferences.tiny();			
+//		}
 		
 		if(p.z < z)
 			pat = pat | 1;
@@ -1541,7 +1638,7 @@ public class AllSTLsToBuild
 		e2 = new Point2D(e2.x(), e2.y());
 		
 		// Too short?
-		if(!Point2D.same(e1, e2, Preferences.lessGridSquare()))
+		//if(!Point2D.same(e1, e2, Preferences.lessGridSquare()))
 			edges[att.getExtruder().getID()].add(new LineSegment(e1, e2, att));
 	}
 	

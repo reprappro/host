@@ -55,6 +55,7 @@ public class Producer {
 			simulationPlot = new RrGraphics("RepRap building simulation");
 		} else
 			simulationPlot = null;
+		builder.setGraphics(simulationPlot);
 	}
 	
 	/**

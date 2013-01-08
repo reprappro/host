@@ -1031,6 +1031,9 @@ public class GCodeRepRap extends GenericRepRap {
 		{
 			if(really)
 			{
+//				System.out.println("Extruder selection code; old: " + oldPhysicalExtruder + " New: " + newPhysicalExtruder + " Force: " + forceSelection);
+//				Exception e = new Exception();
+//				e.printStackTrace();
 				oldExtruder.stopExtruding();
 				if(Preferences.loadGlobalBool("Shield"))
 				{
@@ -1045,22 +1048,17 @@ public class GCodeRepRap extends GenericRepRap {
 				if(Debug.d())
 					s += " ; select new extruder";
 				gcode.queue(s);
-				printStartDelay(true);
-				getExtruder().setExtrusion(getExtruder().getExtruderSpeed(), false);
-				singleMove(layerRules.getPurgePoint().x() + layerRules.getPurgeLength(), layerRules.getPurgePoint().y() - newPhysicalExtruder, currentZ, getExtruder().getFastXYFeedrate(), true);
-				currentX = layerRules.getPurgePoint().x() + layerRules.getPurgeLength();
-				currentY = layerRules.getPurgePoint().y() - newPhysicalExtruder;
-				printEndReverse();
-				getExtruder().stopExtruding();
-				getExtruder().setValve(false);
-//				double pwm = getExtruder().getPWM();
-//				if(pwm >= 0)
-//				{
-//					s = "M113 S" + pwm;
-//					if(Debug.d())
-//						s += " ; set extruder PWM";
-//					gcode.queue(s);
-//				}
+				if(Preferences.loadGlobalBool("Shield"))
+				{
+					printStartDelay(true);
+					getExtruder().setExtrusion(getExtruder().getExtruderSpeed(), false);
+					singleMove(layerRules.getPurgePoint().x() + layerRules.getPurgeLength(), layerRules.getPurgePoint().y() - newPhysicalExtruder, currentZ, getExtruder().getFastXYFeedrate(), true);
+					currentX = layerRules.getPurgePoint().x() + layerRules.getPurgeLength();
+					currentY = layerRules.getPurgePoint().y() - newPhysicalExtruder;
+					printEndReverse();
+					getExtruder().stopExtruding();
+					getExtruder().setValve(false);
+				}
 			}
 			forceSelection = false;
 		}
