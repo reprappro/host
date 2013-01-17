@@ -347,8 +347,9 @@ public abstract class GenericRepRap implements CartesianPrinter
 	 * Plot rectangles round the build on layer 0 or above
 	 * @param lc
 	 */
-	private void plotOutlines(LayerRules lc, boolean started)
-	{	
+	private void plotOutlines(LayerRules lc)
+	{
+		boolean zRight = false;
 		try 
 		{
 			Rectangle r = lc.getBox();
@@ -358,16 +359,13 @@ public abstract class GenericRepRap implements CartesianPrinter
 				int pe = extruders[e].getPhysicalExtruderNumber();
 				if(physicalExtruderUsed[pe])
 				{
-//					if(!started)
-//					{
-//						singleMove(0.5*Preferences.loadGlobalDouble("WorkingX(mm)"), 0.5*Preferences.loadGlobalDouble("WorkingY(mm)"), currentZ, getFastXYFeedrate(), true);
-//						selectExtruder(e, true, false, null);
-//						r = lc.getBox();
-//						r = r.offset(4*getExtruder().getExtrusionSize());
-//						singleMove(currentX, currentY, currentZ+getExtruder().getExtrusionHeight(), getFastXYFeedrate(), true);
-//						started = true;
-//					} else
-						selectExtruder(e, true, false, new Point2D(r.x().low(), r.y().low()));
+					if(!zRight)
+					{
+						singleMove(currentX, currentY, getExtruder().getExtrusionHeight(), getFastFeedrateZ(), true);
+						currentZ = lc.getMachineZ();
+					}
+					zRight = true;
+					selectExtruder(e, true, false, new Point2D(r.x().low(), r.y().low()));
 					singleMove(r.x().low(), r.y().low(), currentZ, getExtruder().getFastXYFeedrate(), true);
 					printStartDelay(true);
 					//getExtruder().zeroExtrudedLength(true);
@@ -408,7 +406,7 @@ public abstract class GenericRepRap implements CartesianPrinter
 	{		
 		// plot the outline
 		if(Preferences.loadGlobalBool("StartRectangle"))
-			plotOutlines(lc, false);
+			plotOutlines(lc);
 	}
 	
 	/**

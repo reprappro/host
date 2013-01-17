@@ -190,25 +190,25 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
             
             
             
-        printButton = new javax.swing.JButton();
-        pcbButton = new javax.swing.JButton();
-        pauseButton = new javax.swing.JButton();
-        stopButton = new javax.swing.JButton();
+        sliceButton = new javax.swing.JButton();
+        //pcbButton = new javax.swing.JButton();
+        //pauseButton = new javax.swing.JButton();
+        //stopButton = new javax.swing.JButton();
         exitButton = new javax.swing.JButton();
         loadSTL = new javax.swing.JButton();
-        loadGCode = new javax.swing.JButton();
+        //loadGCode = new javax.swing.JButton();
         loadRFO = new javax.swing.JButton();
         saveRFO = new javax.swing.JButton();
         saveSCAD = new javax.swing.JButton();
         
         
-        printButton.setText("Print/slice");
-        pcbButton.setText("PCB");
-        pauseButton.setText("Pause");       
-        stopButton.setText("STOP !");       
+        sliceButton.setText("Slice");
+        //pcbButton.setText("PCB");
+        //pauseButton.setText("Pause");       
+        //stopButton.setText("STOP !");       
         exitButton.setText("Exit");       
         loadSTL.setText("Load STL/CSG");
-        loadGCode.setText("Load GCode"); 
+        //loadGCode.setText("Load GCode"); 
         loadRFO.setText("Load RFO");         
         saveRFO.setText("Save RFO");
         saveSCAD.setText("Save SCAD");
@@ -227,48 +227,48 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
         currentLayerOutOfN = new javax.swing.JLabel();
         progressBar = new javax.swing.JProgressBar();
  
-        gCodeToFileRadioButton = new javax.swing.JRadioButton();
-        fromSDCardRadioButton = new javax.swing.JRadioButton();
-        toGCodeRepRapRadioButton = new javax.swing.JRadioButton();
+        //gCodeToFileRadioButton = new javax.swing.JRadioButton();
+        //fromSDCardRadioButton = new javax.swing.JRadioButton();
+        //toGCodeRepRapRadioButton = new javax.swing.JRadioButton();
         fileNameBox = new javax.swing.JLabel();
   
         displayPathsCheck = new javax.swing.JCheckBox();
         displayPaths(false);
 
-        printButton.setBackground(new java.awt.Color(51, 204, 0));
-        printButton.setFont(printButton.getFont());
+        sliceButton.setBackground(new java.awt.Color(51, 204, 0));
+        sliceButton.setFont(sliceButton.getFont());
  // NOI18N
-        printButton.addActionListener(new java.awt.event.ActionListener() {
+        sliceButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                printButtonActionPerformed(evt);
+                sliceButtonActionPerformed(evt);
             }
         });
         
-        pcbButton.setBackground(new java.awt.Color(152, 99, 62));
-        pcbButton.setFont(pcbButton.getFont());
+        //pcbButton.setBackground(new java.awt.Color(152, 99, 62));
+        //pcbButton.setFont(pcbButton.getFont());
  // NOI18N
-        pcbButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                pcbButtonActionPerformed(evt);
-            }
-        });
+//        pcbButton.addActionListener(new java.awt.event.ActionListener() {
+//            public void actionPerformed(java.awt.event.ActionEvent evt) {
+//                pcbButtonActionPerformed(evt);
+//            }
+//        });
 
-        pauseButton.setBackground(new java.awt.Color(255, 204, 0));
- // NOI18N
-        pauseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                pauseButtonActionPerformed(evt);
-            }
-        });
+//        pauseButton.setBackground(new java.awt.Color(255, 204, 0));
+// // NOI18N
+//        pauseButton.addActionListener(new java.awt.event.ActionListener() {
+//            public void actionPerformed(java.awt.event.ActionEvent evt) {
+//                pauseButtonActionPerformed(evt);
+//            }
+//        });
 
-        stopButton.setBackground(new java.awt.Color(255, 0, 0));
-        stopButton.setFont(new java.awt.Font("Dialog", 1, 12));
- // NOI18N
-        stopButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                stopButtonActionPerformed(evt);
-            }
-        });
+//        stopButton.setBackground(new java.awt.Color(255, 0, 0));
+//        stopButton.setFont(new java.awt.Font("Dialog", 1, 12));
+// // NOI18N
+//        stopButton.addActionListener(new java.awt.event.ActionListener() {
+//            public void actionPerformed(java.awt.event.ActionEvent evt) {
+//                stopButtonActionPerformed(evt);
+//            }
+//        });
 
  
         exitButton.addActionListener(new java.awt.event.ActionListener() {
@@ -277,7 +277,7 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
             }
         });
 
-        layerPauseCheck.setText("Layer pause when slicing"); // NOI18N
+        layerPauseCheck.setText("Pause between layers"); // NOI18N
         layerPauseCheck.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 layerPauseCheckActionPerformed(evt);
@@ -294,7 +294,7 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
         });
         
         expectedBuildTimeLabel.setFont(new java.awt.Font("Tahoma", 0, 12));
-        expectedBuildTimeLabel.setText("Expected build time:"); // NOI18N
+        expectedBuildTimeLabel.setText("Expected slice time:"); // NOI18N
 
         hoursMinutesLabel1.setFont(new java.awt.Font("Tahoma", 0, 12));
         hoursMinutesLabel1.setText("(h:m)"); // NOI18N
@@ -327,30 +327,30 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
             }
         });
 
-        loadGCode.setActionCommand("loadGCode");
-        loadGCode.setBackground(new java.awt.Color(0, 204, 255));
- // NOI18N
-        loadGCode.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                LoadGCode(evt);
-            }
-        });
-
-        buttonGroup1.add(gCodeToFileRadioButton);
-        gCodeToFileRadioButton.setText("Slice to G-Code file");
-        gCodeToFileRadioButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                selectorRadioButtonMousePressed(evt);
-            }
-        });
-        
-        buttonGroup1.add(fromSDCardRadioButton);
-        fromSDCardRadioButton.setText("Print SD card G-Codes");
-        fromSDCardRadioButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                selectorRadioButtonMousePressed(evt);
-            }
-        });
+//        loadGCode.setActionCommand("loadGCode");
+//        loadGCode.setBackground(new java.awt.Color(0, 204, 255));
+// // NOI18N
+//        loadGCode.addActionListener(new java.awt.event.ActionListener() {
+//            public void actionPerformed(java.awt.event.ActionEvent evt) {
+//                LoadGCode(evt);
+//            }
+//        });
+//
+//        buttonGroup1.add(gCodeToFileRadioButton);
+//        gCodeToFileRadioButton.setText("Slice to G-Code file");
+//        gCodeToFileRadioButton.addMouseListener(new java.awt.event.MouseAdapter() {
+//            public void mousePressed(java.awt.event.MouseEvent evt) {
+//                selectorRadioButtonMousePressed(evt);
+//            }
+//        });
+//        
+//        buttonGroup1.add(fromSDCardRadioButton);
+//        fromSDCardRadioButton.setText("Print SD card G-Codes");
+//        fromSDCardRadioButton.addMouseListener(new java.awt.event.MouseAdapter() {
+//            public void mousePressed(java.awt.event.MouseEvent evt) {
+//                selectorRadioButtonMousePressed(evt);
+//            }
+//        });
 
         loadRFO.setActionCommand("loadRFO");
         loadRFO.setBackground(new java.awt.Color(0, 204, 255));
@@ -361,13 +361,13 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
             }
         });
 
-        buttonGroup1.add(toGCodeRepRapRadioButton);
-        toGCodeRepRapRadioButton.setText("Print computer G-Codes");
-        toGCodeRepRapRadioButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                selectorRadioButtonMousePressed(evt);
-            }
-        });
+//        buttonGroup1.add(toGCodeRepRapRadioButton);
+//        toGCodeRepRapRadioButton.setText("Print computer G-Codes");
+//        toGCodeRepRapRadioButton.addMouseListener(new java.awt.event.MouseAdapter() {
+//            public void mousePressed(java.awt.event.MouseEvent evt) {
+//                selectorRadioButtonMousePressed(evt);
+//            }
+//        });
 
         fileNameBox.setFont(new java.awt.Font("Tahoma", 0, 12));
         fileNameBox.setText(" - ");
@@ -410,19 +410,22 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                        	.add(pcbButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)	
+                        	//.add(pcbButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        		.add(exitButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        		.add(sliceButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(saveRFO, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(saveSCAD, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(loadGCode, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            //.add(loadGCode, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                 .add(loadRFO, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .add(loadSTL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                                
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             //.add(toSNAPRepRapRadioButton)
-                            .add(toGCodeRepRapRadioButton)
-                            .add(gCodeToFileRadioButton)
-                            .add(fromSDCardRadioButton)
+                            //.add(toGCodeRepRapRadioButton)
+                            //.add(gCodeToFileRadioButton)
+                            //.add(fromSDCardRadioButton)
                             .add(layerPauseCheck).add(changeMachineLabel)//**77
                             .add(displayPathsCheck))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -436,15 +439,16 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
                                 )
                             .add(layout.createSequentialGroup()
                             	
-                                .add(printButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 105, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                //.add(sliceButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 105, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                //.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 //.add(pcbButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 //.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(pauseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(stopButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 85, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(exitButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 62, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                                //.add(pauseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                //.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                //.add(stopButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 85, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                //.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                //.add(exitButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 62, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            		)))
                     .add(layout.createSequentialGroup()
                         .add(expectedFinishTimeLabel)
                         .add(7, 7, 7)
@@ -466,7 +470,8 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(fileNameBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                             .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 430, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(29, Short.MAX_VALUE))
+                .addContainerGap(29, Short.MAX_VALUE)
+            		)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -480,43 +485,75 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(loadGCode, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(loadSTL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                )
-                            .add(layout.createSequentialGroup()
-                                //.add(toSNAPRepRapRadioButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(toGCodeRepRapRadioButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(fromSDCardRadioButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(gCodeToFileRadioButton)
-                                )
-                            .add(preferencesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(dummyButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                )
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(layerPauseCheck).add(changeMachineLabel) //**77
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(displayPathsCheck))
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(pauseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(printButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(pcbButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(stopButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(exitButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                .add(layout.createSequentialGroup()
+                            		
+                            		
+                            		
+                                	.add(loadSTL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                	.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                     .add(loadRFO, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                     .add(saveRFO, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                     .add(saveSCAD, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                    .add(pcbButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(sliceButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                    .add(exitButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    
+                                    
+                                    
+                            	//.add(layerPauseCheck).add(changeMachineLabel)
+                                //.add(loadGCode, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                //.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                //.add(loadSTL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                )
+                            //.add(layout.createSequentialGroup()
+                                //.add(toSNAPRepRapRadioButton)
+//                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                                .add(toGCodeRepRapRadioButton)
+//                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                                .add(fromSDCardRadioButton)
+//                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                                .add(gCodeToFileRadioButton)
+                              //  )
+                            .add(preferencesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(dummyButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                )
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                            		
+                            	.add(layerPauseCheck)//**77
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(displayPathsCheck)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(changeMachineLabel)
+                                
+                            		)
+                                
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    //.add(pauseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    //.add(sliceButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    //.add(pcbButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    //.add(stopButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    //.add(exitButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .add(layout.createSequentialGroup()
+//                                	.add(loadSTL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                	.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                                    .add(loadRFO, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                                    .add(saveRFO, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                                    .add(saveSCAD, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                                    .add(sliceButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                                    .add(exitButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    )
+                                    //.add(pcbButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     )))))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
@@ -545,17 +582,17 @@ public void printLive(boolean p)
 {
 	printing = true;
 	if(p)
-		printButton.setText("Printing...");
+		sliceButton.setText("Printing...");
 	else
-		printButton.setText("Slicing...");
-	printButton.setBackground(Color.gray);    	
+		sliceButton.setText("Slicing...");
+	sliceButton.setBackground(Color.gray);    	
 }
 
 private void restorePrintButton()
 {
 	printing = false;
-	printButton.setText("Print/slice");
-	printButton.setBackground(new java.awt.Color(51, 204, 0)); 
+	sliceButton.setText("Print/slice");
+	sliceButton.setBackground(new java.awt.Color(51, 204, 0)); 
 	printerFilePlay = null;	
 }
 
@@ -570,18 +607,19 @@ public void printDone()
 	org.reprap.Main.gui.dispose();
 }
 
-private void printButtonActionPerformed(java.awt.event.ActionEvent evt) 
+private void sliceButtonActionPerformed(java.awt.event.ActionEvent evt) 
 {//GEN-FIRST:event_printButtonActionPerformed
 	if(printing)
 		return;
 	
-	printLive(!gCodeToFileRadioButton.isSelected());
+	//printLive(!gCodeToFileRadioButton.isSelected());
+	printLive(false);
 	
 	parentBotConsoleFrame.suspendPolling();
     parentBotConsoleFrame.setFractionDone(-1, -1, -1);
     org.reprap.Main.gui.mouseToWorld();
-    if(gCodeToFileRadioButton.isSelected())
-    {
+//    if(gCodeToFileRadioButton.isSelected())
+//    {
     	int sp = -1;
     	if(loadedFiles != null)
     		sp = loadedFiles.length();
@@ -602,22 +640,22 @@ private void printButtonActionPerformed(java.awt.event.ActionEvent evt)
     		restorePrintButton();
     		return;
     	}
-    }
+//    }
 
-    if(sdCard)
-    {
-    	if(!printer.printSDFile(loadedFiles))
-    	{
-    		JOptionPane.showMessageDialog(null, "Error printing SD file.");
-    		restorePrintButton();
-    	}
-    	return;
-    }
+//    if(sdCard)
+//    {
+//    	if(!printer.printSDFile(loadedFiles))
+//    	{
+//    		JOptionPane.showMessageDialog(null, "Error printing SD file.");
+//    		restorePrintButton();
+//    	}
+//    	return;
+//    }
 
-	if((printerFilePlay = printer.filePlay()) != null)
-	{
-	}
-    else
+//	if((printerFilePlay = printer.filePlay()) != null)
+//	{
+//	}
+//    else
     	org.reprap.Main.gui.onProduceB();
     //parentBotConsoleFrame.resumePolling();
 }//GEN-LAST:event_printButtonActionPerformed
@@ -671,34 +709,34 @@ private void pcbButtonActionPerformed(java.awt.event.ActionEvent evt)
 	parentBotConsoleFrame.resumePolling();
 }
 
-public void pauseAction()
-{
-    paused = !paused;
-    if(paused)
-    {
-    	pauseButton.setText("Pausing...");
-    	org.reprap.Main.gui.pause();
-    	//while(!printer.iAmPaused());
-        parentBotConsoleFrame.resumePolling();
-        parentBotConsoleFrame.getPosition();
-        //parentBotConsoleFrame.getXYZTabPanel().recordCurrentPosition();
-        pauseButton.setText("Resume");
-    } else
-    {
-    	org.reprap.Main.gui.resume();
-        parentBotConsoleFrame.suspendPolling();
-        pauseButton.setText("Pause");
-    }   
-}
+//public void pauseAction()
+//{
+//    paused = !paused;
+//    if(paused)
+//    {
+//    	pauseButton.setText("Pausing...");
+//    	org.reprap.Main.gui.pause();
+//    	//while(!printer.iAmPaused());
+//        parentBotConsoleFrame.resumePolling();
+//        parentBotConsoleFrame.getPosition();
+//        //parentBotConsoleFrame.getXYZTabPanel().recordCurrentPosition();
+//        pauseButton.setText("Resume");
+//    } else
+//    {
+//    	org.reprap.Main.gui.resume();
+//        parentBotConsoleFrame.suspendPolling();
+//        pauseButton.setText("Pause");
+//    }   
+//}
 
-private void pauseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pauseButtonActionPerformed
-    pauseAction();
-}//GEN-LAST:event_pauseButtonActionPerformed
+//private void pauseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pauseButtonActionPerformed
+//    pauseAction();
+//}//GEN-LAST:event_pauseButtonActionPerformed
 
-private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
-//org.reprap.Main.gui.clickCancel();
-	pauseAction(); //FIXME - best we can do at the moment
-}//GEN-LAST:event_stopButtonActionPerformed
+//private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
+////org.reprap.Main.gui.clickCancel();
+//	pauseAction(); //FIXME - best we can do at the moment
+//}//GEN-LAST:event_stopButtonActionPerformed
 
 private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
 	Main.ftd.killThem();
@@ -723,29 +761,29 @@ private void selectorRadioButtonMousePressed(java.awt.event.MouseEvent evt) {//G
 
 	machine = org.reprap.Preferences.RepRapMachine();
 
-	if(evt.getSource() == toGCodeRepRapRadioButton)
-	{
-		enableGLoad();
-		if(seenSNAP)
-			closeMessage = true;
-		seenGCode = true;
-		sdCard = false;
-	} else if(evt.getSource() == gCodeToFileRadioButton)
-	{
-
-		enableSLoad();
-		if(seenSNAP)
-			closeMessage = true;
-		seenGCode = true;
-		sdCard = false;
-	}else if(evt.getSource() == fromSDCardRadioButton)
-	{
-		enableGLoad();
-		if(seenSNAP)
-			closeMessage = true;
-		seenGCode = true;
-		sdCard = true;
-	}
+//	if(evt.getSource() == toGCodeRepRapRadioButton)
+//	{
+//		enableGLoad();
+//		if(seenSNAP)
+//			closeMessage = true;
+//		seenGCode = true;
+//		sdCard = false;
+//	} else if(evt.getSource() == gCodeToFileRadioButton)
+//	{
+//
+//		enableSLoad();
+//		if(seenSNAP)
+//			closeMessage = true;
+//		seenGCode = true;
+//		sdCard = false;
+//	}else if(evt.getSource() == fromSDCardRadioButton)
+//	{
+//		enableGLoad();
+//		if(seenSNAP)
+//			closeMessage = true;
+//		seenGCode = true;
+//		sdCard = true;
+//	}
 	try {
 		org.reprap.Preferences.saveGlobal();
 	} catch (IOException e) {
@@ -996,12 +1034,12 @@ private void enableSLoad()
 {
 	SLoadOK = true;
 	GLoadOK = false;
-	loadGCode.setBackground(new java.awt.Color(153, 153, 153));
+//	loadGCode.setBackground(new java.awt.Color(153, 153, 153));
 	loadSTL.setBackground(new java.awt.Color(0, 204, 255));
 	loadRFO.setBackground(new java.awt.Color(0, 204, 255));
 	saveRFO.setBackground(new java.awt.Color(0, 204, 255));
 	saveSCAD.setBackground(new java.awt.Color(0, 204, 255));
-	pcbButton.setBackground(new java.awt.Color(152, 99, 62));
+//	pcbButton.setBackground(new java.awt.Color(152, 99, 62));
 	try
 	{	
 		org.reprap.Preferences.setRepRapMachine("GCodeRepRap");
@@ -1010,33 +1048,33 @@ private void enableSLoad()
 	{
 		JOptionPane.showMessageDialog(null, e.toString());
 	}	
-	toGCodeRepRapRadioButton.setSelected(false);
-	fromSDCardRadioButton.setSelected(false);
-	gCodeToFileRadioButton.setSelected(true);
+//	toGCodeRepRapRadioButton.setSelected(false);
+//	fromSDCardRadioButton.setSelected(false);
+//	gCodeToFileRadioButton.setSelected(true);
 }
 
-private void enableGLoad()
-{
-	SLoadOK = false;
-	GLoadOK = true;
-	loadGCode.setBackground(new java.awt.Color(0, 204, 255));
-	loadSTL.setBackground(new java.awt.Color(153, 153, 153));
-    loadRFO.setBackground(new java.awt.Color(153, 153, 153));
-    saveRFO.setBackground(new java.awt.Color(153, 153, 153));
-    saveSCAD.setBackground(new java.awt.Color(153, 153, 153));
-    pcbButton.setBackground(new java.awt.Color(153, 153, 153));
-	try
-	{
-		org.reprap.Preferences.setRepRapMachine("GCodeRepRap");
-		org.reprap.Preferences.setGCodeUseSerial(true);
-	} catch (Exception e)
-	{
-		JOptionPane.showMessageDialog(null, e.toString());
-	}
-	toGCodeRepRapRadioButton.setSelected(true);
-	fromSDCardRadioButton.setSelected(false);
-	gCodeToFileRadioButton.setSelected(false);
-}
+//private void enableGLoad()
+//{
+//	SLoadOK = false;
+//	GLoadOK = true;
+//	loadGCode.setBackground(new java.awt.Color(0, 204, 255));
+//	loadSTL.setBackground(new java.awt.Color(153, 153, 153));
+//    loadRFO.setBackground(new java.awt.Color(153, 153, 153));
+//    saveRFO.setBackground(new java.awt.Color(153, 153, 153));
+//    saveSCAD.setBackground(new java.awt.Color(153, 153, 153));
+//    pcbButton.setBackground(new java.awt.Color(153, 153, 153));
+//	try
+//	{
+//		org.reprap.Preferences.setRepRapMachine("GCodeRepRap");
+//		org.reprap.Preferences.setGCodeUseSerial(true);
+//	} catch (Exception e)
+//	{
+//		JOptionPane.showMessageDialog(null, e.toString());
+//	}
+//	toGCodeRepRapRadioButton.setSelected(true);
+//	fromSDCardRadioButton.setSelected(false);
+//	gCodeToFileRadioButton.setSelected(false);
+//}
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -1049,24 +1087,24 @@ private void enableGLoad()
     private javax.swing.JLabel expectedFinishTime;
     private javax.swing.JLabel expectedFinishTimeLabel;
     private javax.swing.JLabel fileNameBox;
-    private javax.swing.JRadioButton gCodeToFileRadioButton;
+    //private javax.swing.JRadioButton gCodeToFileRadioButton;
     private javax.swing.JLabel changeMachineLabel;
 
     private javax.swing.JLabel hoursMinutesLabel1;
     private javax.swing.JCheckBox layerPauseCheck;
     private javax.swing.JButton getWebPage;
     
-    private javax.swing.JButton loadGCode;
+    //private javax.swing.JButton loadGCode;
     private javax.swing.JButton loadRFO;
     private javax.swing.JButton loadSTL;
-    private javax.swing.JButton pauseButton;
+    //private javax.swing.JButton pauseButton;
     private javax.swing.JButton preferencesButton;
-    private javax.swing.JButton printButton;
-    private javax.swing.JButton pcbButton;
+    private javax.swing.JButton sliceButton;
+    //private javax.swing.JButton pcbButton;
     private javax.swing.JButton exitButton;
     private javax.swing.JButton saveRFO;
     private javax.swing.JButton saveSCAD;
-    private javax.swing.JButton stopButton;
+    //private javax.swing.JButton stopButton;
     private javax.swing.JButton changeMachineButton;
     
     
@@ -1088,8 +1126,8 @@ private void enableGLoad()
     private javax.swing.JProgressBar progressBar;
     private javax.swing.JLabel progressLabel;
  
-    private javax.swing.JRadioButton toGCodeRepRapRadioButton;
-    private javax.swing.JRadioButton fromSDCardRadioButton;
+    //private javax.swing.JRadioButton toGCodeRepRapRadioButton;
+    //private javax.swing.JRadioButton fromSDCardRadioButton;
     //private javax.swing.JRadioButton toSNAPRepRapRadioButton;
     // End of variables declaration//GEN-END:variables
     private boolean SLoadOK = false;

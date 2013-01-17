@@ -100,7 +100,7 @@ public class BotConsoleFrame extends javax.swing.JFrame {
 		} catch (Exception e) {
 			handleException(e);
 		}
-    	extruderPanels[exPanelNumber].refreshTemperature();
+    	//extruderPanels[exPanelNumber].refreshTemperature();
     	try {
 			org.reprap.Main.gui.getPrinter().selectExtruder(currentExtruder, true, false, null);
 		} catch (Exception e) {
@@ -108,11 +108,11 @@ public class BotConsoleFrame extends javax.swing.JFrame {
 		}
     	
     	exPanelNumber++;
-    	if(exPanelNumber >= extruderPanels.length)
-    	{
-    		xYZTabPanel.refreshTemperature();
-    		exPanelNumber = 0;
-    	}
+//    	if(exPanelNumber >= extruderPanels.length)
+//    	{
+//    		xYZTabPanel.refreshTemperature();
+//    		exPanelNumber = 0;
+//    	}
     	if(updatePosition)
     		xYZTabPanel.recordCurrentPosition();
     	updatePosition = false;
@@ -182,37 +182,37 @@ public class BotConsoleFrame extends javax.swing.JFrame {
     }
     private void initialiseExtruderPanels() {
 
-        extruderPanels = new GenericExtruderTabPanel[extruderCount];
-        for (int i = 0; i < extruderCount; i++) {
-            extruderPanels[i] = new GenericExtruderTabPanel();
-            try {
-                extruderPanels[i].initialiseExtruders(i);
-            }
-            catch (Exception e) {
-                System.out.println("Failure trying to initialise extruders in botConsole: " + e);
-                JOptionPane.showMessageDialog(null, e.getMessage());
-                return;
-            }            
-            try {
-                extruderPanels[i].setPrefs();
-            }
-            catch (Exception e) {
-                System.out.println("Problem loading prefs for Extruder " + i);
-                JOptionPane.showMessageDialog(null, "Problem loading prefs for Extruder " + i);
-            }
-        }
+//        extruderPanels = new GenericExtruderTabPanel[extruderCount];
+//        for (int i = 0; i < extruderCount; i++) {
+//            extruderPanels[i] = new GenericExtruderTabPanel();
+//            try {
+//                extruderPanels[i].initialiseExtruders(i);
+//            }
+//            catch (Exception e) {
+//                System.out.println("Failure trying to initialise extruders in botConsole: " + e);
+//                JOptionPane.showMessageDialog(null, e.getMessage());
+//                return;
+//            }            
+//            try {
+//                extruderPanels[i].setPrefs();
+//            }
+//            catch (Exception e) {
+//                System.out.println("Problem loading prefs for Extruder " + i);
+//                JOptionPane.showMessageDialog(null, "Problem loading prefs for Extruder " + i);
+//            }
+//        }
     }
     
     private void addExtruderPanels() {
         
-        xYZTabPanel = new org.reprap.gui.botConsole.XYZTabPanel();
-
-        jTabbedPane1.addTab("XYZ", xYZTabPanel);
-        for (int i = 0; i < extruderCount; i++) {
-            //jTabbedPane1.addTab("Extruder " + i, extruderPanels[i]);
-        	jTabbedPane1.addTab(extruderPanels[i].getExtruder().getMaterial(), extruderPanels[i]);
-        }
-        pack();
+//        xYZTabPanel = new org.reprap.gui.botConsole.XYZTabPanel();
+//
+//        jTabbedPane1.addTab("XYZ", xYZTabPanel);
+//        for (int i = 0; i < extruderCount; i++) {
+//            //jTabbedPane1.addTab("Extruder " + i, extruderPanels[i]);
+//        	jTabbedPane1.addTab(extruderPanels[i].getExtruder().getMaterial(), extruderPanels[i]);
+//        }
+//        pack();
     }
        
     
@@ -231,7 +231,7 @@ public class BotConsoleFrame extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jTabbedPane1.setRequestFocusEnabled(false);
-        jTabbedPane1.addTab("Print", printTabFrame1);
+        jTabbedPane1.addTab("Slice", printTabFrame1);
 
         addExtruderPanels();
 
@@ -262,9 +262,9 @@ public class BotConsoleFrame extends javax.swing.JFrame {
                 bcf = new BotConsoleFrame();
                 bcf.setVisible(true);
                 bcf.printTabFrame1.setConsoleFrame(bcf);
-                bcf.xYZTabPanel.setConsoleFrame(bcf);
-                for(int i = 0; i < bcf.extruderPanels.length; i++)
-                	bcf.extruderPanels[i].setConsoleFrame(bcf);
+                //bcf.xYZTabPanel.setConsoleFrame(bcf);
+//                for(int i = 0; i < bcf.extruderPanels.length; i++)
+//                	bcf.extruderPanels[i].setConsoleFrame(bcf);
             }
             
         });

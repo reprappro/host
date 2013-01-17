@@ -64,7 +64,7 @@ public class GCodeReaderAndWriter
 	/**
 	* this is if we need to talk over serial
 	*/
-	private SerialPort port;
+	//private SerialPort port;
 	
 	/**
 	 * Flag to tell it we've finished
@@ -868,84 +868,84 @@ public class GCodeReaderAndWriter
 	private void openSerialConnection(String portName)
 	{
 		
-		int baudRate = 19200;
-		serialInStream = null;
-		serialOutStream = null;
-		
-		portName = portName.trim();
-		
-		//open our port.
-		Debug.d("GCode opening port " + portName);
-		Main.setRepRapPresent(false);
-		try 
-		{
-			CommPortIdentifier commId = CommPortIdentifier.getPortIdentifier(portName);
-			port = (SerialPort)commId.open(portName, 30000);
-		} catch (NoSuchPortException e) {
-			Debug.d("Can't open port: " + portName + " - no RepRap attached.");
-			return;
-		}
-		catch (PortInUseException e){
-			Debug.e("Port '" + portName + "' is already in use.");
-			return;			
-		}
-		Main.setRepRapPresent(true);		
-		//get our baudrate
-		try {
-			baudRate = Preferences.loadGlobalInt("BaudRate");
-		}
-		catch (IOException e){}
-		
-		// Workround for javax.comm bug.
-		// See http://forum.java.sun.com/thread.jspa?threadID=673793
-		// FIXME: jvandewiel: is this workaround also needed when using the RXTX library?
-		try {
-			port.setSerialPortParams(baudRate,
-					SerialPort.DATABITS_8,
-					SerialPort.STOPBITS_1,
-					SerialPort.PARITY_NONE);
-		}
-		catch (UnsupportedCommOperationException e) {
-			Debug.d("An unsupported comms operation was encountered.\n" + e.toString());
-			return;		
-		}
-		
-		// Wait for baud rate change to take effect
-		try {Thread.sleep(1000);} catch (Exception e) {}
-
-		
-		try {
-			port.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
-		} catch (Exception e) {
-			// Um, Linux USB ports don't do this. What can I do about it?
-		}
-		
-		try {
-			port.enableReceiveTimeout(1);
-		} catch (UnsupportedCommOperationException e) {
-			Debug.d("Read timeouts unsupported on this platform");
-		}
-
-		//create our steams
-		try {
-			OutputStream writeStream = port.getOutputStream();
-			serialInStream = port.getInputStream();
-			serialOutStream = new PrintStream(writeStream);
-		} catch (IOException e) {
-			Debug.e("GCodeWriter: Error opening serial port stream.");
-			serialInStream = null;
-			serialOutStream = null;
-			return;		
-		}
-
-		//arduino bootloader skip.
-		//Debug.d("Attempting to initialize Arduino/Sanguino");
-        try {Thread.sleep(1000);} catch (Exception e) {}
-        //for(int i = 0; i < 10; i++)
-        //        serialOutStream.write('0');
-        try {Thread.sleep(1000);} catch (Exception e) {}
-        //serialOutStream.write('\n');
-        return;
+//		int baudRate = 19200;
+//		serialInStream = null;
+//		serialOutStream = null;
+//		
+//		portName = portName.trim();
+//		
+//		//open our port.
+//		Debug.d("GCode opening port " + portName);
+//		Main.setRepRapPresent(false);
+//		try 
+//		{
+//			CommPortIdentifier commId = CommPortIdentifier.getPortIdentifier(portName);
+//			port = (SerialPort)commId.open(portName, 30000);
+//		} catch (NoSuchPortException e) {
+//			Debug.d("Can't open port: " + portName + " - no RepRap attached.");
+//			return;
+//		}
+//		catch (PortInUseException e){
+//			Debug.e("Port '" + portName + "' is already in use.");
+//			return;			
+//		}
+//		Main.setRepRapPresent(true);		
+//		//get our baudrate
+//		try {
+//			baudRate = Preferences.loadGlobalInt("BaudRate");
+//		}
+//		catch (IOException e){}
+//		
+//		// Workround for javax.comm bug.
+//		// See http://forum.java.sun.com/thread.jspa?threadID=673793
+//		// FIXME: jvandewiel: is this workaround also needed when using the RXTX library?
+//		try {
+//			port.setSerialPortParams(baudRate,
+//					SerialPort.DATABITS_8,
+//					SerialPort.STOPBITS_1,
+//					SerialPort.PARITY_NONE);
+//		}
+//		catch (UnsupportedCommOperationException e) {
+//			Debug.d("An unsupported comms operation was encountered.\n" + e.toString());
+//			return;		
+//		}
+//		
+//		// Wait for baud rate change to take effect
+//		try {Thread.sleep(1000);} catch (Exception e) {}
+//
+//		
+//		try {
+//			port.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
+//		} catch (Exception e) {
+//			// Um, Linux USB ports don't do this. What can I do about it?
+//		}
+//		
+//		try {
+//			port.enableReceiveTimeout(1);
+//		} catch (UnsupportedCommOperationException e) {
+//			Debug.d("Read timeouts unsupported on this platform");
+//		}
+//
+//		//create our steams
+//		try {
+//			OutputStream writeStream = port.getOutputStream();
+//			serialInStream = port.getInputStream();
+//			serialOutStream = new PrintStream(writeStream);
+//		} catch (IOException e) {
+//			Debug.e("GCodeWriter: Error opening serial port stream.");
+//			serialInStream = null;
+//			serialOutStream = null;
+//			return;		
+//		}
+//
+//		//arduino bootloader skip.
+//		//Debug.d("Attempting to initialize Arduino/Sanguino");
+//        try {Thread.sleep(1000);} catch (Exception e) {}
+//        //for(int i = 0; i < 10; i++)
+//        //        serialOutStream.write('0');
+//        try {Thread.sleep(1000);} catch (Exception e) {}
+//        //serialOutStream.write('\n');
+//        return;
 	}
 	
 
