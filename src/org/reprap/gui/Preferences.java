@@ -278,7 +278,7 @@ public class Preferences extends JFrame {
 			JPanel panel  = new JPanel();
 			String[] configfiles =  { "reprap.properties" };
 			
-			File dir = new File( org.reprap.Preferences.getUsersRootDir()); 
+			File dir = new File( org.reprap.Preferences.getMachineFilePath());//getUsersRootDir()); 
 			
 			if (dir.list() != null)
 			{
@@ -517,6 +517,13 @@ public class Preferences extends JFrame {
 		dispose();
 	}
 	
+	private String removeExtruder(String s)
+	{
+		//if(!s.startsWith("Extruder", 0))
+			return s;
+		//return s.substring(s.indexOf("_")+1, s.length());
+	}
+	
 	/**
 	 * Take an array of strings and turn them into labels (right justified).
 	 * @param a
@@ -529,7 +536,7 @@ public class Preferences extends JFrame {
 		{
 			result[i] = new JLabel();
 			result[i].setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-			result[i].setText(a[i]);
+			result[i].setText(removeExtruder(a[i]));
 		}
 		return result;
 	}	

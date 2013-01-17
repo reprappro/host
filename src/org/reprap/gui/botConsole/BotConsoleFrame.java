@@ -51,7 +51,7 @@ public class BotConsoleFrame extends javax.swing.JFrame {
         updatePosition = false;
         initComponents();
 
-        this.setTitle("RepRap Console");
+        this.setTitle("RepRapPro Slicer");
 
         
         /*
@@ -240,7 +240,7 @@ public class BotConsoleFrame extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 750, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 670, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(5, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(

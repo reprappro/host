@@ -10,8 +10,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.awt.Color;
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 
 import javax.swing.JOptionPane;
 
@@ -156,15 +158,15 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
         buttonGroup1 = new javax.swing.ButtonGroup();
         
  
-            preferencesButton = new javax.swing.JButton();
-            preferencesButton.setActionCommand("preferences");
-            preferencesButton.setBackground(new java.awt.Color(255, 102, 255));
-            preferencesButton.addActionListener(new java.awt.event.ActionListener() {
+            variablesButton = new javax.swing.JButton();
+            variablesButton.setActionCommand("preferences");
+            variablesButton.setBackground(new java.awt.Color(255, 102, 255));
+            variablesButton.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
                     preferences(evt);
                 }
             });
-            preferencesButton.setText("Preferences"); 
+            variablesButton.setText("Variables"); 
         
             // If this isn't here it falls over.  God knows why... 
             dummyButton = new java.awt.Button();
@@ -218,7 +220,7 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
         layerPause(false);
         getWebPage = new javax.swing.JButton();
         expectedBuildTimeLabel = new javax.swing.JLabel();
-        hoursMinutesLabel1 = new javax.swing.JLabel();
+        filesLabel = new javax.swing.JLabel();
         expectedBuildTime = new javax.swing.JLabel();
         expectedFinishTimeLabel = new javax.swing.JLabel();
         changeMachineLabel = new javax.swing.JLabel();
@@ -286,7 +288,8 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
 
 
         getWebPage.setIcon(new javax.swing.ImageIcon(
-        		ClassLoader.getSystemResource("rr-logo-green-url.png"))); // NOI18N
+        		ClassLoader.getSystemResource("reprappro_logo-0.5.png")));
+        		//ClassLoader.getSystemResource("rr-logo-green-url.png"))); // NOI18N
         getWebPage.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 getWebPageActionPerformed(evt);
@@ -296,8 +299,8 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
         expectedBuildTimeLabel.setFont(new java.awt.Font("Tahoma", 0, 12));
         expectedBuildTimeLabel.setText("Expected slice time:"); // NOI18N
 
-        hoursMinutesLabel1.setFont(new java.awt.Font("Tahoma", 0, 12));
-        hoursMinutesLabel1.setText("(h:m)"); // NOI18N
+        filesLabel.setFont(new java.awt.Font("Tahoma", 0, 12));
+        filesLabel.setText("File(s): "); // NOI18N
 
         expectedBuildTime.setFont(new java.awt.Font("Tahoma", 0, 12));
         expectedBuildTime.setText("00:00"); // NOI18N
@@ -403,144 +406,341 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());//AB99
         getContentPane().setLayout(layout);
         //this.setLayout(layout);//AB99
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+        
+        
+        
+        
+        
+        
+        layout.setHorizontalGroup
+        (
+        	layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add
+        	(
+                layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                        	//.add(pcbButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        		.add(exitButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        		.add(sliceButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(saveRFO, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(saveSCAD, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            //.add(loadGCode, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(loadRFO, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .add(loadSTL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                                
+                .add
+                (
+                    layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add
+                    (
+                    	layout.createSequentialGroup().add
+                    	(
+                    		layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    		.add(exitButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    		.add(sliceButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    		.add(saveRFO, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    		.add(saveSCAD, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    		.add(loadRFO, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    		.add(loadSTL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        )
+                        .add(50,50,50)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add
+                        (
+                            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layerPauseCheck)
+                            .add(displayPathsCheck)
+                            .add(changeMachineLabel)
+                            .add
+                            (
+                            		layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false).add
+                                    (
+                                        layout.createSequentialGroup()
+                                        .add(variablesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130,org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .add(190,190,190)
+                                        //.add(dummyButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        //.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .add(getWebPage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 110, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    )
+                             )
+                        )
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            //.add(toSNAPRepRapRadioButton)
-                            //.add(toGCodeRepRapRadioButton)
-                            //.add(gCodeToFileRadioButton)
-                            //.add(fromSDCardRadioButton)
-                            .add(layerPauseCheck).add(changeMachineLabel)//**77
-                            .add(displayPathsCheck))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(layout.createSequentialGroup()
-                                .add(preferencesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .add(dummyButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .add(getWebPage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 190, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                )
-                            .add(layout.createSequentialGroup()
-                            	
-                                //.add(sliceButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 105, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                //.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                //.add(pcbButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                //.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                //.add(pauseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                //.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                //.add(stopButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 85, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                //.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                //.add(exitButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 62, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            		)))
-                    .add(layout.createSequentialGroup()
-                        .add(expectedFinishTimeLabel)
-                        .add(7, 7, 7)
-                        .add(expectedFinishTime))
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
+//                        .add
+//                        (
+//                            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false).add
+//                            (
+//                                layout.createSequentialGroup()
+//                                .add(variablesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130,org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+//                                .add(dummyButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+//                                .add(getWebPage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 190, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                            )
+//                            .add
+//                            (
+//                                layout.createSequentialGroup()
+//                            )
+//                        )
+                    ).add
+//                    (
+//                         layout.createSequentialGroup()
+//                         .add(expectedFinishTimeLabel)
+//                         .add(7, 7, 7)
+//                         .add(expectedFinishTime)
+//                    ).add
+                    (
+                    	layout.createSequentialGroup().add
+                        (
+                            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add
+                            (
+                                layout.createSequentialGroup()
                                 .add(expectedBuildTimeLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(expectedBuildTime))
-                            .add(layout.createSequentialGroup()
+                                .add(expectedBuildTime)
+                            ).add
+                            (
+                                 layout.createSequentialGroup()
+                                 .add(expectedFinishTimeLabel)
+                                 .add(7, 7, 7)
+                                 .add(expectedFinishTime)
+                            ).add
+                            (
+                                layout.createSequentialGroup()
                                 .add(progressLabel)
                                 .add(7, 7, 7)
-                                .add(currentLayerOutOfN)))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(layout.createSequentialGroup()
-                                .add(hoursMinutesLabel1)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(fileNameBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 430, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(29, Short.MAX_VALUE)
-            		)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(getWebPage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(currentLayerOutOfN)
+                            )
+                        ).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add
+                        (
+                            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false).add
+                            (
+                                layout.createSequentialGroup()
+                                
+                                .add(50,50,50)
+                                .add(filesLabel)
+                                //.addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .add(fileNameBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            )
+                            .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 430, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         )
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                            		
-                            		
-                            		
-                                	.add(loadSTL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                	.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                    .add(loadRFO, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                    .add(saveRFO, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                    .add(saveSCAD, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                    .add(sliceButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                    .add(exitButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    
-                                    
-                                    
-                            	//.add(layerPauseCheck).add(changeMachineLabel)
-                                //.add(loadGCode, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                //.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                //.add(loadSTL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                )
-                            //.add(layout.createSequentialGroup()
-                                //.add(toSNAPRepRapRadioButton)
-//                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-//                                .add(toGCodeRepRapRadioButton)
-//                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-//                                .add(fromSDCardRadioButton)
-//                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-//                                .add(gCodeToFileRadioButton)
-                              //  )
-                            .add(preferencesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(dummyButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                )
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                            		
-                            	.add(layerPauseCheck)//**77
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(displayPathsCheck)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(changeMachineLabel)
-                                
-                            		)
-                                
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    //.add(pauseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    //.add(sliceButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    //.add(pcbButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    //.add(stopButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    //.add(exitButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                   )
+               )
+               .addContainerGap(29, Short.MAX_VALUE)
+        	)
+        );
+        
+        
+        
+        
+            layout.setVerticalGroup(
+                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(layout.createSequentialGroup()
+                    .addContainerGap()
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(layout.createSequentialGroup()
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(getWebPage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            )
+                        .add(layout.createSequentialGroup()
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                 .add(layout.createSequentialGroup()
+                                		.add(loadSTL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    	.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(loadRFO, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        
+                                        
+                                        
+                                        .add(layout.createParallelGroup()
+                                        .add(saveRFO, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .add(layout.createSequentialGroup()
+                                        		
+                                            	.add(layerPauseCheck)//**77
+                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                                .add(displayPathsCheck)
+                                                
+                                                
+                                            		)     
+                                        )
+                                        
+                                        
+                                        
+                                        
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(saveSCAD, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(layout.createParallelGroup()
+                                        		.add(sliceButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                                
+                                        .add(layout.createSequentialGroup()
+                                        		
+                                            	
+                                                .add(changeMachineLabel)
+                                                
+                                            		)     
+                                        )
+                                        
+                                        
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(exitButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    )
+                                .add(variablesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                               // .add(dummyButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    )
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+//                                .add(layout.createSequentialGroup()
+//                                		
+//                                	.add(layerPauseCheck)//**77
+//                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                                    .add(displayPathsCheck)
+//                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                                    .add(changeMachineLabel)
+//                                    
+//                                		)                                  
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(layout.createSequentialGroup()
+                                        )
+                                        )))))
+                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                        .add(expectedBuildTimeLabel)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(expectedBuildTime)
+                            .add(filesLabel)
+                            .add(fileNameBox)))
+                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                        .add(expectedFinishTimeLabel)
+                        .add(expectedFinishTime))
+                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(progressLabel)
+                            .add(currentLayerOutOfN))
+                        .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .addContainerGap(24, Short.MAX_VALUE))
+            ); 
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+//        layout.setHorizontalGroup(
+//            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+//            .add(layout.createSequentialGroup()
+//                .addContainerGap()
+//                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+//                    .add(layout.createSequentialGroup()
+//                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+//                        	//.add(pcbButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                        		.add(exitButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                        		.add(sliceButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                            .add(saveRFO, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                            .add(saveSCAD, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                            //.add(loadGCode, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                            //.add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+//                                .add(loadRFO, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                .add(loadSTL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                              //  )
+//                                )
+//                                
+//                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+//                            //.add(toSNAPRepRapRadioButton)
+//                            //.add(toGCodeRepRapRadioButton)
+//                            //.add(gCodeToFileRadioButton)
+//                            //.add(fromSDCardRadioButton)
+//                            .add(layerPauseCheck).add(changeMachineLabel)//**77
+//                            .add(displayPathsCheck))
+//                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+//                            .add(layout.createSequentialGroup()
+//                                .add(variablesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+//                                .add(dummyButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+//                                .add(getWebPage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 190, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                )
+//                            .add(layout.createSequentialGroup()
+//                            	
+//                                //.add(sliceButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 105, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                //.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                                //.add(pcbButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                //.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                                //.add(pauseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                //.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                                //.add(stopButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 85, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                //.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                                //.add(exitButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 62, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                            		)))
+//                    .add(layout.createSequentialGroup()
+//                        .add(expectedFinishTimeLabel)
+//                        .add(7, 7, 7)
+//                        .add(expectedFinishTime))
+//                    .add(layout.createSequentialGroup()
+//                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+//                            .add(layout.createSequentialGroup()
+//                                .add(expectedBuildTimeLabel)
+//                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                                .add(expectedBuildTime))
+//                            .add(layout.createSequentialGroup()
+//                                .add(progressLabel)
+//                                .add(7, 7, 7)
+//                                .add(currentLayerOutOfN)))
+//                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+//                            .add(layout.createSequentialGroup()
+//                                .add(hoursMinutesLabel1)
+//                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                                .add(fileNameBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+//                            .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 430, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+//                .addContainerGap(29, Short.MAX_VALUE)
+//            		)
+//        );
+//        layout.setVerticalGroup(
+//            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+//            .add(layout.createSequentialGroup()
+//                .addContainerGap()
+//                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+//                    .add(layout.createSequentialGroup()
+//                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                        .add(getWebPage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                        )
+//                    .add(layout.createSequentialGroup()
+//                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+//                            .add(layout.createSequentialGroup()
+//                            		
+//                            		
+//                            		
 //                                	.add(loadSTL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
 //                                	.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
 //                                    .add(loadRFO, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -552,28 +752,81 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
 //                                    .add(sliceButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
 //                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
 //                                    .add(exitButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    )
-                                    //.add(pcbButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    )))))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(expectedBuildTimeLabel)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(expectedBuildTime)
-                        .add(hoursMinutesLabel1)
-                        .add(fileNameBox)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(expectedFinishTimeLabel)
-                    .add(expectedFinishTime))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                        .add(progressLabel)
-                        .add(currentLayerOutOfN))
-                    .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(24, Short.MAX_VALUE))
-        );
+//                                    
+//                                    
+//                                    
+//                            	//.add(layerPauseCheck).add(changeMachineLabel)
+//                                //.add(loadGCode, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                //.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                                //.add(loadSTL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                )
+//                            //.add(layout.createSequentialGroup()
+//                                //.add(toSNAPRepRapRadioButton)
+////                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+////                                .add(toGCodeRepRapRadioButton)
+////                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+////                                .add(fromSDCardRadioButton)
+////                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+////                                .add(gCodeToFileRadioButton)
+//                              //  )
+//                            .add(variablesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                            .add(dummyButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                )
+//                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+//                            .add(layout.createSequentialGroup()
+//                            		
+//                            	.add(layerPauseCheck)//**77
+//                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                                .add(displayPathsCheck)
+//                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                                .add(changeMachineLabel)
+//                                
+//                            		)
+//                                
+//                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+//                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+//                                    //.add(pauseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                    //.add(sliceButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                    //.add(pcbButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                    //.add(stopButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                    //.add(exitButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+//                                .add(layout.createSequentialGroup()
+////                                	.add(loadSTL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+////                                	.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+////                                    .add(loadRFO, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+////                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+////                                    .add(saveRFO, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+////                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+////                                    .add(saveSCAD, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+////                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+////                                    .add(sliceButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+////                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+////                                    .add(exitButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                    )
+//                                    //.add(pcbButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+//                                    )))))
+//                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+//                    .add(expectedBuildTimeLabel)
+//                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+//                        .add(expectedBuildTime)
+//                        .add(hoursMinutesLabel1)
+//                        .add(fileNameBox)))
+//                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+//                    .add(expectedFinishTimeLabel)
+//                    .add(expectedFinishTime))
+//                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+//                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+//                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+//                        .add(progressLabel)
+//                        .add(currentLayerOutOfN))
+//                    .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+//                .addContainerGap(24, Short.MAX_VALUE))
+//        );
         
         //pack(); //AB99
     }// </editor-fold>//GEN-END:initComponents
@@ -799,8 +1052,8 @@ private void selectorRadioButtonMousePressed(java.awt.event.MouseEvent evt) {//G
 
 private void getWebPageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getWebPageActionPerformed
 try {
-//            URI url = new URI("http://reprap.org");
-            //Desktop.getDesktop().browse(url);//***AB
+           URI url = new URI("http://reprappro.com");
+           Desktop.getDesktop().browse(url);//***AB
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -1090,7 +1343,7 @@ private void enableSLoad()
     //private javax.swing.JRadioButton gCodeToFileRadioButton;
     private javax.swing.JLabel changeMachineLabel;
 
-    private javax.swing.JLabel hoursMinutesLabel1;
+    private javax.swing.JLabel filesLabel;
     private javax.swing.JCheckBox layerPauseCheck;
     private javax.swing.JButton getWebPage;
     
@@ -1098,7 +1351,7 @@ private void enableSLoad()
     private javax.swing.JButton loadRFO;
     private javax.swing.JButton loadSTL;
     //private javax.swing.JButton pauseButton;
-    private javax.swing.JButton preferencesButton;
+    private javax.swing.JButton variablesButton;
     private javax.swing.JButton sliceButton;
     //private javax.swing.JButton pcbButton;
     private javax.swing.JButton exitButton;

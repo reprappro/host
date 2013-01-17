@@ -28,7 +28,8 @@ public class Utility {
 //		}
 		
 	  	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		return new Dimension(4 * screenSize.width / 5, 4 * screenSize.height / 5);
+		//return new Dimension(4 * screenSize.width / 5, 4 * screenSize.height / 5);
+	  	return new Dimension(1000, 800);
 	}
 
 	public static void positionWindowOnScreen(Window w) {

@@ -2,6 +2,7 @@ package org.reprap.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.GraphicsConfigTemplate;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -175,7 +176,8 @@ abstract public class Panel3D extends JPanel {
 	}
 
 
-	protected void initialise() throws Exception {
+	protected void initialise() throws Exception 
+	{
 		
 		refreshPreferences();
 		

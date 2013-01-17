@@ -87,6 +87,7 @@ package org.reprap.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -303,6 +304,7 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 		stls = new AllSTLsToBuild();
 		reordering = false;
 		graphics = null;
+		setPreferredSize(new Dimension(600, 400));
 	}
 	
 	public AllSTLsToBuild getSTLs()
