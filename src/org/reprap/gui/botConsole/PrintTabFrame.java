@@ -169,15 +169,15 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
             variablesButton.setText("Variables"); 
         
             // If this isn't here it falls over.  God knows why... 
-            dummyButton = new java.awt.Button();
-            dummyButton.setActionCommand("dummy");
-            dummyButton.setBackground(new java.awt.Color(238, 238, 238));
-            dummyButton.addActionListener(new java.awt.event.ActionListener() {
+            helpButton = new javax.swing.JButton();
+            helpButton.setActionCommand("Help");
+            helpButton.setBackground(new java.awt.Color(255, 102, 255));
+            helpButton.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    dummy(evt);
+                    help(evt);
                 }
             });
-            dummyButton.setLabel(" ");      
+            helpButton.setLabel("   Help   ");      
         
         
             changeMachineButton = new javax.swing.JButton();
@@ -446,9 +446,10 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
                                         layout.createSequentialGroup()
                                         .add(variablesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130,org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .add(190,190,190)
-                                        //.add(dummyButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        //.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .add(20,20,20)
+                                        .add(helpButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .add(100,100,100)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .add(getWebPage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 110, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     )
                              )
@@ -510,7 +511,7 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
                                 //.addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                                 .add(fileNameBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             )
-                            .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 430, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 350, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         )
                    )
                )
@@ -585,7 +586,7 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
                                         .add(exitButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     )
                                 .add(variablesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                               // .add(dummyButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(helpButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     )
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -1237,8 +1238,13 @@ private void changeMachine(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pr
 		
 }//GEN-LAST:event_preferences
 
-private void dummy(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_preferences
-	
+private void help(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_preferences
+	try {
+        URI url = new URI("http://reprap.org/wiki/RepRapPro_Slicer");
+        Desktop.getDesktop().browse(url);//***AB
+     } catch(Exception e) {
+         e.printStackTrace();
+     }
 }//GEN-LAST:event_preferences
 
 private void saveRFO(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveRFO
@@ -1367,7 +1373,7 @@ private void enableSLoad()
 //    private java.awt.Button pauseButton;
 //    private java.awt.Button preferencesButton;
     
-    private java.awt.Button dummyButton;
+      private javax.swing.JButton helpButton;
 //    private java.awt.Button printButton;
 //    private java.awt.Button pcbButton;
 //    private java.awt.Button exitButton;
