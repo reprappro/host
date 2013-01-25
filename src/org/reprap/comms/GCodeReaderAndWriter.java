@@ -202,15 +202,17 @@ public class GCodeReaderAndWriter
 //		response = "0000";
 		//opFileIndex = -1;
 		lastResp = "";
-		try
-		{
-			portName = Preferences.loadGlobalString("Port(name)");
-		} catch (Exception ex)
-		{
-			Debug.e("Cannot load preference Port(name).");
-			portName = "stdout";
-		}
-
+//		try
+//		{
+//			portName = Preferences.loadGlobalString("Port(name)");
+//		} catch (Exception ex)
+//		{
+//			Debug.e("Cannot load preference Port(name).");
+//			portName = "stdout";
+//		}
+		
+		portName = "/dev/ttyUSB0";
+		
 		openSerialConnection(portName);
 
 		myPriority = Thread.currentThread().getPriority();
@@ -220,8 +222,8 @@ public class GCodeReaderAndWriter
 	
 	private void nonRunningWarning(String s)
 	{
-		if(nonRunningWarn)
-			Debug.d("GCodeReaderAndWriter(): attempt to " + s + " a non-running output buffer.  Further attempts will not be reported.");
+//		if(nonRunningWarn)
+//			Debug.d("GCodeReaderAndWriter(): attempt to " + s + " a non-running output buffer.  Further attempts will not be reported.");
 		nonRunningWarn = false;		
 	}
 
@@ -868,7 +870,7 @@ public class GCodeReaderAndWriter
 	private void openSerialConnection(String portName)
 	{
 		
-//		int baudRate = 19200;
+//		int baudRate = 115200;
 //		serialInStream = null;
 //		serialOutStream = null;
 //		
@@ -889,13 +891,14 @@ public class GCodeReaderAndWriter
 //			Debug.e("Port '" + portName + "' is already in use.");
 //			return;			
 //		}
-//		Main.setRepRapPresent(true);		
+//		Main.setRepRapPresent(true);
+		/*
 //		//get our baudrate
 //		try {
 //			baudRate = Preferences.loadGlobalInt("BaudRate");
 //		}
 //		catch (IOException e){}
-//		
+//		*/
 //		// Workround for javax.comm bug.
 //		// See http://forum.java.sun.com/thread.jspa?threadID=673793
 //		// FIXME: jvandewiel: is this workaround also needed when using the RXTX library?

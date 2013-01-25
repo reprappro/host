@@ -32,13 +32,13 @@ public class Debug {
 			db.debug = false;
 		}
 		
-		try {
-			// Try to load debug setting from properties file
-			db.commsDebug = Preferences.loadGlobalBool("CommsDebug");
-		} catch (Exception ex) {
+//		try {
+//			// Try to load debug setting from properties file
+//			db.commsDebug = Preferences.loadGlobalBool("CommsDebug");
+//		} catch (Exception ex) {
 			// Fall back to non-debug mode if no setting is available
 			db.commsDebug = false;
-		}			
+//		}			
 	}
 	
 	static public boolean d()

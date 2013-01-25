@@ -1330,7 +1330,7 @@ public class AllSTLsToBuild
 		double zOff = 0.5*(modelZMax - shieldSize.z);
 		
 		s.rScale(zScale, true);
-		s.translate(new Vector3d(xOff, yOff, zOff));
+		s.hardTranslate(new Vector3d(xOff, yOff, zOff));
 		
 		try 
 		{

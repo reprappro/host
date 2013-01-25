@@ -422,7 +422,8 @@ public abstract class GenericExtruder implements Extruder
 			maxExtruderSpeed = 255; //Preferences.loadGlobalInt(prefName + "MaxSpeed(0..255)");
 //			extrusionSpeed = Preferences.loadGlobalDouble(prefName + "ExtrusionSpeed(mm/minute)");
 			purgeTime = Preferences.loadGlobalDouble(prefName + "Purge(ms)");
-			extrusionPWM = Preferences.loadGlobalDouble(prefName + "ExtrusionPWM(0..1)");
+			//extrusionPWM = Preferences.loadGlobalDouble(prefName + "ExtrusionPWM(0..1)");
+			extrusionPWM = -1;
 			extrusionTemp = Preferences.loadGlobalDouble(prefName + "ExtrusionTemp(C)");
 			extrusionSize = Preferences.loadGlobalDouble(prefName + "ExtrusionSize(mm)");
 			extrusionHeight = Preferences.loadGlobalDouble(prefName + "ExtrusionHeight(mm)");		

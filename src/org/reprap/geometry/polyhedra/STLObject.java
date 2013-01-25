@@ -57,6 +57,7 @@ This version: 14 April 2006
 package org.reprap.geometry.polyhedra;
 
 import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -217,7 +218,7 @@ public class STLObject
     
     /**
      * Load an STL object from a file with a known offset (set that null to put
-     * the object bottom-left-at-origin) and set its appearance
+     * the object in the middle of the bed) and set its appearance
      * 
      * @param location
      * @param offset
@@ -347,7 +348,10 @@ public class STLObject
         if(pNew.z < pOld.z)
         	pOld.z = pNew.z;
         bbox.setLower(pOld);
-        extent = new Vector3d(pOld.x, pOld.y, pOld.z);
+        extent = new Vector3d();
+        extent.x = pOld.x;
+        extent.y = pOld.y;
+        extent.z = pOld.z;       
 
         bb.getUpper(pNew);
         bbox.getUpper(pOld);
@@ -382,7 +386,7 @@ public class STLObject
     
     public Vector3d extent()
     {
-    	return extent;
+    	return new Vector3d(extent);
     }
     
     public String fileAndDirectioryItCameFrom(int i)
@@ -487,15 +491,15 @@ public class STLObject
             
             // If no offset requested, set it to bottom-left-at-origin
             
-            if(offset == null) 
-            {
-                offset = new Vector3d();
-                offset.x = -p0.x;  // Generally offset to put bottom left at the origin
-                offset.y = -p0.y;
-                offset.z = -p0.z;
-            } //else
-            	//offset.z = -p0.z;  // Tie it down whatever the user has said...
-            
+
+            	if(offset == null) 
+            	{
+            		offset = new Vector3d();
+            		offset.x = -p0.x;
+            		offset.y = -p0.y;
+            		offset.z = -p0.z;
+            	} 
+ 
             // How big?
             
             extent = new Vector3d(p1.x - p0.x, p1.y - p0.y, p1.z - p0.z);
@@ -622,7 +626,7 @@ public class STLObject
      * @param s
      * @param p
      */
-    public void translate(Vector3d p)
+    public void hardTranslate(Vector3d p)
     {
     	for(int i = 0; i < contents.size(); i++)
     	{
@@ -638,6 +642,19 @@ public class STLObject
     			c.csg = c.csg.transform(m);
     		}
     	}
+    }
+    
+    /**
+     * Soft translation
+     * @param p
+     */
+    public void translate(Vector3d p)
+    {
+		Transform3D t3d1 = getTransform();
+		Transform3D t3d2 = new Transform3D();
+		t3d2.set(p);
+		t3d1.mul(t3d2);
+		setTransform(t3d1);
     }
     
     // Shift a Shape3D permanently by p
@@ -1134,6 +1151,7 @@ public class STLObject
     		tetVolume(a, e, c, d) +
     		tetVolume(e, f, c, d);
     }
+    
 }
 
 //********************************************************************************

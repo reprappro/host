@@ -110,7 +110,7 @@ public class Main {
 
 	private void createAndShowGUI() throws Exception {
         JFrame.setDefaultLookAndFeelDecorated(false);
-        mainFrame = new JFrame("RepRap      left: rotate   middle: zoom   right: translate     grid: 20 mm");
+        mainFrame = new JFrame("RepRap build bed    |     mouse:  left - rotate   middle - zoom   right - translate     |    grid: 20 mm");
         mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         // Required so menus float over Java3D
@@ -128,7 +128,7 @@ public class Main {
 
 
         
-        JMenu manipMenu = new JMenu("Edit");
+        JMenu manipMenu = new JMenu("Click here for help");
         manipMenu.setMnemonic(KeyEvent.VK_M);
         menubar.add(manipMenu);
 
@@ -253,7 +253,7 @@ public class Main {
         // which may be invisible.
 
         Box builderFrame = new Box(BoxLayout.Y_AXIS);
-        builderFrame.add(new JLabel("Setup build"));
+        builderFrame.add(new JLabel("Arrange items to print on the build bed"));
         builder = new RepRapBuild();
         builderFrame.setMinimumSize(new Dimension(0,0));
         builderFrame.add(builder);
@@ -396,7 +396,7 @@ public class Main {
             if(extensions[0].toUpperCase().contentEquals("RFO"))
             	builder.addRFOFile(result);
             if(extensions[0].toUpperCase().contentEquals("STL"))
-            	builder.anotherSTLFile(result);
+            	builder.anotherSTLFile(result, true);
 
             return f;
         }

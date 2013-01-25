@@ -93,6 +93,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.IOException;
 
 import javax.media.j3d.AmbientLight;
 import javax.media.j3d.Background;
@@ -467,18 +468,61 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 	public void mouseReleased(MouseEvent e) {
 	}
 
+	
+	public void moreCopies(STLObject original, Attributes originalAttributes, int number)
+	{
+		if (number <= 0)
+			return;
+		String fileName = original.fileAndDirectioryItCameFrom(0);
+		double increment = original.extent().x + 5;
+		Vector3d offset = new Vector3d();
+		offset.x = increment;
+		offset.y = 0;
+		offset.z = 0;
+		for(int i = 0; i < number; i++)
+		{
+			STLObject stl = new STLObject();
+			Attributes newAtt = stl.addSTL(fileName, null, original.getAppearance(), null);
+			if(newAtt != null)
+			{
+				newAtt.setMaterial(originalAttributes.getMaterial());
+				stl.translate(offset);
+				if(stl.numChildren() > 0)
+				{
+					wv_and_stls.addChild(stl.top());
+					stls.add(stl);
+				}
+			}
+			offset.x += increment;
+		}
+	}
+	
 	// Callback for when the user selects an STL file to load
 
-	public void anotherSTLFile(String s) 
+	public void anotherSTLFile(String s, boolean centre) 
 	{
 		if (s == null)
 			return;
 		//objectIndex++;
 		STLObject stl = new STLObject();
-		Attributes att;
-
-		att = stl.addSTL(s, null, Preferences.unselectedApp(), lastPicked);
-
+		Attributes att = stl.addSTL(s, null, Preferences.unselectedApp(), lastPicked);
+		if(lastPicked == null && centre)
+		{
+			try 
+			{
+				Vector3d v = new Vector3d(0.5*Preferences.loadGlobalDouble("WorkingX(mm)"), 0.5*Preferences.loadGlobalDouble("WorkingY(mm)"), 0);
+				Vector3d e = stl.extent();
+				e.z = 0;
+				e.x = -0.5*e.x;
+				e.y = -0.5*e.y;
+				v.add(e);
+				stl.translate(v);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
 		if(att != null)
 		{
 			// New separate object, or just appended to lastPicked?
@@ -537,38 +581,7 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 		stls.saveSCAD(s);
 	}
 	
-	public void moreCopies(STLObject original, Attributes originalAttributes, int number)
-	{
-		if (number <= 0)
-			return;
-		String fileName = original.fileAndDirectioryItCameFrom(0);
-		Vector3d offset = new Vector3d();
-		offset.y = 0;
-		offset.z = 0;
-		double increment = original.extent().x + 5;
-		offset.x = increment;
-		for(int i = 0; i < number; i++)
-		{
-			STLObject stl = new STLObject();
-			Attributes newAtt = stl.addSTL(fileName, null, original.getAppearance(), null);
-			newAtt.setMaterial(originalAttributes.getMaterial());
-			if(newAtt != null)
-			{
-				Transform3D t3d1 = original.getTransform();
-				Transform3D t3d2 = new Transform3D();
-				t3d2.set(new Vector3d(offset));
-				t3d1.mul(t3d2);
-				stl.setTransform(t3d1);
-				// New separate object, or just appended to lastPicked?
-				if(stl.numChildren() > 0)
-				{
-					wv_and_stls.addChild(stl.top());
-					stls.add(stl);
-				}
-			}
-			offset.x += increment;
-		}
-	}
+
 
 	public void start() throws Exception {
 		if (pickCanvas == null)

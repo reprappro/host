@@ -315,7 +315,7 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
         changeMachineLabel.setText("RepRap in use: " + Preferences.getActiveMachineName()); // NOI18N
 
         progressLabel.setFont(new java.awt.Font("Tahoma", 0, 12));
-        progressLabel.setText("Layer progress:"); // NOI18N
+        progressLabel.setText("Top down layer progress:"); // NOI18N
 
         currentLayerOutOfN.setFont(new java.awt.Font("Tahoma", 0, 12));
         currentLayerOutOfN.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
@@ -533,15 +533,15 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
                         .add(layout.createSequentialGroup()
                             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                 .add(layout.createSequentialGroup()
-                                		.add(loadSTL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    	.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                		
                                         .add(loadRFO, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                         
-                                        
-                                        
-                                        .add(layout.createParallelGroup()
                                         .add(saveRFO, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(layout.createParallelGroup()
+                                        .add(loadSTL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    	
                                         .add(layout.createSequentialGroup()
                                         		
                                             	.add(layerPauseCheck)//**77
