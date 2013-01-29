@@ -362,7 +362,7 @@ public class Main {
 					producer = null;
 			        cancelMenuItem.setEnabled(false);
 			        produceProduceB.setEnabled(true);
-					JOptionPane.showMessageDialog(mainFrame, "Production complete - Exit");
+					JOptionPane.showMessageDialog(mainFrame, "Slicing complete - Exit");
 					dispose();
 				}
 				catch (Exception ex) {
