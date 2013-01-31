@@ -1,0 +1,123 @@
+#!/bin/bash
+# make-jar-file -- Packages RepRapPro Slicer software into a self-sufficient directory 
+# whence it can be executed
+
+SOFTWARE_NAME="reprappro_slicer"
+
+DESTINATION="executable"
+
+RELEASE=${1:-`date -u +%Y%m%d`}
+
+RELEASENAME="$SOFTWARE_NAME-$RELEASE"
+
+FILELIST="jar/reprap.jar lib/*.jar lib/reprap-icon.png lib/reprap.ico\
+	lib/reprappro_logo-0.5.png lib/rr-logo-green-url.png\
+	lib/reprap-configurations lib/system-dependent lib/reprap lib/reprap.bat"
+
+CONFIG_DIR="reprap-configurations"
+
+SRCFILELIST="src/* build.xml build-user.xml .classpath .project \
+	host-package-release readme"
+
+CLASSPATH=$CLASSPATH:./lib/j3d-org-java3d-all.jar  
+CLASSPATH=$CLASSPATH:./lib/j3dutils.jar            
+CLASSPATH=$CLASSPATH:./lib/vecmath.jar
+CLASSPATH=$CLASSPATH:./lib/j3dcore.jar             
+CLASSPATH=$CLASSPATH:./lib/swing-layout-1.0.4.jar
+CLASSPATH=$CLASSPATH:.
+export CLASSPATH
+
+# Remove any old jar directory
+[ -d jar ] && rm -rf jar
+
+# Clean out old executable directory
+
+[ -d "$DESTINATION" ] && rm -rf "$DESTINATION"
+mkdir "$DESTINATION"
+
+# Recompile java files and create reprap.jar
+ant clean jar || exit 1
+
+#Delete any old release
+#rm -f "./*.zip"
+
+#BASENAME="./$RELEASENAME"
+#mkdir "$BASENAME"
+#mkdir "$BASENAME"/src
+
+# Copy files into binary package directory
+for F in $FILELIST
+do
+  cp -rp $F "$DESTINATION"
+done
+
+cp -rp $CONFIG_DIR "$DESTINATION"
+
+echo "Executable created."
+
+# Copy README into package dir, substituting release string for RELEASE
+#   and the current UTC date for DATE
+#NOW=`date -u +'%d %B %Y'`
+#sed -e "s/RELEASE/$RELEASE/g" -e "s/DATE/$NOW/g" readme > "$BASENAME/readme"
+
+# Create README.txt for Windows people
+#sed -e 's/$/\r/' readme > "$BASENAME/readme.txt"
+
+#echo "READMEs created."
+
+# Now create the src archive
+#for F in $SRCFILELIST
+#do
+#  cp -rp $F "$BASENAME"/src
+#done
+
+#mkdir -p "$SRCFILENAME"/lib
+#for F in $LIBFILES
+#do
+#  cp -rp $F "$BASENAME"/lib
+#done
+
+#echo "Sources copied."
+
+#for F in $DESIGNFILES
+#do
+#  cp -rp $F "$BASENAME"
+#done
+
+#Remove local configuration files
+
+#rm -f "$BASENAME"/firmware/FiveD_GCode/Extruder/configuration.h
+#rm -f "$BASENAME"/firmware/FiveD_GCode/FiveD_GCode_Interpreter/configuration.h
+
+#echo "Design files copied."
+
+# Omit all .git subdirs
+#cd "./$BASENAME"
+#find . -type d -name .git |xargs rm -rf
+#cd ..
+
+#echo "Git references removed."
+
+# Make sure executable permissions are right
+
+#chmod 755 /reprap
+
+# Create zip archive
+
+#rm -f *.zip
+#zip -qr "$RELEASENAME.zip" "$RELEASENAME"
+
+#echo "Zip file created."
+
+# Remove the lot that is now in the .zip file
+
+#rm -rf "$RELEASENAME"
+
+#cd ../host
+# Remove any old jar directory
+#[ -d jar ] && rm -rf jar
+
+#cd ..
+
+echo "RepRap Release $RELEASE created."
+

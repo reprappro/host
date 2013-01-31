@@ -1,11 +1,59 @@
-This the the RepRapPro Ltd Fork of the RepRap Java Host Software.
+This the the RepRapPro Ltd Fork of the RepRap Java Host Software, which forms RepRapPro's
+multi-colour/multi-material slicer code.
 
 http://reprappro.com
 
-For details of how to install RepRap on your computer, see:
+This is a beta-release of this software: it is working, but may still contain bugs.
 
-    http://objects.reprap.org/wiki/Installing_RepRap_on_your_computer
+Licence: GPL
 
-For details of how to use this RepRap Java host software see:
 
-    http://objects.reprap.org/wiki/How_to_use_RepRap_Version_II_Mendel
+Download and installation
+=========================
+
+You need to have Java installed on your computer to run this software.  You will almost certainly already have this.  To check, open a teminal/MSDOS window and type the command:
+
+	$ java
+
+If you get a load of usage instructions, Java is installed.
+
+If you haven't got Java, see:
+
+	http://www.java.com/en/download/help/download_options.xml
+
+Once you have Java, to install this software download it as a .zip file.  To do that click on the little cloud and down-arrow above and to the left on its Github page:
+
+	https://github.com/reprappro/host
+
+which is this page if you are reading this README file on Github.
+
+Unzip the download anywhere you like on your computer, say in a directory called my_download_reprap_unzip.
+
+
+To run the RepRapPro Slicer Software
+====================================
+
+In the unzipped directory there is a sub-directory called 
+
+	executable
+
+in which there is a file called
+
+	reprap
+
+(or reprap.bat for Windows users).
+
+Open a teminal/MSDOS window, move to the executable directory, and run the reprap file:
+
+	$ cd my_download_reprap_unzip/executable
+	$ ./reprap
+
+
+User Documentation
+==================
+
+For details of how to use this software, see:
+
+	http://reprap.org/wiki/RepRapPro_Slicer 
+
+

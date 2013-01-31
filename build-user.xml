@@ -6,16 +6,13 @@
 </target>
 
 <target name="properties" depends="build">
-    <copy file="lib/reprap.properties.dist" tofile="bin/reprap.properties.dist"/>
+    <copy file="lib/reprap" tofile="/tmp/a"/>
 </target>
 
 <target name="backgroundstl" depends="build">
-    <copy file="lib/mendel-base.stl" tofile="bin/mendel-base.stl"/>
+    <copy file="lib/reprap" tofile="/tmp/a"/>
 </target>
 
-<target name="backgroundhuxleystl" depends="build">
-    <copy file="lib/huxley-base.stl" tofile="bin/huxley-base.stl"/>
-</target>
 
 <target name="jar" depends="init,properties,backgroundstl">
     <mkdir dir="${jar.dir}"/>
