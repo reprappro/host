@@ -14,6 +14,10 @@ You need to have Java installed on your computer to run this software.  You will
 
 	$ java
 
+or, on Windows:
+
+	C:\> java
+
 If you get a load of usage instructions, Java is installed.
 
 If you haven't got Java, see:
@@ -49,8 +53,8 @@ On Linux, open a teminal window, move to the executable directory, and run the r
 
 On Windows do pretty much the same in a command window:
 
-	C: CD my_download\host-master\executable
-	C: .\reprap.bat
+	C:\> CD my_download\host-master\executable
+	C:\> .\reprap.bat
 
 User Documentation
 ==================
