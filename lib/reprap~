@@ -8,11 +8,12 @@ cd $REPRAP_DIR
 
 MACHINE=`uname -m`
 
-echo $MACHINE
+#echo $MACHINE
 
 # put the directory with the native RXTX and j3d libs in the library path
-LD_LIBRARY_PATH=`pwd`/linux/lib-${MACHINE}:${LD_LIBRARY_PATH}
+LD_LIBRARY_PATH=`pwd`/system-dependent/linux/lib-${MACHINE}:${LD_LIBRARY_PATH}
 export LD_LIBRARY_PATH
+#echo $LD_LIBRARY_PATH
 
 # build up classpath
 # when we move to OpenJDK/Java-6 these next few can be replaced with wildcard
