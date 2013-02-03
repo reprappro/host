@@ -8,8 +8,10 @@ cd $REPRAP_DIR
 
 MACHINE=`uname -m`
 
+echo $MACHINE
+
 # put the directory with the native RXTX and j3d libs in the library path
-LD_LIBRARY_PATH=`pwd`/lib-${MACHINE}:${LD_LIBRARY_PATH}
+LD_LIBRARY_PATH=`pwd`/linux/lib-${MACHINE}:${LD_LIBRARY_PATH}
 export LD_LIBRARY_PATH
 
 # build up classpath
