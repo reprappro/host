@@ -1,11 +1,11 @@
 org.reprap
 org.reprap.comms
-org.reprap.comms.messages
 org.reprap.devices
-org.reprap.devices.pseudo
 org.reprap.geometry
 org.reprap.geometry.polygons
+org.reprap.geometry.polyhedra
 org.reprap.gui
 org.reprap.gui.botConsole
 org.reprap.machines
+org.reprap.pcb
 org.reprap.utilities

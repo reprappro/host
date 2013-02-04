@@ -10,7 +10,7 @@ Licence: GPL
 Download and installation
 =========================
 
-You need to have Java installed on your computer to run this software.  You will almost certainly already have this.  To check, open a teminal/command window and type the command:
+You need to have Java installed on your computer to run this software.  You will almost certainly already have this.  To check, open a teminal/command-prompt window and type the command:
 
 	$ java
 
@@ -51,7 +51,7 @@ On Linux, open a teminal window, move to the executable directory, and run the r
 	$ cd my_download/host-master/executable
 	$ ./reprap
 
-On Windows do pretty much the same in a command window:
+On Windows do pretty much the same in a command-prompt window:
 
 	C:\> CD my_download\host-master\executable
 	C:\> .\reprap.bat
