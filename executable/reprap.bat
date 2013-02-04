@@ -6,9 +6,7 @@ set REPRAP_RAM_SIZE=1024M
 rem set MACHINE=%wmic cpu get AddressWidth%
 rem echo %MACHINE%
 
-rem set CLASSPATH=./j3d-org-java3d-all.jar;./j3dutils.jar;./vecmath.jar;./j3dcore.jar;./swing-layout-1.0.4.jar;.;%CLASSPATH%
-
-set CLASSPATH=./j3d-org-java3d-all.jar;./j3dutils.jar;./j3dcore.jar;./swing-layout-1.0.4.jar;.;%CLASSPATH%
+set CLASSPATH=./j3d-org-java3d-all.jar;./j3dutils.jar;./vecmath.jar;./j3dcore.jar;./swing-layout-1.0.4.jar;.
 
 echo %CLASSPATH%
 
