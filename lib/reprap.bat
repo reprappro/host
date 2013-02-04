@@ -10,8 +10,12 @@ set CLASSPATH=./j3d-org-java3d-all.jar;./j3dutils.jar;./vecmath.jar;./j3dcore.ja
 
 echo %CLASSPATH%
 
+set PATH=.\system-dependent\windows\w32;%PATH%
+
+echo %PATH%
+
 rem java -Djava.library.path=.\system-dependent\windows\w32 -cp "./reprap.jar;./j3d-org-java3d-all.jar;./j3dutils.jar;./vecmath.jar;./j3dcore.jar; ./swing-layout-1.0.4.jar;." -Xmx%REPRAP_RAM_SIZE% org/reprap/Main
 
-java -Djava.library.path=.\system-dependent\windows\w32 -jar ./reprap.jar -Xmx%REPRAP_RAM_SIZE% org/reprap/Main
+java -jar ./reprap.jar -Xmx%REPRAP_RAM_SIZE% org/reprap/Main
 if ERRORLEVEL 1 pause
 
