@@ -44,7 +44,11 @@ in which there is a file called
 
 	reprap
 
-(or reprap.bat for Windows users).
+or
+
+	reprap.bat 
+
+for Windows users.
 
 On Linux, open a teminal window, move to the executable directory, and run the reprap file:
 
@@ -53,8 +57,18 @@ On Linux, open a teminal window, move to the executable directory, and run the r
 
 On Windows do pretty much the same in a command-prompt window:
 
-	C:\> CD my_download\host-master\executable
-	C:\> .\reprap.bat
+	C:\> cd my_download\host-master\executable
+	C:\> reprap.bat
+
+You can, of course, just navigate to the appropriate point in your Windows filesystem and click on reprap.bat to execute it.  Similarly you can set up a Linux system to put an clickable link to the executable on your desktop.  The RepRap teardrop logo is in the file
+
+	my_download/host-master/executable/reprap-icon.png
+
+Which you can use for clickable executables as an icon (though to attach an icon to a .bat file in Windows you first have to change it to an executable, which is a bit tedious.  See: 
+
+	http://www.makeuseof.com/answers/change-icon-bat-file-windows-7/
+
+).
 
 User Documentation
 ==================
@@ -62,5 +76,40 @@ User Documentation
 For details of how to use this software, see:
 
 	http://reprap.org/wiki/RepRapPro_Slicer 
+
+
+Experiment with the source code
+===============================
+
+Download a copy of the Eclipse Java Development Environment:
+
+	http://www.eclipse.org/downloads/
+
+Rename
+
+	my_download/host-master
+
+to
+
+	my_download/host
+
+Run Eclipse, select New->Java Project from the File menu and uncheck the "Use default location" box.  Use the "Browse" button to navigate to the directory you just renamed and click "Finish".
+
+To run the software in the development environment open:
+
+	host->src->org.reprap
+
+right click on Main.java and select
+
+	Run as->Java Application
+
+and the slicer should run.
+
+You can then edit the source code and make it crash in all sorts of entertaining ways...
+
+
+Adrian Bowyer
+RepRapPro Ltd
+4 February 2013
 
 
