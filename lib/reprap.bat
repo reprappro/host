@@ -10,7 +10,7 @@ set CLASSPATH=./j3d-org-java3d-all.jar;./j3dutils.jar;./vecmath.jar;./j3dcore.ja
 
 echo %CLASSPATH%
 
-set PATH=.\system-dependent\windows\w32;%PATH%
+set PATH=.\system-dependent\windows\w32
 
 echo %PATH%
 
