@@ -1,0 +1,5 @@
+#!/bin/sh
+./make-executable
+git add -A
+git commit
+git push --repo=git@github.com:reprappro/host.git
