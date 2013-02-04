@@ -44,7 +44,11 @@ in which there is a file called
 
 	reprap
 
-(or reprap.bat for Windows users).
+or
+
+	reprap.bat 
+
+for Windows users.
 
 On Linux, open a teminal window, move to the executable directory, and run the reprap file:
 
@@ -53,8 +57,8 @@ On Linux, open a teminal window, move to the executable directory, and run the r
 
 On Windows do pretty much the same in a command-prompt window:
 
-	C:\> CD my_download\host-master\executable
-	C:\> .\reprap.bat
+	C:\> cd my_download\host-master\executable
+	C:\> reprap.bat
 
 You can, of course, just navigate to the appropriate point in your Windows filesystem and click on reprap.bat to execute it.  Similarly you can set up a Linux system to put an clickable link to the executable on your desktop.  The RepRap teardrop logo is in the file
 
