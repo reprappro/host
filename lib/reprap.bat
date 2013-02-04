@@ -6,6 +6,11 @@ set REPRAP_RAM_SIZE=1024M
 rem set MACHINE=%wmic cpu get AddressWidth%
 rem echo %MACHINE%
 
-java -Djava.library.path=.\system-dependent\windows\w32 -cp "./reprap.jar;./j3d-org-java3d-all.jar;./j3dutils.jar;./vecmath.jar;./j3dcore.jar; ./swing-layout-1.0.4.jar;." -Xmx%REPRAP_RAM_SIZE% org/reprap/Main
+set CLASSPATH=./reprap.jar:./j3d-org-java3d-all.jar:./j3dutils.jar:./vecmath.jar:./j3dcore.jar:./swing-layout-1.0.4.jar:.:%CLASSPATH%
+
+rem java -Djava.library.path=.\system-dependent\windows\w32 -cp "./reprap.jar;./j3d-org-java3d-all.jar;./j3dutils.jar;./vecmath.jar;./j3dcore.jar; ./swing-layout-1.0.4.jar;." -Xmx%REPRAP_RAM_SIZE% org/reprap/Main
+
+java -Djava.library.path=.\system-dependent\windows\w32 -Xmx%REPRAP_RAM_SIZE% org/reprap/Main
+
 if ERRORLEVEL 1 pause
 
