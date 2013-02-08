@@ -46,9 +46,9 @@ in which there is a file called
 
 or
 
-	reprap.bat 
+	reprap32.bat or reprap64.bat
 
-for Windows users.
+for Windows 32-bit or 64-bit users.
 
 On Linux, open a teminal window, move to the executable directory, and run the reprap file:
 
@@ -60,7 +60,9 @@ On Windows do pretty much the same in a command-prompt window:
 	C:\> cd my_download\host-master\executable
 	C:\> reprap.bat
 
-You can, of course, just navigate to the appropriate point in your Windows filesystem and click on reprap.bat to execute it.  Similarly you can set up a Linux system to put an clickable link to the executable on your desktop.  The RepRap teardrop logo is in the file
+You can, of course, just navigate to the appropriate point in your Windows filesystem and click on reprap.bat to execute it.  Similarly you can set up a Linux system to put an clickable link to the executable on your desktop.  Note that your working directory has to be the same one as the one containing the reprap file for it to work. 
+
+The RepRap teardrop logo is in the file
 
 	my_download/host-master/executable/reprap-icon.png
 

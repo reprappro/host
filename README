@@ -46,9 +46,9 @@ in which there is a file called
 
 or
 
-	reprap.bat 
+	reprap32.bat or reprap64.bat
 
-for Windows users.
+for Windows 32-bit or 64-bit users.
 
 On Linux, open a teminal window, move to the executable directory, and run the reprap file:
 
