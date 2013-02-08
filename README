@@ -44,13 +44,13 @@ in which there is a file called
 
 	reprap
 
-or
+for Linux and Mac users, or
 
 	reprap32.bat or reprap64.bat
 
 for Windows 32-bit or 64-bit users.
 
-On Linux, open a teminal window, move to the executable directory, and run the reprap file:
+On Linux or Mac, open a teminal window, move to the executable directory, and run the reprap file:
 
 	$ cd my_download/host-master/executable
 	$ ./reprap
