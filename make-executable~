@@ -12,7 +12,7 @@ RELEASENAME="$SOFTWARE_NAME-$RELEASE"
 
 FILELIST="jar/reprap.jar lib/*.jar lib/reprap-icon.png lib/reprap.ico\
 	lib/reprappro_logo-0.5.png lib/rr-logo-green-url.png\
-	lib/reprap-configurations lib/system-dependent lib/reprap lib/reprap.bat"
+	lib/reprap-configurations lib/system-dependent lib/reprap lib/reprap32.bat lib/reprap64.bat"
 
 CONFIG_DIR="reprap-configurations"
 

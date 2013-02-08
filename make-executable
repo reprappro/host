@@ -45,7 +45,8 @@ do
 done
 
 chmod 755 "$DESTINATION"/reprap
-chmod 755 "$DESTINATION"/reprap.bat
+chmod 755 "$DESTINATION"/reprap32.bat
+chmod 755 "$DESTINATION"/reprap64.bat
 
 echo "RepRapPro Slicer $RELEASENAME created."
 
