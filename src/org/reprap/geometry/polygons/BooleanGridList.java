@@ -183,7 +183,8 @@ public class BooleanGridList
 							}
 							shell++;
 						}
-						result = result.reverse();  // Best to plot from the inside out
+						if(e.getInsideOut()) 
+							result = result.reverse();  // Plot from the inside out?
 					} else
 					{
 						// Must be a hatch.  Only do it if the gap is +ve or we're building the foundation

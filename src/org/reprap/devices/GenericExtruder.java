@@ -369,6 +369,8 @@ public abstract class GenericExtruder implements Extruder
 	
 	protected boolean singleLine = false;
 	
+	protected boolean insideOut = false;
+	
 	/**
 	* Our printer object.
 	*/
@@ -492,6 +494,7 @@ public abstract class GenericExtruder implements Extruder
 			surfaceLayers = Preferences.loadGlobalInt(prefName + "SurfaceLayers(0..N)");
 			singleLine = Preferences.loadGlobalBool(prefName + "SingleLine");
 			feedDiameter = Preferences.loadGlobalDouble(prefName + "FeedDiameter(mm)");
+			insideOut = Preferences.loadGlobalBool(prefName + "InsideOut");
 		} catch (Exception ex)
 		{
 			Debug.e("Refresh extruder preferences: " + ex.toString());
@@ -942,7 +945,7 @@ public abstract class GenericExtruder implements Extruder
      * Start polygons at a random location round their perimiter
      * @return
      */
-    public boolean randomStart()
+    public boolean getRandomStart()
     {
     	return randSt;
     }
@@ -951,7 +954,7 @@ public abstract class GenericExtruder implements Extruder
      * Start polygons at an incremented location round their perimiter
      * @return
      */
-    public boolean incrementedStart()
+    public boolean getIncrementedStart()
     {
     	return incrementedSt;
     }
@@ -1465,5 +1468,14 @@ public abstract class GenericExtruder implements Extruder
     public double getFeedDiameter()
     {
     	return feedDiameter;
+    }
+    
+    /**
+     * Plot perimiters inside out or outside in?
+     * @return
+     */
+    public boolean getInsideOut()
+    {
+    	return insideOut;
     }
 }

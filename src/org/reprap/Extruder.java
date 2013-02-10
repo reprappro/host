@@ -368,13 +368,19 @@ public interface Extruder
      * Start polygons at a random location round their perimiter
      * @return
      */
-    public boolean randomStart();
+    public boolean getRandomStart();
 
     /**
      * Start polygons at an incremented location round their perimiter
      * @return
      */
-    public boolean incrementedStart();
+    public boolean getIncrementedStart();
+    
+    /**
+     * Plot perimiters inside out or outside in?
+     * @return
+     */
+    public boolean getInsideOut();
     
     /**
      * If this is true, plot outlines from the middle of their infilling hatch to reduce dribble at
