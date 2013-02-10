@@ -24,6 +24,8 @@ If you haven't got Java, see:
 
 	http://www.java.com/en/download/help/download_options.xml
 
+If you are running 64-bit Linux you will also have to install the Java 3D JNI library.  For example, in the Ubuntu Software Centre, search for and install "libjava3d-jni".
+
 Once you have Java, to install this software download it as a .zip file.  To do that click on the little cloud and down-arrow above and to the left on its Github page:
 
 	https://github.com/reprappro/host
