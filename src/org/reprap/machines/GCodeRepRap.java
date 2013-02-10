@@ -1019,13 +1019,18 @@ public class GCodeRepRap extends GenericRepRap {
 		currentZ = round(z, 4);
 	}
 	
-
+	private double yPurge(Extruder e, int physicalExtruder, int pass)
+	{
+		return layerRules.getPurgePoint().y() - (physicalExtruder*3 + pass)*e.getExtrusionSize();
+	}
 	
 	public void selectExtruder(int materialIndex, boolean really, boolean update, Point2D next) throws Exception
 	{
 		int oldPhysicalExtruder = getExtruder().getPhysicalExtruderNumber();
 		Extruder oldExtruder = getExtruder();
 		int newPhysicalExtruder = extruders[materialIndex].getPhysicalExtruderNumber();
+		double y = 0;
+		boolean shield = Preferences.loadGlobalBool("Shield");
 		
 		if(newPhysicalExtruder != oldPhysicalExtruder || forceSelection)
 		{
@@ -1035,11 +1040,12 @@ public class GCodeRepRap extends GenericRepRap {
 //				Exception e = new Exception();
 //				e.printStackTrace();
 				oldExtruder.stopExtruding();
-				if(Preferences.loadGlobalBool("Shield"))
+				if(shield)
 				{
-					singleMove(layerRules.getPurgePoint().x(), layerRules.getPurgePoint().y() - newPhysicalExtruder, currentZ, getFastXYFeedrate(), true);
+					y = yPurge(getExtruder(), newPhysicalExtruder, 0);
+					singleMove(layerRules.getPurgePoint().x(), y, currentZ, getFastXYFeedrate(), true);
 					currentX = layerRules.getPurgePoint().x();
-					currentY = layerRules.getPurgePoint().y() - newPhysicalExtruder;
+					currentY = y;
 				}
 				super.selectExtruder(materialIndex, true, update, next);
 				if(update)physicalExtruderUsed[newPhysicalExtruder] = true;
@@ -1048,13 +1054,27 @@ public class GCodeRepRap extends GenericRepRap {
 				if(Debug.d())
 					s += " ; select new extruder";
 				gcode.queue(s);
-				if(Preferences.loadGlobalBool("Shield"))
+				if(shield)
 				{
 					printStartDelay(true);
 					getExtruder().setExtrusion(getExtruder().getExtruderSpeed(), false);
-					singleMove(layerRules.getPurgePoint().x() + layerRules.getPurgeLength(), layerRules.getPurgePoint().y() - newPhysicalExtruder, currentZ, getExtruder().getFastXYFeedrate(), true);
+					singleMove(layerRules.getPurgePoint().x() + layerRules.getPurgeLength(), y, currentZ, getExtruder().getFastXYFeedrate(), true);
 					currentX = layerRules.getPurgePoint().x() + layerRules.getPurgeLength();
-					currentY = layerRules.getPurgePoint().y() - newPhysicalExtruder;
+					currentY = y;
+					y = yPurge(getExtruder(), newPhysicalExtruder, 1);
+					singleMove(layerRules.getPurgePoint().x() + layerRules.getPurgeLength(), y, currentZ, getExtruder().getFastXYFeedrate(), true);
+					currentX = layerRules.getPurgePoint().x() + layerRules.getPurgeLength();
+					currentY = y;
+					singleMove(layerRules.getPurgePoint().x(), y, currentZ, getExtruder().getFastXYFeedrate(), true);
+					currentX = layerRules.getPurgePoint().x();
+					currentY = y;
+					y = yPurge(getExtruder(), newPhysicalExtruder, 2);
+					singleMove(layerRules.getPurgePoint().x(), y, currentZ, getExtruder().getFastXYFeedrate(), true);
+					currentX = layerRules.getPurgePoint().x();
+					currentY = y;
+					singleMove(layerRules.getPurgePoint().x() + layerRules.getPurgeLength(), y, currentZ, getExtruder().getFastXYFeedrate(), true);
+					currentX = layerRules.getPurgePoint().x() + layerRules.getPurgeLength();
+					currentY = y;
 					printEndReverse();
 					getExtruder().stopExtruding();
 					getExtruder().setValve(false);
