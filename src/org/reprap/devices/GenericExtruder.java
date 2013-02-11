@@ -392,7 +392,9 @@ public abstract class GenericExtruder implements Extruder
 		myExtruderID = extruderId;
 		separating = false;
 		es = new ExtruderState(refreshPreferences());
-		es.setReverse(false);
+		es.setReverse(false); // We are not reversing...
+		double delay = getExtrusionReverseDelay(); // ...but when we are first called (top down calculation means at our top layer) the
+		es.setRetraction(es.retraction() + delay); // layer below will have reversed us at its end on the way up in the actual build.
 	}
 
 	/**

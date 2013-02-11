@@ -910,7 +910,7 @@ public class AllSTLsToBuild
 				Extruder e = a.getExtruder().getSupportExtruder();
 				if(e != null)
 				{
-					if(layerRules.extruderActiveThisLayer(e.getID()))
+					if(layerRules.extruderLiveThisLayer(e.getID()))
 						support.add(BooleanGrid.difference(above, unionOfThisLayer, a));
 				}
 			}
@@ -1145,7 +1145,7 @@ public class AllSTLsToBuild
 			else
 				e = allLayer.get(i).attribute().getExtruder();
 			if(e != null)
-				if(layerRules.extruderActiveThisLayer(e.getID()))
+				if(layerRules.extruderLiveThisLayer(e.getID()))
 					neededSlice.add(allLayer.get(i));
 		}
 		return neededSlice;

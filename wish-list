@@ -15,4 +15,7 @@ Also it should stop building the barrier at all when it is near the top and ther
 >> thought this feature would help the extruders to get going once
 >> they have  been sat idle for a while.
 
-Multi (3?) line purge
+Multi (3?) line purge - done
+
+Last layer of a colour (i.e. first computed) doesn't take up extruder reverse from previous layer? 
+

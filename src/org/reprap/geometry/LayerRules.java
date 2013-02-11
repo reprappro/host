@@ -44,6 +44,11 @@ public class LayerRules
 	private int[] lastExtruder;
 	
 	/**
+	 * Record extruder usage in each layer for planning
+	 */
+	private boolean[][] extruderUsedThisLayer;
+	
+	/**
 	 * The heights of the layers
 	 */
 	private double[] layerZ;
@@ -169,6 +174,11 @@ public class LayerRules
 	private final double purgeL = 25;
 	
 	/**
+	 * How many physical extruders?
+	 */
+	private int maxAddress = -1;
+	
+	/**
 	 * 
 	 * @param p
 	 * @param modZMax
@@ -211,13 +221,15 @@ public class LayerRules
 		
 		
 
-		// Run through the extruders checking their layer heights
+		// Run through the extruders checking their layer heights and the
+		// Actual physical extruder used.
 		
 		layingSupport = found;
 		Extruder[] es = printer.getExtruders();
 		zStep = es[0].getExtrusionHeight();
 		thickestZStep = zStep;
 		int fineLayers = es[0].getLowerFineLayers();
+
 		if(es.length > 1)
 		{
 			for(int i = 1; i < es.length; i++)
@@ -230,6 +242,8 @@ public class LayerRules
 					zStep = es[i].getExtrusionHeight();
 				if(es[i].getSurfaceLayers() > maxSurfaceLayers)
 					maxSurfaceLayers = es[i].getSurfaceLayers();
+				if(es[i].getPhysicalExtruderNumber() > maxAddress)
+					maxAddress = es[i].getPhysicalExtruderNumber();
 				/*
 				if(Math.abs(es[i].getExtrusionHeight() - zStep) > Preferences.tiny())
 					Debug.e("Not all extruders extrude the same height of filament: " + 
@@ -274,8 +288,13 @@ public class LayerRules
 		lastExtruder = new int[machineLayerMax+1];
 		layerZ = new double[machineLayerMax+1];
 		layerFileNames = new String[machineLayerMax+1];
+		extruderUsedThisLayer = new boolean[machineLayerMax+1][maxAddress];
 		for(int i = 0; i < machineLayerMax+1; i++)
+		{
 			layerFileNames[i] = null;
+			for(int j = 0; j < maxAddress; j++)
+				extruderUsedThisLayer[i][j] = false;
+		}
 		prologueFileName = null;
 		epilogueFileName = null;
 		
@@ -327,7 +346,14 @@ public class LayerRules
 	
 	public int getModelLayer() { return modelLayer; }
 	
-	public boolean extruderActiveThisLayer(int e)
+	/**
+	 * MIGHT an extruder be used in this layer.  I.e. is this
+	 * layer the correct multiple of the microlayering heights for
+	 * this extruder possibly to be required. 
+	 * @param e
+	 * @return
+	 */
+	public boolean extruderLiveThisLayer(int e)
 	{
 		Extruder[] es = printer.getExtruders();
 		double myHeight = es[e].getExtrusionHeight();
@@ -422,6 +448,49 @@ public class LayerRules
 	public double getLayerZ(int layer)
 	{
 		return layerZ[layer];
+	}
+	
+	public void setPhysicalExtruderUsed(Extruder e, int layer)
+	{
+		extruderUsedThisLayer[layer][e.getPhysicalExtruderNumber()] = true;
+	}
+	
+	public boolean getPhysicalExtruderUsed(Extruder e, int layer)
+	{
+		return extruderUsedThisLayer[layer][e.getPhysicalExtruderNumber()];
+	}
+	
+	private int oneThisLayer(int layer)
+	{
+		int r = -1;
+		for(int i = 0; i < maxAddress; i++)
+		{
+			if(extruderUsedThisLayer[layer][i])
+			{
+				if(r == -1)
+					r = i;
+				else
+					return -1;
+			}
+		}
+		if(r == -1)
+			return -2;
+		else
+			return r;
+	}
+	
+	public int onlyOneHereOnUp(int layer)
+	{
+		int start = oneThisLayer(layer);
+		if(start < 0)
+			return -1;
+		for(int i = layer+1; i < machineLayerMax+1; i++)
+		{
+			int el = oneThisLayer(i);
+			if(el != start)
+				return -1;
+		}
+		return start;
 	}
 	
 	public int getModelLayerMax() { return modelLayerMax; }
