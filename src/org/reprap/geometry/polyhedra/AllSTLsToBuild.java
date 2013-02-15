@@ -1075,7 +1075,7 @@ public class AllSTLsToBuild
 					PolygonList bridgeOutline = bridge.allPerimiters(bridge.attribute());
 					for(int pol = 0; pol < bridgeOutline.size(); pol++)
 					{
-						Polygon polygon = bridgeOutline.polygon(i);
+						Polygon polygon = bridgeOutline.polygon(pol);
 
 						for(int vertex1 = 0; vertex1 < polygon.size(); vertex1++)
 						{
