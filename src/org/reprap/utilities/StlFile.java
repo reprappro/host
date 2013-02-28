@@ -150,30 +150,42 @@ public class StlFile implements Loader
       // If the first word is not "solid" then we consider the file is binary
       // Can give us problems if the comment of the binary file begins by "solid"
       this.setAscii(false);
-    }
+    } 
     else  // It's an ASCII file
     {
-      try{
-          parser.nextToken();
-          }
-      catch (IOException e)
-      {
-        System.err.println("IO Error on line " + parser.lineno() + ": " + e.getMessage());
-      }
-      if( parser.ttype != StlFileParser.TT_WORD)
-      {
-        // Is the object name always provided???
-        System.err.println("Format Error:expecting the object name on line " + parser.lineno());
-      }
-      else
-      { // Store the object Name
-        this.setObjectName(new String(parser.sval));
-        if(DEBUG==1)
-        {
-          System.out.println("Object Name:" + this.getObjectName().toString());
-        }
-        this.readEOL(parser);
-      }
+    	try{
+    		parser.nextToken();
+    	}
+    	catch (IOException e)
+    	{
+    		System.err.println("IO Error on line " + parser.lineno() + ": " + e.getMessage());
+    	}
+    	if(parser.sval.equals("binary"))  // Deal with annoying CAD systems that start files with "solid binary"
+    	{
+    		this.setAscii(false);
+    		try {
+    			parser.nextToken();
+    		} catch (IOException e) {
+    			// TODO Auto-generated catch block
+    			System.err.println("IO Error on line " + parser.lineno() + ": " + e.getMessage());
+    		}
+    	} else
+    	{
+    		if( parser.ttype != StlFileParser.TT_WORD)
+    		{
+    			// Is the object name always provided???
+    			System.err.println("Format Error:expecting the object name on line " + parser.lineno());
+    		}
+    		else
+    		{ // Store the object Name
+    			this.setObjectName(new String(parser.sval));
+    			if(DEBUG==1)
+    			{
+    				System.out.println("Object Name:" + this.getObjectName().toString());
+    			}
+    			this.readEOL(parser);
+    		}
+    	}
     }
   }//End of readSolid
 
