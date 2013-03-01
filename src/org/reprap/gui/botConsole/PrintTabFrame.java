@@ -861,10 +861,35 @@ public void printDone()
 	org.reprap.Main.gui.dispose();
 }
 
+private boolean worthSaving()
+{
+	return true;
+}
+
 private void sliceButtonActionPerformed(java.awt.event.ActionEvent evt) 
 {//GEN-FIRST:event_printButtonActionPerformed
 	if(printing)
 		return;
+	
+	if(worthSaving())
+	{
+		int toDo = JOptionPane.showConfirmDialog(null, "First save the build as an RFO file?");
+		switch(toDo)
+		{
+		case JOptionPane.YES_OPTION:
+			saveRFO(null);
+			break;
+			
+		case JOptionPane.NO_OPTION:
+			break;
+			
+		case JOptionPane.CANCEL_OPTION:
+			return;
+		
+		default:
+			saveRFO(null);
+		}
+	}
 	
 	//printLive(!gCodeToFileRadioButton.isSelected());
 	printLive(false);

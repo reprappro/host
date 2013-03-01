@@ -90,7 +90,7 @@ public class RepRapUtils
      */
     public static int countLines(File f) throws IOException 
     {
-    	// Thanks to Johan Nordström
+    	// Thanks to Johan Nordstrom
     	FileInputStream fstream = new FileInputStream(f);
 		DataInputStream in = new DataInputStream(fstream);
 		BufferedReader br = new BufferedReader(new InputStreamReader(in));
