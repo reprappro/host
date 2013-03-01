@@ -1017,7 +1017,27 @@ private void pcbButtonActionPerformed(java.awt.event.ActionEvent evt)
 //	pauseAction(); //FIXME - best we can do at the moment
 //}//GEN-LAST:event_stopButtonActionPerformed
 
-private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
+private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) 
+{//GEN-FIRST:event_exitButtonActionPerformed
+	if(worthSaving())
+	{
+		int toDo = JOptionPane.showConfirmDialog(null, "First save the build as an RFO file?");
+		switch(toDo)
+		{
+		case JOptionPane.YES_OPTION:
+			saveRFO(null);
+			break;
+			
+		case JOptionPane.NO_OPTION:
+			break;
+			
+		case JOptionPane.CANCEL_OPTION:
+			return;
+		
+		default:
+			saveRFO(null);
+		}
+	}
 	Main.ftd.killThem();
 	printer.dispose();
 	System.exit(0);

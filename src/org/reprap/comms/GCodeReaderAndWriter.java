@@ -85,6 +85,8 @@ public class GCodeReaderAndWriter
 	 * The root file name for output (without ".gcode" on the end)
 	 */
 	private String opFileName;
+			
+	private String layerFileNames;
 	
 	/**
 	 * List of file names - used to reverse layer order when layers are done top-down
@@ -1029,6 +1031,12 @@ public class GCodeReaderAndWriter
 				String shortName = chooser.getSelectedFile().getName();
 				if(!shortName.endsWith(gcodeExtension))
 					shortName += gcodeExtension;
+				layerFileNames = System.getProperty("java.io.tmpdir") + File.separator + shortName;
+				File rfod = new File(layerFileNames);
+				if(!rfod.mkdir())
+					throw new RuntimeException(layerFileNames);
+				rfod.deleteOnExit();
+				layerFileNames += File.separator;
 				return shortName;
 			} catch (FileNotFoundException e) 
 			{
@@ -1087,7 +1095,7 @@ public class GCodeReaderAndWriter
 //		}
 		
 		//opFileArray[opFileIndex] = opFileName + lc.getMachineLayer() + tmpString + gcodeExtension;
-		lc.setLayerFileName(opFileName + lc.getMachineLayer() + tmpString + gcodeExtension);
+		lc.setLayerFileName(layerFileNames + "reprap" + lc.getMachineLayer() + tmpString + gcodeExtension);
 		//System.out.println("Name out: " + lc.getLayerFileName());
 		if(!lc.getReversing())
 		try
