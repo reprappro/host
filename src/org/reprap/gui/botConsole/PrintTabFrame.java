@@ -42,7 +42,7 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
     private boolean loadedFilesLong = false;
     private boolean stlLoaded = false;
     private boolean gcodeLoaded = false;
-    private boolean printing = false;
+    private boolean slicing = false;
     private boolean sdCard = false;
     private Thread printerFilePlay;
     /** Creates new form PrintTabFrame */
@@ -834,7 +834,7 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
     
 public void printLive(boolean p)
 {
-	printing = true;
+	slicing = true;
 	if(p)
 		sliceButton.setText("Printing...");
 	else
@@ -842,17 +842,17 @@ public void printLive(boolean p)
 	sliceButton.setBackground(Color.gray);    	
 }
 
-private void restorePrintButton()
+private void restoreSliceButton()
 {
-	printing = false;
-	sliceButton.setText("Print/slice");
+	slicing = false;
+	sliceButton.setText("Slice");
 	sliceButton.setBackground(new java.awt.Color(51, 204, 0)); 
 	printerFilePlay = null;	
 }
 
 public void printDone()
 {
-	restorePrintButton();
+	restoreSliceButton();
 	String[] options = { "Exit" };
 	//int r = 
 		JOptionPane.showOptionDialog(null, "The file has been processed.", "Message",
@@ -868,7 +868,7 @@ private boolean worthSaving()
 
 private void sliceButtonActionPerformed(java.awt.event.ActionEvent evt) 
 {//GEN-FIRST:event_printButtonActionPerformed
-	if(printing)
+	if(slicing)
 		return;
 	
 	if(worthSaving())
@@ -905,7 +905,7 @@ private void sliceButtonActionPerformed(java.awt.event.ActionEvent evt)
     	if(sp <= 0)
     	{
     		JOptionPane.showMessageDialog(null, "There are no STLs/RFOs loaded to slice to file.");
-    		restorePrintButton();
+    		restoreSliceButton();
     		return;
     	}
     	sp = Math.max(loadedFiles.indexOf(".stl"), Math.max(loadedFiles.indexOf(".STL"), Math.max(loadedFiles.indexOf(".rfo"), loadedFiles.indexOf(".RFO"))));
@@ -916,7 +916,7 @@ private void sliceButtonActionPerformed(java.awt.event.ActionEvent evt)
     	printer.setTopDown(true);	
     	if(printer.setGCodeFileForOutput(loadedFiles.substring(0, sp)) == null)
     	{
-    		restorePrintButton();
+    		restoreSliceButton();
     		return;
     	}
 //    }

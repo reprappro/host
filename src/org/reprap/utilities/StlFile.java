@@ -114,17 +114,18 @@ public class StlFile implements Loader
    */
   private void readEOL(StlFileParser parser)
   {
-    try{
-    parser.nextToken();
-    }
-    catch (IOException e)
-    {
-      System.err.println("IO Error on line " + parser.lineno() + ": " + e.getMessage());
-    }
-    if(parser.ttype != StlFileParser.TT_EOL)
-    {
-      System.err.println("Format Error:expecting End Of Line on line " + parser.lineno());
-    }
+	  do{
+		  try{
+			  parser.nextToken();
+		  }
+		  catch (IOException e)
+		  {
+			  System.err.println("IO Error on line " + parser.lineno() + ": " + e.getMessage());
+		  }
+	  }while (parser.ttype != StlFileParser.TT_EOL);
+    //{
+    //  System.err.println("Format Error:expecting End Of Line on line " + parser.lineno());
+    //}
   }
 
   /**
