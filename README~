@@ -81,7 +81,29 @@ User Documentation
 
 For details of how to use this software, see:
 
-	http://reprap.org/wiki/RepRapPro_Slicer 
+	http://reprap.org/wiki/RepRapPro_Slicer
+
+
+Upgrades
+======== 
+
+As described here:
+
+        http://reprap.org/wiki/RepRapPro_Slicer_Variables
+
+when you first run this software it creates a copy in your space of all its configuration files.  If you later download upgrades from Github, your configurations will not be overwritten.  That way, if you make adjustments, you keep them from one upgrade to the next.
+
+All the configuration files are placed in a directory called .reprap in your home directory on your computer (note that the initial "." in the name means that this directory is hidden - you have to enable the viewing of hidden files to see it).
+
+If you decide you want to revert your configuration to the standard one rename the .reprap directory to, say, .reprap.old then run the software.  It will now not find .reprap, and so it will create you a new copy of the standard release of these files from your download.
+
+One thing you may well want to preserve even if you do this is the offsets of the heads in your Tricolor RepRap that you have set - these are unique to your machine.  (See here:
+
+      http://reprap.org/wiki/RepRapPro_Multimaterials#Step_5_-_Registration
+
+for how to set the offsets.)
+
+These offsets will be in the file prologue.gcode in the directory .reprap.old/Mendel-0.5mm (or whatever RepRap machine you are using).  Compare that file to the version in .reprap/Mendel-0.5mm (they are quite short).  Edit the new file to change the G10 lines to set the offsets for your machine.
 
 
 Experiment with the source code
