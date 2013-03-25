@@ -17,5 +17,6 @@ Also it should stop building the barrier at all when it is near the top and ther
 
 Multi (3?) line purge - done
 
-Last layer of a colour (i.e. first computed) doesn't take up extruder reverse from previous layer? 
+Last layer of a colour (i.e. first computed) doesn't take up extruder reverse from previous layer? - DOne. 
 
+Centre RFOs when loaded if they don't have a global transform.

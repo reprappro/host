@@ -1286,6 +1286,104 @@ public class PolygonList
 		}
 	}
 	
+	
+	
+	/**
+	 * This assumes that the RrPolygonList for which it is called is all the closed outline
+	 * polygons, and that hatching is their infill hatch.  It goes through the outlines
+	 * and the hatch modifying both so that that outlines actually start and end half-way 
+	 * along a hatch line (that half of the hatch line being deleted).  When the outlines
+	 * are then printed, they start and end in the middle of a solid area, thus minimising dribble.
+	 * 
+	 * The outline polygons are re-ordered before the start so that their first point is
+	 * the most extreme one in the current hatch direction.
+	 * 
+	 * Only hatches and outlines whose physical extruders match are altered.
+	 * 
+	 * @param hatching
+	 * @param lc
+	 */
+	public void joinAndWipe(PolygonList hatching, LayerRules lc, BooleanGridList slice)
+	{
+		// We should all be closed for this to work
+		int i;
+		for(i = 0; i < size(); i++)
+		{
+			if(!polygon(i).isClosed())
+			{
+				Debug.e("RrPolygonList.joinAndWipe(): some polygons are not closed!");
+				return;
+			}
+		}
+		
+		for(i = 0; i < size(); i++)
+		{
+			Polygon outline = polygon(i);
+			Extruder ex = outline.getAttributes().getExtruder();
+			if(ex.getMiddleStart())
+			{
+				Line l = lc.getHatchDirection(ex, false).pLine();
+				if(i%2 != 0 ^ lc.getMachineLayer()%4 > 1)
+					l = l.neg();
+				outline = outline.newStart(outline.maximalVertex(l));
+
+				Point2D start = outline.point(0);
+				PolPoint pp = hatching.ppSearch(start, -1, outline.getAttributes().getExtruder().getPhysicalExtruderNumber());
+				boolean failed = true;
+				if(pp != null)
+				{
+					pp.findLongEnough(10, 30);
+
+					int st = pp.near();
+					int en = pp.end();
+
+					Polygon pg = pp.polygon();
+					
+					// Check that the line from the start of the outline polygon to the first point
+					// of the tail-in is in solid.  If not, we have jumped between polygons and don't
+					// want to use that as a lead in.
+					
+					Point2D pDif = Point2D.sub(pg.point(st), start);
+					
+					Point2D pq1 = Point2D.add(start, Point2D.mul(0.25, pDif));
+					Point2D pq2 = Point2D.add(start, Point2D.mul(0.5, pDif));
+					Point2D pq3 = Point2D.add(start, Point2D.mul(0.5, pDif));
+					
+					if(slice.membership(pq1) & slice.membership(pq2) & slice.membership(pq3))
+					{
+						outline.add(start);
+						outline.setExtrudeEnd(-1, 0);
+
+						if(en >= st)
+						{
+							for(int j = st; j <= en; j++)
+							{
+								outline.add(0, pg.point(j));  // Put it on the beginning...
+								if(j < en)
+									outline.add(pg.point(j));     // ...and the end.
+							}
+						} else
+						{
+							for(int j = st; j >= en; j--)
+							{
+								outline.add(0, pg.point(j));
+								if(j > en)
+									outline.add(pg.point(j));
+							}
+						}
+
+						set(i, outline);
+
+						hatching.cutPolygon(pp.pIndex(), st, en);
+						failed = false;
+					}
+				}
+				if(failed)
+					set(i, outline.randomStart()); // Best we can do.
+			}
+		}
+	}
+	
 	/**
 	 * Offset (some of) the points in the polygons to allow for the fact that extruded
 	 * circles otherwise don't come out right.  See http://reprap.org/bin/view/Main/ArcCompensation.
