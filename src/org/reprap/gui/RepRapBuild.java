@@ -127,8 +127,11 @@ import com.sun.j3d.utils.picking.PickResult;
 import com.sun.j3d.utils.picking.PickTool;
 
 import org.reprap.Attributes;
+import org.reprap.Printer;
 import org.reprap.RFO;
 import org.reprap.Preferences;
+import org.reprap.geometry.LayerRules;
+import org.reprap.geometry.polygons.Point2D;
 import org.reprap.geometry.polyhedra.AllSTLsToBuild;
 import org.reprap.geometry.polyhedra.STLObject;
 import org.reprap.utilities.Debug;
@@ -499,7 +502,7 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 	
 	// Callback for when the user selects an STL file to load
 
-	public void anotherSTLFile(String s, boolean centre) 
+	public void anotherSTLFile(String s, Printer printer, boolean centre) 
 	{
 		if (s == null)
 			return;
@@ -508,20 +511,15 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 		Attributes att = stl.addSTL(s, null, Preferences.unselectedApp(), lastPicked);
 		if(lastPicked == null && centre)
 		{
-			try 
-			{
-				Vector3d v = new Vector3d(0.5*Preferences.loadGlobalDouble("WorkingX(mm)"), 0.5*Preferences.loadGlobalDouble("WorkingY(mm)"), 0);
-				Vector3d e = stl.extent();
-				e.z = 0;
-				e.x = -0.5*e.x;
-				e.y = -0.5*e.y;
-				v.add(e);
-				stl.translate(v);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
+
+			Point2D middle = Point2D.mul(0.5, printer.getBedNorthEast());
+			Vector3d v = new Vector3d(middle.x(), middle.y(), 0);
+			Vector3d e = stl.extent();
+			e.z = 0;
+			e.x = -0.5*e.x;
+			e.y = -0.5*e.y;
+			v.add(e);
+			stl.translate(v);
 		}
 		if(att != null)
 		{

@@ -632,5 +632,7 @@ public interface Printer {
 	 * @return
 	 */
 	public RrGraphics getGraphics();
+	
+	public Point2D getBedNorthEast();
 
 }
