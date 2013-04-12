@@ -905,7 +905,7 @@ public class STLObject
         return result;
     }
     
-    // Apply a 90 degree click transform about one of the coordinate axes,
+    // Apply a rotating click transform about one of the coordinate axes,
     // which should be set in t.  This can only be done if we're being controlled
     // by the mouse, making us the active object.
     
@@ -1044,23 +1044,23 @@ public class STLObject
         if(mouse == null)
             return;
         
-        Transform3D x90 = new Transform3D();
-        x90.set(new AxisAngle4d(0, 1, 0, 0.5*Math.PI));
+        Transform3D y90 = new Transform3D();
+        y90.set(new AxisAngle4d(0, 1, 0, 0.5*Math.PI));
         
-        rClick(x90);
+        rClick(y90);
     }
     
-    // Do Zs by 45 deg
+    // Do Zs by any angle
     
     public void zClick(double angle)
     {
         if(mouse == null)
             return;
         
-        Transform3D x45 = new Transform3D();
-        x45.set(new AxisAngle4d(0, 0, 1, angle*Math.PI/180.0));
+        Transform3D zAngle = new Transform3D();
+        zAngle.set(new AxisAngle4d(0, 0, 1, angle*Math.PI/180.0));
         
-        rClick(x45);
+        rClick(zAngle);
     } 
     
     // This is called when the user wants to convert the object from

@@ -1019,10 +1019,10 @@ public class GCodeRepRap extends GenericRepRap {
 		currentZ = round(z, 4);
 	}
 	
-	private double yPurge(Extruder e, int physicalExtruder, int pass)
-	{
-		return layerRules.getPurgePoint().y() - (physicalExtruder*3 + pass)*e.getExtrusionSize();
-	}
+//	private double yPurge(Extruder e, int physicalExtruder, int pass)
+//	{
+//		return layerRules.getPurgePoint().y() - (physicalExtruder*3 + pass)*e.getExtrusionSize();
+//	}
 	
 	public void selectExtruder(int materialIndex, boolean really, boolean update, Point2D next) throws Exception
 	{
@@ -1031,50 +1031,68 @@ public class GCodeRepRap extends GenericRepRap {
 		int newPhysicalExtruder = extruders[materialIndex].getPhysicalExtruderNumber();
 		double y = 0;
 		boolean shield = Preferences.loadGlobalBool("Shield");
+		Point2D purge;
 		
 		if(newPhysicalExtruder != oldPhysicalExtruder || forceSelection)
 		{
 			if(really)
 			{
-//				System.out.println("Extruder selection code; old: " + oldPhysicalExtruder + " New: " + newPhysicalExtruder + " Force: " + forceSelection);
-//				Exception e = new Exception();
-//				e.printStackTrace();
 				oldExtruder.stopExtruding();
-				if(shield)
-				{
-					y = yPurge(getExtruder(), newPhysicalExtruder, 0);
-					singleMove(layerRules.getPurgePoint().x(), y, currentZ, getFastXYFeedrate(), true);
-					currentX = layerRules.getPurgePoint().x();
-					currentY = y;
-				}
 				super.selectExtruder(materialIndex, true, update, next);
 				if(update)physicalExtruderUsed[newPhysicalExtruder] = true;
 				getExtruder().stopExtruding(); // Make sure we are off
+				
+				if(shield)
+				{
+					// At this point this software thinks we have the next extruder, but the GCodes haven't got that yet
+					// Move the old head to the purge start point for the new head
+					
+					purge = layerRules.getPurgeEnd(true, 0);
+					singleMove(purge.x(), purge.y(), currentZ, getFastXYFeedrate(), true);
+					currentX = purge.x();
+					currentY = purge.y();
+				}
+				
+				// Now tell the GCodes to select the new extruder and stabilise all temperatures
+				
 				String s = "T" + newPhysicalExtruder;
 				if(Debug.d())
 					s += " ; select new extruder";
 				gcode.queue(s);
+				
+				
 				if(shield)
 				{
+					// Plot the purge pattern with the new extruder
+					
 					printStartDelay(true);
 					getExtruder().setExtrusion(getExtruder().getExtruderSpeed(), false);
-					singleMove(layerRules.getPurgePoint().x() + layerRules.getPurgeLength(), y, currentZ, getExtruder().getFastXYFeedrate(), true);
-					currentX = layerRules.getPurgePoint().x() + layerRules.getPurgeLength();
-					currentY = y;
-					y = yPurge(getExtruder(), newPhysicalExtruder, 1);
-					singleMove(layerRules.getPurgePoint().x() + layerRules.getPurgeLength(), y, currentZ, getExtruder().getFastXYFeedrate(), true);
-					currentX = layerRules.getPurgePoint().x() + layerRules.getPurgeLength();
-					currentY = y;
-					singleMove(layerRules.getPurgePoint().x(), y, currentZ, getExtruder().getFastXYFeedrate(), true);
-					currentX = layerRules.getPurgePoint().x();
-					currentY = y;
-					y = yPurge(getExtruder(), newPhysicalExtruder, 2);
-					singleMove(layerRules.getPurgePoint().x(), y, currentZ, getExtruder().getFastXYFeedrate(), true);
-					currentX = layerRules.getPurgePoint().x();
-					currentY = y;
-					singleMove(layerRules.getPurgePoint().x() + layerRules.getPurgeLength(), y, currentZ, getExtruder().getFastXYFeedrate(), true);
-					currentX = layerRules.getPurgePoint().x() + layerRules.getPurgeLength();
-					currentY = y;
+					
+					purge = layerRules.getPurgeEnd(false, 0);
+					singleMove(purge.x(), purge.y(), currentZ, getExtruder().getFastXYFeedrate(), true);
+					currentX = purge.x();
+					currentY = purge.y();
+					
+					purge = layerRules.getPurgeEnd(false, 1);
+					singleMove(purge.x(), purge.y(), currentZ, getExtruder().getFastXYFeedrate(), true);
+					currentX = purge.x();
+					currentY = purge.y();
+					
+					purge = layerRules.getPurgeEnd(true, 1);
+					singleMove(purge.x(), purge.y(), currentZ, getExtruder().getFastXYFeedrate(), true);
+					currentX = purge.x();
+					currentY = purge.y();
+					
+					purge = layerRules.getPurgeEnd(true, 2);
+					singleMove(purge.x(), purge.y(), currentZ, getExtruder().getFastXYFeedrate(), true);
+					currentX = purge.x();
+					currentY = purge.y();
+					
+					purge = layerRules.getPurgeEnd(false, 2);
+					singleMove(purge.x(), purge.y(), currentZ, getExtruder().getFastXYFeedrate(), true);
+					currentX = purge.x();
+					currentY = purge.y();
+					
 					printEndReverse();
 					getExtruder().stopExtruding();
 					getExtruder().setValve(false);

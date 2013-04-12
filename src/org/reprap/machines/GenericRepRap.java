@@ -199,6 +199,11 @@ public abstract class GenericRepRap implements CartesianPrinter
 	protected double bedTemperatureTarget;
 	
 	/**
+	 * The maximum X and Y point we can move to
+	 */
+	protected Point2D bedNorthEast;
+	
+	/**
 	 * Stepper motors for the 3 axis 
 	 */
 //	public GenericStepperMotor motorX;
@@ -298,6 +303,10 @@ public abstract class GenericRepRap implements CartesianPrinter
 			//scaleX = 7.99735; //Preferences.loadGlobalDouble("XAxisScale(steps/mm)");
 			//scaleY = 7.99735; //Preferences.loadGlobalDouble("YAxisScale(steps/mm)");
 			//scaleZ = 320; //Preferences.loadGlobalDouble("ZAxisScale(steps/mm)");
+			
+			double xNE = Preferences.loadGlobalDouble("WorkingX(mm)");
+			double yNE = Preferences.loadGlobalDouble("WorkingY(mm)");
+			bedNorthEast = new Point2D(xNE, yNE);
 
 			// Load our maximum feedrate variables
 			double maxFeedrateX = Preferences.loadGlobalDouble("MaximumFeedrateX(mm/minute)");
@@ -572,7 +581,7 @@ public abstract class GenericRepRap implements CartesianPrinter
 	{
 		if(liftZ > 0)
 			singleMove(currentX, currentY, currentZ + liftZ, getFastFeedrateZ(), true);
-		Point2D p = layerRules.getPurgePoint();
+		Point2D p = layerRules.getPurgeMiddle();
 		singleMove(p.x(), p.y(), currentZ, getExtruder().getFastXYFeedrate(), true);
 	}
 	
@@ -1323,12 +1332,12 @@ public abstract class GenericRepRap implements CartesianPrinter
 	 */
 	public double getDumpX()
 	{
-		return layerRules.getPurgePoint().x();
+		return layerRules.getPurgeMiddle().x();
 	}
 	
 	public double getDumpY()
 	{
-		return layerRules.getPurgePoint().y();
+		return layerRules.getPurgeMiddle().y();
 	}
 	
 	/**
@@ -1389,5 +1398,13 @@ public abstract class GenericRepRap implements CartesianPrinter
 	public RrGraphics getGraphics()
 	{
 		return org.reprap.Main.gui.getGraphics();
+	}
+	
+	/**
+	 * The XY point furthest from the origin
+	 */
+	public Point2D getBedNorthEast()
+	{
+		return bedNorthEast;
 	}
 }

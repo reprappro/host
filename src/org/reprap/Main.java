@@ -396,7 +396,7 @@ public class Main {
             if(extensions[0].toUpperCase().contentEquals("RFO"))
             	builder.addRFOFile(result);
             if(extensions[0].toUpperCase().contentEquals("STL"))
-            	builder.anotherSTLFile(result, true);
+            	builder.anotherSTLFile(result, printer, true);
 
             return f;
         }

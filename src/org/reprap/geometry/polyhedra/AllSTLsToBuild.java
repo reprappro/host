@@ -1318,19 +1318,41 @@ public class AllSTLsToBuild
 		
 		setBoxes();
 		Rectangle buildPlan = ObjectPlanRectangle();
+		
+		
 		double modelZMax = maxZ();
 		
 		STLObject s = new STLObject();
 		Attributes att = s.addSTL(Preferences.getActiveMachineDir()+"shield.stl", null, Preferences.unselectedApp(),  null);
+
 		Vector3d shieldSize = s.extent();
-		double zScale = modelZMax/shieldSize.z;
 		
-		double xOff = 0.5*(buildPlan.se().x() + buildPlan.sw().x() - shieldSize.x);
-		double yOff = buildPlan.se().y() - shieldSize.y - 2;
+
+		Point2D shieldPos = layerRules.getPurgeMiddle();
+		double xOff = shieldPos.x();
+		double yOff = shieldPos.y();
+		
+		double zScale = modelZMax/shieldSize.z;
 		double zOff = 0.5*(modelZMax - shieldSize.z);
 		
 		s.rScale(zScale, true);
-		s.hardTranslate(new Vector3d(xOff, yOff, zOff));
+		
+		if(!layerRules.purgeXOriented())
+		{
+			s.translate(new Vector3d(-0.5*shieldSize.x, -0.5*shieldSize.y, 0));
+			Transform3D t3d1 = s.getTransform();
+			Transform3D t3d2 = new Transform3D();
+			t3d2.rotZ(0.5*Math.PI);
+			t3d1.mul(t3d2);
+			s.setTransform(t3d1);
+			s.translate(new Vector3d(yOff, -xOff, zOff));
+		} else
+		{
+			xOff -= 0.5*shieldSize.x;
+			yOff -= shieldSize.y;
+			s.translate(new Vector3d(xOff, yOff, zOff));
+		}
+		
 		
 		try 
 		{
@@ -1342,7 +1364,9 @@ public class AllSTLsToBuild
 		
 		org.reprap.Main.gui.getBuilder().anotherSTL(s, att, 0);
 		
-		layerRules.setPurgePoint(0.5*(buildPlan.se().x() + buildPlan.sw().x() - layerRules.getPurgeLength()), yOff + 0.5*shieldSize.y + 1.5);
+
+		
+		//layerRules.setPurgePoint(new Point2D(0.5*(buildPlan.se().x() + buildPlan.sw().x() - layerRules.getPurgeLength()), yOff + 0.5*shieldSize.y + 1.5))
 	}
 	
 	/**

@@ -166,7 +166,7 @@ public class LayerRules
 	/**
 	 * The point at which to purge extruders
 	 */
-	private double purgeX, purgeY;
+	private Point2D purge;
 	
 	/**
 	 * The length of the purge trail in mm
@@ -199,8 +199,7 @@ public class LayerRules
 		
 		try 
 		{
-			purgeX = Preferences.loadGlobalDouble("DumpX(mm)");
-			purgeY = Preferences.loadGlobalDouble("DumpY(mm)");
+			purge = new Point2D(Preferences.loadGlobalDouble("DumpX(mm)"), Preferences.loadGlobalDouble("DumpY(mm)"));
 		} catch (IOException e) 
 		{	
 			Debug.e(e.toString());
@@ -307,15 +306,32 @@ public class LayerRules
 		new Point2D(gp.x().high() + 6, gp.y().high() + 6));
 	}
 	
-	public void setPurgePoint(double x, double y)
+	public boolean purgeXOriented()
 	{
-		purgeX = x;
-		purgeY = y;
+		Point2D middle = Point2D.mul(0.5, printer.getBedNorthEast());
+		return Math.abs(middle.y() - purge.y()) > Math.abs(middle.x() - purge.x());
 	}
 	
-	public Point2D getPurgePoint()
+//	public void setPurgePoint(Point2D p)
+//	{
+//		purge = new Point2D(p);
+//	}
+	
+	public Point2D getPurgeEnd(boolean low, int pass)
 	{
-		return new Point2D(purgeX, purgeY);
+		double a = purgeL*0.5;
+		if(low)
+			a = -a;
+		double b = 4*printer.getExtruder().getExtrusionSize() - (printer.getExtruder().getPhysicalExtruderNumber()*3 + pass)*printer.getExtruder().getExtrusionSize();
+		if(purgeXOriented())
+			return Point2D.add(purge, new Point2D(a, b));
+		else
+			return Point2D.add(purge, new Point2D(b, a));
+	}
+	
+	public Point2D getPurgeMiddle()
+	{
+		return purge;
 	}
 	
 	public double getPurgeLength()
@@ -602,7 +618,7 @@ public class LayerRules
 	 */
 	public void stepMachine()
 	{
-		int ld;
+
 		
 		if(topDown)
 		{
@@ -721,12 +737,12 @@ public class LayerRules
 		{
 			getPrinter().startRun(this); // Sets current X, Y, Z to 0 and optionally plots an outline
 			int top = realTopLayer();
-			boolean started = false;
+
 			for(machineLayer = 1; machineLayer <= top; machineLayer++)
 			{
 				machineZ = layerZ[machineLayer];
 				getPrinter().startingLayer(this);
-				started = true;
+
 				getPrinter().singleMove(getFirstPoint(machineLayer).x(), getFirstPoint(machineLayer).y(), machineZ, getPrinter().getFastXYFeedrate(), true);
 				copyFile(fileOutStream, getLayerFileName(machineLayer));
 				
