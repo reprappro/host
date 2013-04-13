@@ -1,4 +1,4 @@
-<property name="jar.dir"     value="jar"/>
+<property name="jar.dir"     value="executable"/>
 <property name="main-class"  value="org.reprap.Main"/>
 
 <target name="help">

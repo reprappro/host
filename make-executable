@@ -1,23 +1,11 @@
 #!/bin/bash
-# make-executable -- Packages RepRapPro Slicer software into a self-sufficient directory 
-# whence it can be executed
-
-SOFTWARE_NAME="reprappro_slicer"
+# make-executable -- Packages RepRapPro Slicer software into a self-sufficient
+# directory whence it can be executed
 
 DESTINATION="executable"
-
-RELEASE=${1:-`date -u +%Y%m%d`}
-
-RELEASENAME="$SOFTWARE_NAME-$RELEASE"
-
 FILELIST="lib/*.jar lib/reprap-icon.png lib/reprap.ico\
 	lib/reprappro_logo-0.5.png lib/rr-logo-green-url.png\
 	lib/reprap-configurations lib/system-dependent lib/reprap lib/reprap32.bat lib/reprap64.bat"
-
-CONFIG_DIR="reprap-configurations"
-
-SRCFILELIST="src/* build.xml build-user.xml .classpath .project \
-	host-package-release readme"
 
 CLASSPATH=$CLASSPATH:./lib/j3d-org-java3d-all.jar  
 CLASSPATH=$CLASSPATH:./lib/j3dutils.jar            
@@ -28,13 +16,11 @@ CLASSPATH=$CLASSPATH:.
 export CLASSPATH
 
 # Clean out old executable directory
-
 [ -d "$DESTINATION" ] && rm -rf "$DESTINATION"
 mkdir "$DESTINATION"
 
 # Recompile java files and create reprap.jar
 ant clean jar || exit 1
-mv jar/reprap.jar $DESTINATION && rmdir jar
 
 # Copy files into $DESTINATION directory
 for F in $FILELIST
@@ -46,5 +32,7 @@ chmod 755 "$DESTINATION"/reprap
 chmod 755 "$DESTINATION"/reprap32.bat
 chmod 755 "$DESTINATION"/reprap64.bat
 
+SOFTWARE_NAME="reprappro_slicer"
+RELEASE=${1:-`date -u +%Y%m%d`}
+RELEASENAME="$SOFTWARE_NAME-$RELEASE"
 echo "RepRapPro Slicer $RELEASENAME created."
-
