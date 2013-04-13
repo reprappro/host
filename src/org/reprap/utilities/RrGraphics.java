@@ -121,9 +121,6 @@ public class RrGraphics {
 
     /**
      * Constructor for just a box - add stuff later
-     * 
-     * @param b
-     * @param pb
      */
     public RrGraphics(final Rectangle b, final String t) {
         p_list = null;
@@ -133,9 +130,6 @@ public class RrGraphics {
 
     /**
      * Constructor for nothing - add stuff later
-     * 
-     * @param b
-     * @param pb
      */
     public RrGraphics(final String t) {
         p_list = null;
@@ -209,8 +203,6 @@ public class RrGraphics {
 
     /**
      * Plot a G code
-     * 
-     * @param gCode
      */
     public void add(String gCode) {
         if (p_list == null) {
@@ -247,9 +239,6 @@ public class RrGraphics {
         }
     }
 
-    /**
-     * @param pl
-     */
     public void add(final PolygonList pl) {
         if (pl == null) {
             return;
@@ -272,9 +261,6 @@ public class RrGraphics {
 
     /**
      * Real-world coordinates to pixels
-     * 
-     * @param p
-     * @return
      */
     private Point2D transform(final Point2D p) {
         return new Point2D(p_0.x() + scale * p.x(), frameHeight - (p_0.y() + scale * p.y()));
@@ -282,9 +268,6 @@ public class RrGraphics {
 
     /**
      * Pixels to real-world coordinates
-     * 
-     * @param p
-     * @return
      */
     private Point2D iTransform(final int x, final int y) {
         return new Point2D((x - p_0.x()) / scale, ((frameHeight - y) - p_0.y()) / scale);
@@ -292,8 +275,6 @@ public class RrGraphics {
 
     /**
      * Move invisibly to a point
-     * 
-     * @param p
      */
     private void move(final Point2D p) {
         pos = transform(p);
@@ -301,8 +282,6 @@ public class RrGraphics {
 
     /**
      * Draw a straight line to a point
-     * 
-     * @param p
      */
     private void plot(final Point2D p) {
         final Point2D a = transform(p);
@@ -312,8 +291,6 @@ public class RrGraphics {
 
     /**
      * Plot a box
-     * 
-     * @param b
      */
     private void plot(final Rectangle b) {
         if (Rectangle.intersection(b, scaledBox).empty()) {
@@ -330,8 +307,6 @@ public class RrGraphics {
 
     /**
      * Set the colour from a RepRap attribute
-     * 
-     * @param at
      */
     private void setColour(final Attributes at) {
         final Appearance ap = at.getAppearance();
@@ -343,8 +318,6 @@ public class RrGraphics {
 
     /**
      * Plot a polygon
-     * 
-     * @param p
      */
     private void plot(final Polygon p) {
         if (p.size() <= 0) {
@@ -371,8 +344,6 @@ public class RrGraphics {
 
     /**
      * Fill a Boolean Grid where it's solid.
-     * 
-     * @param q
      */
     private void fillBG(final BooleanGrid b) {
         if (b.attribute().getAppearance() == null) {
@@ -443,9 +414,6 @@ public class RrGraphics {
 
     /**
      * Clicking the mouse magnifies
-     * 
-     * @author ensab
-     * 
      */
     class myMouse implements MouseListener {
         private Rectangle magBox(final Rectangle b, final int ix, final int iy) {
@@ -504,12 +472,9 @@ public class RrGraphics {
             super();
         }
 
-        // This method is called whenever the contents needs to be painted
         @Override
         public void paint(final Graphics g) {
-            // Retrieve the graphics context; this object is used to paint shapes
             g2d = (Graphics2D) g;
-            // Draw everything
             plot();
         }
     }

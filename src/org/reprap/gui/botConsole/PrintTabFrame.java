@@ -192,14 +192,22 @@ public class PrintTabFrame extends JInternalFrame {
         sliceButton.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(final java.awt.event.ActionEvent evt) {
-                sliceButtonActionPerformed();
+                try {
+                    sliceButtonActionPerformed();
+                } catch (final IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
 
         exitButton.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(final java.awt.event.ActionEvent evt) {
-                exitButtonActionPerformed();
+                try {
+                    exitButtonActionPerformed();
+                } catch (final IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
 
@@ -270,7 +278,11 @@ public class PrintTabFrame extends JInternalFrame {
         saveRFO.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(final java.awt.event.ActionEvent evt) {
-                saveRFO();
+                try {
+                    saveRFO();
+                } catch (final IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
 
@@ -473,14 +485,13 @@ public class PrintTabFrame extends JInternalFrame {
         final String[] options = { "Exit" };
         JOptionPane.showOptionDialog(null, "The file has been processed.", "Message", JOptionPane.DEFAULT_OPTION,
                 JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-        org.reprap.Main.gui.dispose();
     }
 
     private boolean worthSaving() {
         return true;
     }
 
-    private void sliceButtonActionPerformed() {
+    private void sliceButtonActionPerformed() throws IOException {
         if (slicing) {
             return;
         }
@@ -529,7 +540,7 @@ public class PrintTabFrame extends JInternalFrame {
         org.reprap.Main.gui.onProduceB();
     }
 
-    private void exitButtonActionPerformed() {
+    private void exitButtonActionPerformed() throws IOException {
         if (worthSaving()) {
             final int toDo = JOptionPane.showConfirmDialog(null, "First save the build as an RFO file?");
             switch (toDo) {
@@ -547,7 +558,6 @@ public class PrintTabFrame extends JInternalFrame {
                 saveRFO();
             }
         }
-        Main.ftd.killThem();
         System.exit(0);
     }
 
@@ -642,7 +652,7 @@ public class PrintTabFrame extends JInternalFrame {
         }
     }
 
-    private void saveRFO() {
+    private void saveRFO() throws IOException {
         if (!SLoadOK) {
             return;
         }
@@ -655,7 +665,7 @@ public class PrintTabFrame extends JInternalFrame {
         if (sp <= 0) {
             JOptionPane.showMessageDialog(null, "The loaded file is not an STL or an RFO file.");
         }
-        org.reprap.Main.gui.saveRFO(loadedFiles.substring(0, sp));
+        Main.gui.saveRFO(loadedFiles.substring(0, sp));
     }
 
     private void saveSCAD() {
@@ -688,10 +698,5 @@ public class PrintTabFrame extends JInternalFrame {
         loadRFO.setBackground(new java.awt.Color(0, 204, 255));
         saveRFO.setBackground(new java.awt.Color(0, 204, 255));
         saveSCAD.setBackground(new java.awt.Color(0, 204, 255));
-        try {
-            org.reprap.Preferences.setGCodeUseSerial(false);
-        } catch (final Exception e) {
-            JOptionPane.showMessageDialog(null, e.toString());
-        }
     }
 }

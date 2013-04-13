@@ -20,6 +20,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileFilter;
 
@@ -31,60 +32,35 @@ import org.reprap.machines.GCodePrinter;
 import org.reprap.utilities.Debug;
 import org.reprap.utilities.ExtensionFileFilter;
 import org.reprap.utilities.RrDeleteOnExit;
-import org.reprap.utilities.RrGraphics;
 
 /**
- * 
- * mainpage RepRap Host Controller Software
- * 
- * section overview Overview
- * 
- * Please see http://reprap.org/ for more details.
- * 
+ * Main RepRapProSlicer software overview. Please see http://reprap.org/ for
+ * more details.
  */
 public class Main {
     public static Main gui;
-    public static RrDeleteOnExit ftd = null;
-    private static boolean repRapAttached = false;
+    public static RrDeleteOnExit cleanUpFiles = new RrDeleteOnExit();
 
     private Producer producer = null;
     private GCodePrinter printer = null;
-    private final JFileChooser chooser;
+    private final JFileChooser chooser = new JFileChooser();
     private JFrame mainFrame;
     private RepRapBuild builder;
-    private JCheckBoxMenuItem segmentPause;
     private JCheckBoxMenuItem layerPause;
     private JMenuItem cancelMenuItem;
     private JMenuItem produceProduceB;
-
-    public void setSegmentPause(final boolean state) {
-        segmentPause.setState(state);
-    }
-
-    public void setLayerPause(final boolean state) {
-        layerPause.setState(state);
-    }
-
-    public void clickCancel() {
-        cancelMenuItem.doClick();
-    }
-
     private JSplitPane panel;
 
-    public Main() {
-        ftd = new RrDeleteOnExit();
-        chooser = new JFileChooser();
-
+    public Main() throws IOException {
         if (listStlFilesOnly()) {
             final FileFilter filter = new ExtensionFileFilter("STL", new String[] { "STL" });
             chooser.setFileFilter(filter);
         }
-        try {
-            printer = new GCodePrinter();
-        } catch (final Exception ex) {
-            Debug.e("MachineFactory.create() failed.\n");
-            ex.printStackTrace();
-        }
+        printer = new GCodePrinter();
+    }
+
+    public void setLayerPause(final boolean state) {
+        layerPause.setState(state);
     }
 
     private boolean listStlFilesOnly() {
@@ -106,8 +82,6 @@ public class Main {
         produceProduceB = new JMenuItem("Start build...", KeyEvent.VK_B);
         cancelMenuItem = new JMenuItem("Cancel", KeyEvent.VK_P);
         cancelMenuItem.setEnabled(false);
-        segmentPause = new JCheckBoxMenuItem("Pause before segment");
-
         layerPause = new JCheckBoxMenuItem("Pause before layer");
 
         // Create the main window area
@@ -246,43 +220,12 @@ public class Main {
         return manipMenu;
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        Debug.d("Main finalise()");
-        ftd.killThem();
-    }
-
     public GCodePrinter getPrinter() {
         return printer;
     }
 
     public RepRapBuild getBuilder() {
         return builder;
-    }
-
-    /**
-     * Stop production
-     */
-    public void pause() {
-        if (producer != null) {
-            producer.pause();
-        }
-        try {
-            printer.stopMotor();
-            printer.stopValve();
-            printer.pause();
-        } catch (final Exception ex) {
-        }
-    }
-
-    /**
-     * Resume production NB: does not re-start the extruder
-     */
-    public void resume() {
-        printer.resume();
-        if (producer != null) {
-            producer.resume();
-        }
     }
 
     public int getLayers() {
@@ -312,14 +255,13 @@ public class Main {
                         Debug.e("Production attempted with null printer.");
                     }
                     producer = new Producer(printer, builder);
-                    producer.setSegmentPause(segmentPause);
                     producer.setLayerPause(layerPause);
                     producer.produce();
                     producer = null;
                     cancelMenuItem.setEnabled(false);
                     produceProduceB.setEnabled(true);
                     JOptionPane.showMessageDialog(mainFrame, "Slicing complete - Exit");
-                    dispose();
+                    System.exit(0);
                 } catch (final Exception ex) {
                     JOptionPane.showMessageDialog(mainFrame, "Production exception: " + ex);
                     ex.printStackTrace();
@@ -355,7 +297,7 @@ public class Main {
         return null;
     }
 
-    public String saveRFO(final String fileRoot) {
+    public String saveRFO(final String fileRoot) throws IOException {
         String result = null;
         File f;
         FileFilter filter;
@@ -404,10 +346,6 @@ public class Main {
         return "";
     }
 
-    public void deleteAllSTLs() {
-        builder.deleteAllSTLs();
-    }
-
     private void onRotateX() {
         builder.xRotate();
     }
@@ -444,24 +382,19 @@ public class Main {
         builder.mouseToWorld();
     }
 
-    public void dispose() {
-        Debug.d("Main dispose()");
-        ftd.killThem();
-        /// TODO This class should be fixed so it gets the dispose on window close
-
-        System.exit(0);
-    }
-
     public static void main(final String[] args) {
-
-        Thread.currentThread().setName("Main");
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                cleanUpFiles.killThem();
+            }
+        });
+        SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 Thread.currentThread().setName("RepRap");
-                gui = new Main();
                 try {
+                    gui = new Main();
                     gui.createAndShowGUI();
                 } catch (final IOException e) {
                     throw new RuntimeException(e);
@@ -471,18 +404,5 @@ public class Main {
                 SlicerFrame.main(null);
             }
         });
-
-    }
-
-    public static void setRepRapPresent(final boolean a) {
-        repRapAttached = a;
-    }
-
-    public static boolean repRapPresent() {
-        return repRapAttached;
-    }
-
-    public RrGraphics getGraphics() {
-        return builder.getRrGraphics();
     }
 }

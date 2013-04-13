@@ -159,5 +159,4 @@ class MaterialRadioButtons extends JPanel {
             createAndShowGUI(a, r, index, r.getSTLs().get(index).volume());
         }
     }
-
 }

@@ -55,13 +55,12 @@
 package org.reprap.geometry.polygons;
 
 /**
-* Exception for when trying to intersect parallel lines
-*/
-public class ParallelException extends Exception
-{
-	private static final long serialVersionUID = 1L;
-	public ParallelException(String s)
-	{
-		super(s);
-	}
+ * Exception for when trying to intersect parallel lines
+ */
+public class ParallelException extends Exception {
+    private static final long serialVersionUID = 1L;
+
+    public ParallelException(final String s) {
+        super(s);
+    }
 }

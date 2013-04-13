@@ -9,11 +9,10 @@ import org.reprap.machines.GCodePrinter;
 import org.reprap.utilities.Debug;
 
 /**
- * Small class to hold RepRap attributes that are attached to Java3D shapes as
- * user data, primarily to record the material that things are made from.
+ * Holds RepRap attributes that are attached to Java3D shapes as user data,
+ * primarily to record the material that things are made from.
  * 
  * @author adrian
- * 
  */
 public class Attributes {
 
@@ -25,7 +24,7 @@ public class Attributes {
     /**
      * The STLObject of which this is a part
      */
-    private STLObject parent;
+    private final STLObject parent;
 
     /**
      * Where this is in the STLObject of which it is a part
@@ -41,7 +40,7 @@ public class Attributes {
      * The extruder corresponsing to this material. This is lazily evaluated
      * (I.e. it is not set until there are some extruders around to use).
      */
-    private GCodeExtruder e;
+    private GCodeExtruder extruder;
 
     /**
      * Constructor - it is permissible to set any argument null. If you know
@@ -61,7 +60,7 @@ public class Attributes {
         parent = p;
         part = b;
         app = a;
-        e = null;
+        extruder = null;
     }
 
     /**
@@ -69,9 +68,7 @@ public class Attributes {
      */
     @Override
     public String toString() {
-        String result = new String();
-        result += "Attributes: material is " + material;
-        return result;
+        return "Attributes: material is " + material;
     }
 
     /**
@@ -110,19 +107,19 @@ public class Attributes {
      * @return my extruder
      */
     public GCodeExtruder getExtruder() {
-        if (e == null) {
+        if (extruder == null) {
             final GCodePrinter p = org.reprap.Main.gui.getPrinter();
             if (p == null) {
                 Debug.e("Attributes.getExtruder(): null printer!");
                 return null;
             }
-            e = p.getExtruder(material);
-            if (e == null) {
+            extruder = p.getExtruder(material);
+            if (extruder == null) {
                 Debug.e("Attributes.getExtruder(): null extruder for " + material);
                 return null;
             }
         }
-        return e;
+        return extruder;
     }
 
     /**
@@ -132,20 +129,11 @@ public class Attributes {
      */
     public void setMaterial(final String s) {
         material = s;
-        e = null;
+        extruder = null;
         app = GCodeExtruder.getAppearanceFromMaterial(material);
         if (parent != null) {
             parent.restoreAppearance();
         }
-    }
-
-    /**
-     * Change the parent
-     * 
-     * @param p
-     */
-    public void setParent(final STLObject p) {
-        parent = p;
     }
 
     /**
@@ -155,14 +143,5 @@ public class Attributes {
      */
     public void setPart(final BranchGroup b) {
         part = b;
-    }
-
-    /**
-     * New colour
-     * 
-     * @param a
-     */
-    public void setAppearance(final Appearance a) {
-        app = a;
     }
 }

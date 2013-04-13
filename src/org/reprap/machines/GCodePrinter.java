@@ -8,7 +8,6 @@ package org.reprap.machines;
  * TODO: make GCodeWriter a subclass of NullCartesian, so I don't have to fix code all over the place.
  */
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
@@ -19,26 +18,23 @@ import javax.swing.JOptionPane;
 
 import org.reprap.Attributes;
 import org.reprap.Preferences;
-import org.reprap.comms.GCodeReaderAndWriter;
+import org.reprap.comms.GCodeWriter;
 import org.reprap.devices.GCodeExtruder;
 import org.reprap.geometry.LayerRules;
 import org.reprap.geometry.polygons.Point2D;
 import org.reprap.geometry.polygons.Rectangle;
 import org.reprap.utilities.Debug;
-import org.reprap.utilities.RrGraphics;
 import org.reprap.utilities.Timer;
 
 public class GCodePrinter {
 
-    private final GCodeReaderAndWriter gcode;
-    protected boolean stlLoaded = false;
-    protected boolean gcodeLoaded = false;
-    LayerRules layerRules = null;
+    private final GCodeWriter gcode;
+    private LayerRules layerRules = null;
     /**
      * Force an extruder to be selected on startup
      */
-    protected boolean forceSelection;
-    protected boolean XYEAtZero;
+    private boolean forceSelection;
+    private boolean XYEAtZero;
     /**
      * Have we actually used this extruder?
      */
@@ -46,122 +42,73 @@ public class GCodePrinter {
     protected JCheckBoxMenuItem layerPauseCheckbox = null;
     protected JCheckBoxMenuItem segmentPauseCheckbox = null;
     /**
-     * How far have we moved, in mm.
+     * Current X, Y and Z position of the extruder
      */
-    protected double totalDistanceMoved = 0.0;
-    /**
-     * What distnace did we extrude, in mm.
-     */
-    protected double totalDistanceExtruded = 0.0;
-    /**
-     * Rezero X and y every...
-     */
-    double xYReZeroInterval = -1;
-    /**
-     * Distance since last zero
-     */
-    double distanceFromLastZero = 0;
-    /**
-     * Distance at last call of maybeZero
-     */
-    double distanceAtLastCall = 0;
+    private double currentX;
     /**
      * Current X, Y and Z position of the extruder
      */
-    protected double currentX;
+    private double currentY;
     /**
      * Current X, Y and Z position of the extruder
      */
-    protected double currentY;
-    /**
-     * Current X, Y and Z position of the extruder
-     */
-    protected double currentZ;
-    /**
-     * X, Y and Z position of the extruder at the end of the topmost layer
-     */
-    protected double topX;
-    /**
-     * X, Y and Z position of the extruder at the end of the topmost layer
-     */
-    protected double topY;
-    /**
-     * X, Y and Z position of the extruder at the end of the topmost layer
-     */
-    protected double topZ;
+    private double currentZ;
     /**
      * Maximum feedrate for Z axis
      */
-    protected double maxFeedrateZ;
+    private double maxFeedrateZ;
     /**
      * Current feedrate for the machine.
      */
-    protected double currentFeedrate;
+    private double currentFeedrate;
     /**
      * Feedrate for fast XY moves on the machine.
      */
-    protected double fastXYFeedrate;
+    private double fastXYFeedrate;
     /**
      * The fastest the machine can accelerate in X and Y
      */
-    protected double maxXYAcceleration;
+    private double maxXYAcceleration;
     /**
      * The speed from which the machine can do a standing start
      */
-    protected double slowXYFeedrate;
+    private double slowXYFeedrate;
     /**
      * The fastest the machine can accelerate in Z
      */
-    protected double maxZAcceleration;
+    private double maxZAcceleration;
     /**
      * The speed from which the machine can do a standing start in Z
      */
-    protected double slowZFeedrate;
+    private double slowZFeedrate;
     /**
      * Feedrate for fast Z moves on the machine.
      */
-    protected double fastFeedrateZ;
+    private double fastFeedrateZ;
     /**
      * Array containing the extruders on the 3D printer
      */
-    protected GCodeExtruder extruders[];
+    private GCodeExtruder extruders[];
     /**
      * Current extruder?
      */
-    protected int extruder;
-    /**
-     * When did we start printing?
-     */
-    protected long startTime;
-    protected double startCooling;
-    /**
-     * Do we idle the z axis?
-     */
-    protected boolean idleZ;
-    /**
-     * Do we include the z axis?
-     */
-    protected boolean excludeZ = false;
+    private int extruder;
+    private double startCooling;
     private int foundationLayers = 0;
-    /**
-     * The temperature to set the bed to
-     */
-    protected double bedTemperatureTarget;
     /**
      * The maximum X and Y point we can move to
      */
-    protected Point2D bedNorthEast;
+    private Point2D bedNorthEast;
 
-    public GCodePrinter() throws Exception {
+    public GCodePrinter() throws IOException {
         XYEAtZero = false;
-        startTime = System.currentTimeMillis();
         startCooling = -1;
         forceSelection = true;
 
         //load extruder prefs
         final int extruderCount = Preferences.loadGlobalInt("NumberOfExtruders");
         if (extruderCount < 1) {
-            throw new Exception("A Reprap printer must contain at least one extruder.");
+            throw new IllegalStateException("A Reprap printer must contain at least one extruder.");
         }
 
         //load our actual extruders.
@@ -177,7 +124,7 @@ public class GCodePrinter {
         currentZ = 0;
         currentFeedrate = 0;
 
-        gcode = new GCodeReaderAndWriter();
+        gcode = new GCodeWriter();
         String s = "M110";
         if (Debug.d()) {
             s += " ; Reset the line numbers";
@@ -431,13 +378,6 @@ public class GCodePrinter {
 
         checkCoordinates(x, y, z);
 
-        totalDistanceMoved += segmentLength(x - currentX, y - currentY);
-
-        //TODO - next bit needs to take account of startUp and endUp
-        if (z != currentZ) {
-            totalDistanceMoved += Math.abs(currentZ - z);
-        }
-
         currentX = x;
         currentY = y;
         currentZ = z;
@@ -586,13 +526,6 @@ public class GCodePrinter {
     }
 
     public void startRun(final LayerRules lc) throws Exception {
-        // If we are printing from a file, that should contain all the headers we need.
-        if (gcode.buildingFromFile()) {
-            return;
-        }
-
-        gcode.startRun();
-
         gcode.queue("; GCode generated by RepRap Java Host Software");
         final Date myDate = new Date();
         final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd:HH-mm-ss");
@@ -642,7 +575,7 @@ public class GCodePrinter {
                         currentZ = lc.getMachineZ();
                     }
                     zRight = true;
-                    selectExtruder(e, true, false, new Point2D(r.x().low(), r.y().low()));
+                    selectExtruder(e, true, false);
                     singleMove(r.x().low(), r.y().low(), currentZ, getExtruder().getFastXYFeedrate(), true);
                     printStartDelay(true);
                     getExtruder().setExtrusion(getExtruder().getExtruderSpeed(), false);
@@ -738,8 +671,6 @@ public class GCodePrinter {
     }
 
     public void terminate(final LayerRules lc) throws Exception {
-        gcode.startingEpilogue(lc);
-
         final int topLayer = lc.realTopLayer();
         final Point2D p = lc.getLastPoint(topLayer);
         currentX = round(p.x(), 2);
@@ -753,17 +684,6 @@ public class GCodePrinter {
         if (Debug.d()) {
             gcode.queue("; ------");
         }
-        gcode.finish(lc);
-    }
-
-    public void home() throws Exception {
-        String s = "G28";
-        if (Debug.d()) {
-            s += " ; go home";
-        }
-        gcode.queue(s);
-        extruders[extruder].zeroExtrudedLength(true);
-        currentX = currentY = currentZ = 0.0;
     }
 
     private void delay(final long millis, final boolean fastExtrude, final boolean really) throws Exception {
@@ -839,127 +759,6 @@ public class GCodePrinter {
         gcode.queue(s);
     }
 
-    public boolean iAmPaused() {
-        return gcode.iAmPaused();
-    }
-
-    /**
-     * Get X, Y, Z and E (if supported) coordinates in an array
-     * 
-     * @return
-     * @throws Exception
-     */
-
-    public double[] getCoordinates() throws Exception {
-        String s = "M114";
-        if (Debug.d()) {
-            s += " ; get coordinates";
-        }
-        gcode.queue(s);
-        final double[] result = new double[4];
-        result[0] = gcode.getX();
-        result[1] = gcode.getY();
-        result[2] = gcode.getZ();
-        result[3] = gcode.getE();
-        return result;
-    }
-
-    /**
-     * Get the RepRap's SD card (if any) online
-     */
-    public void initialiseSD() {
-        String s = "M21";
-        if (Debug.d()) {
-            s += " ; Initialise SD card";
-        }
-        try {
-            gcode.queue(s);
-        } catch (final Exception e) {
-            Debug.e("GCodeRepRap.initialiseSD() has thrown:");
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Get the file list from the machine's SD card
-     * 
-     * @return
-     */
-
-    public String[] getSDFiles() {
-        initialiseSD();
-        String s = "M20";
-        if (Debug.d()) {
-            s += " ; get file list";
-        }
-        try {
-            gcode.queue(s);
-        } catch (final Exception e) {
-            Debug.e("GCodeRepRap.getSDFiles() has thrown:");
-            e.printStackTrace();
-        }
-        return gcode.getSDFileNames();
-    }
-
-    /**
-     * Print a file on the SD card
-     * 
-     * @param filename
-     */
-
-    public boolean printSDFile(final String filename) {
-        if (filename == null) {
-            return false;
-        }
-        if (filename.length() <= 0) {
-            return false;
-        }
-        String s = "M23 " + filename;
-        if (Debug.d()) {
-            s += " ; Send SD name to print";
-        }
-        try {
-            gcode.queue(s);
-        } catch (final Exception e) {
-            Debug.e("GCodeRepRap.printSDFile() has thrown:");
-            e.printStackTrace();
-            return false;
-        }
-        s = "M24";
-        if (Debug.d()) {
-            s += " ; Start print from SD";
-        }
-        try {
-            gcode.queue(s);
-        } catch (final Exception e) {
-            Debug.e("GCodeRepRap.printSDFile() has thrown:");
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Get X, Y, Z and E (if supported) coordinates in an array
-     * 
-     * @return
-     * @throws Exception
-     */
-
-    public double[] getZeroError() throws Exception {
-        String s = "M117";
-        if (Debug.d()) {
-            s += " ; get error coordinates";
-        }
-        gcode.queue(s);
-        final double[] result = new double[4];
-        result[0] = gcode.getX();
-        result[1] = gcode.getY();
-        result[2] = gcode.getZ();
-        result[3] = gcode.getE();
-        return result;
-    }
-
     public void homeToZeroX() throws Exception {
         String s = "G28 X0";
         if (Debug.d()) {
@@ -991,20 +790,11 @@ public class GCodePrinter {
         }
         final int extruderNow = extruder;
         for (int i = 0; i < extruders.length; i++) {
-            selectExtruder(i, really, false, null);
+            selectExtruder(i, really, false);
             extruders[i].zeroExtrudedLength(really);
         }
-        selectExtruder(extruderNow, really, false, null);
+        selectExtruder(extruderNow, really, false);
         XYEAtZero = true;
-    }
-
-    public void homeToZeroZ() throws Exception {
-        String s = "G28 Z0";
-        if (Debug.d()) {
-            s += " ; set z 0";
-        }
-        gcode.queue(s);
-        currentZ = 0.0;
     }
 
     public static double round(final double c, final double d) {
@@ -1013,16 +803,9 @@ public class GCodePrinter {
         return Math.round(c * power) / power;
     }
 
-    public void waitTillNotBusy() throws IOException {
-    }
-
-    //TODO: make this work normally.
-
     public void stopMotor() throws Exception {
         getExtruder().stopExtruding();
     }
-
-    //TODO: make this work normally.
 
     public void stopValve() throws Exception {
         getExtruder().setValve(false);
@@ -1038,7 +821,6 @@ public class GCodePrinter {
      * @param milliseconds
      * @throws Exception
      */
-
     public void machineWait(final double milliseconds, final boolean fastExtrude, final boolean really) throws Exception {
         if (milliseconds <= 0) {
             return;
@@ -1046,83 +828,19 @@ public class GCodePrinter {
         delay((long) milliseconds, fastExtrude, really);
     }
 
-    public void waitWhileBufferNotEmpty() {
-    }
-
-    public void slowBuffer() {
-        gcode.slowBufferThread();
-    }
-
-    public void speedBuffer() {
-        gcode.speedBufferThread();
-    }
-
-    /**
-     * Load a GCode file to be made.
-     * 
-     * @return the name of the file
-     */
-
-    public String loadGCodeFileForMaking() {
-        if (stlLoaded) {
-            org.reprap.Main.gui.deleteAllSTLs();
-        }
-        stlLoaded = false;
-        gcodeLoaded = true;
-        return gcode.loadGCodeFileForMaking();
-    }
-
-    /**
-     * Set an output file
-     * 
-     * @return
-     */
-
     public String setGCodeFileForOutput(final String fileRoot) {
-        return gcode.setGCodeFileForOutput(getTopDown(), fileRoot);
-    }
-
-    /**
-     * If a file replay is being done, do it and return true otherwise return
-     * false.
-     * 
-     * @return
-     */
-
-    public Thread filePlay() {
-        return gcode.filePlay();
-    }
-
-    /**
-     * Stop the printer building. This _shouldn't_ also stop it being controlled
-     * interactively.
-     */
-
-    public void pause() {
-        gcode.pause();
-    }
-
-    /**
-     * Resume building.
-     */
-
-    public void resume() {
-        gcode.resume();
+        return gcode.setGCodeFileForOutput(true, fileRoot);
     }
 
     /**
      * Tell the printer class it's Z position. Only to be used if you know what
      * you're doing...
-     * 
-     * @param z
      */
-
     public void setZ(final double z) {
         currentZ = round(z, 4);
     }
 
-    public void selectExtruder(final int materialIndex, final boolean really, final boolean update, final Point2D next)
-            throws Exception {
+    public void selectExtruder(final int materialIndex, final boolean really, final boolean update) throws Exception {
         final int oldPhysicalExtruder = getExtruder().getPhysicalExtruderNumber();
         final GCodeExtruder oldExtruder = getExtruder();
         final int newPhysicalExtruder = extruders[materialIndex].getPhysicalExtruderNumber();
@@ -1201,78 +919,17 @@ public class GCodePrinter {
     }
 
     /**
-     * Set the bed temperature. This value is given in centigrade, i.e. 100
-     * equals 100 centigrade.
-     * 
-     * @param temperature
-     *            The temperature of the extruder in centigrade
-     * @param wait
-     *            - wait till it gets there (or not).
-     * @throws Exception
-     * @throws Exception
-     */
-
-    public void setBedTemperature(final double temperature) throws Exception {
-        bedTemperatureTarget = temperature;
-        String s = "M140 S" + temperature;
-        if (Debug.d()) {
-            s += " ; set bed temperature and return";
-        }
-        gcode.queue(s);
-    }
-
-    /**
-     * Return the current temperature of the bed
-     * 
-     * @return
-     * @throws Exception
-     */
-
-    public double getBedTemperature() throws Exception {
-        String s = "M105";
-        if (Debug.d()) {
-            s += " ; get temperature";
-        }
-        gcode.queue(s);
-        return gcode.getBTemp();
-    }
-
-    /**
-     * Wait till the entire machine is ready to print. That is that such things
-     * as extruder and bed temperatures are at the values set and stable.
-     * 
-     * @throws Exception
-     */
-
-    public void stabilise() throws Exception {
-        String s = "M116";
-        if (Debug.d()) {
-            s += " ; wait for stability then return";
-        }
-        gcode.queue(s);
-    }
-
-    /**
      * Force the output stream to be some value - use with caution
-     * 
-     * @param fos
      */
-
     public void forceOutputFile(final PrintStream fos) {
         gcode.forceOutputFile(fos);
     }
 
     /**
      * Return the name if the gcode file
-     * 
-     * @return
      */
-
     public String getOutputFilename() {
         return gcode.getOutputFilename();
-    }
-
-    public void calibrate() {
     }
 
     public void setLayerRules(final LayerRules l) {
@@ -1281,8 +938,6 @@ public class GCodePrinter {
 
     public void refreshPreferences() {
         try {
-            xYReZeroInterval = -1;
-
             final double xNE = Preferences.loadGlobalDouble("WorkingX(mm)");
             final double yNE = Preferences.loadGlobalDouble("WorkingY(mm)");
             bedNorthEast = new Point2D(xNE, yNE);
@@ -1302,11 +957,8 @@ public class GCodePrinter {
             fastXYFeedrate = Math.min(maxFeedrateX, maxFeedrateY);
             setFastFeedrateZ(maxFeedrateZ);
 
-            idleZ = true;
-
             foundationLayers = Preferences.loadGlobalInt("FoundationLayers");
 
-            bedTemperatureTarget = Preferences.loadGlobalDouble("BedTemperature(C)");
             final int extruderCount = Preferences.loadGlobalInt("NumberOfExtruders");
             if (extruderCount < 1) {
                 throw new Exception("A Reprap printer must contain at least one extruder.");
@@ -1325,33 +977,10 @@ public class GCodePrinter {
         Debug.refreshPreferences();
     }
 
-    /**
-     * Deals with all the actions that need to be done between one layer and the
-     * next. THIS FUNCTION MUST NOT MAKE THE REPRAP MACHINE DO ANYTHING (LIKE
-     * MOVE).
-     * 
-     * @param lc
-     */
-
-    public void betweenLayers(final LayerRules lc) throws Exception {
-    }
-
-    /**
-     * Go to the purge point
-     */
-
-    public void moveToPurge(final double liftZ) {
-        if (liftZ > 0) {
-            singleMove(currentX, currentY, currentZ + liftZ, getFastFeedrateZ(), true);
-        }
-        final Point2D p = layerRules.getPurgeMiddle();
-        singleMove(p.x(), p.y(), currentZ, getExtruder().getFastXYFeedrate(), true);
-    }
-
-    public void selectExtruder(final Attributes att, final Point2D next) throws Exception {
+    public void selectExtruder(final Attributes att) throws Exception {
         for (int i = 0; i < extruders.length; i++) {
             if (att.getMaterial().equals(extruders[i].getMaterial())) {
-                selectExtruder(i, true, true, next);
+                selectExtruder(i, true, true);
                 return;
             }
         }
@@ -1368,28 +997,6 @@ public class GCodePrinter {
 
     public double getZ() {
         return currentZ;
-    }
-
-    public double getTotalDistanceMoved() {
-        return totalDistanceMoved;
-    }
-
-    public double getTotalDistanceExtruded() {
-        return totalDistanceExtruded;
-    }
-
-    /**
-     * @param x
-     * @param y
-     * @return segment length in millimeters
-     */
-    public double segmentLength(final double x, final double y) {
-        return Math.sqrt(x * x + y * y);
-    }
-
-    public double getTotalElapsedTime() {
-        final long now = System.currentTimeMillis();
-        return (now - startTime) / 1000.0;
     }
 
     public GCodeExtruder getExtruder(final String name) {
@@ -1414,42 +1021,36 @@ public class GCodePrinter {
      * before we try to move the extruder. But first take up the slack from any
      * previous reverse.
      */
+    public void printStartDelay(final boolean firstOneInLayer) throws Exception {
+        final double rDelay = getExtruder().getExtruderState().retraction();
 
-    public void printStartDelay(final boolean firstOneInLayer) {
-        try {
-            final double rDelay = getExtruder().getExtruderState().retraction();
+        if (rDelay > 0) {
+            getExtruder().setMotor(true);
+            machineWait(rDelay, true, true);
+            getExtruder().getExtruderState().setRetraction(0);
+        }
 
-            if (rDelay > 0) {
-                getExtruder().setMotor(true);
-                machineWait(rDelay, true, true);
-                getExtruder().getExtruderState().setRetraction(0);
-            }
+        // Extrude motor and valve delays (ms)
+        double eDelay, vDelay;
 
-            // Extrude motor and valve delays (ms)
-            double eDelay, vDelay;
+        if (firstOneInLayer) {
+            eDelay = getExtruder().getExtrusionDelayForLayer();
+            vDelay = getExtruder().getValveDelayForLayer();
+        } else {
+            eDelay = getExtruder().getExtrusionDelayForPolygon();
+            vDelay = getExtruder().getValveDelayForPolygon();
+        }
 
-            if (firstOneInLayer) {
-                eDelay = getExtruder().getExtrusionDelayForLayer();
-                vDelay = getExtruder().getValveDelayForLayer();
-            } else {
-                eDelay = getExtruder().getExtrusionDelayForPolygon();
-                vDelay = getExtruder().getValveDelayForPolygon();
-            }
-
-            if (eDelay >= vDelay) {
-                getExtruder().setMotor(true);
-                machineWait(eDelay - vDelay, false, true);
-                getExtruder().setValve(true);
-                machineWait(vDelay, false, true);
-            } else {
-                getExtruder().setValve(true);
-                machineWait(vDelay - eDelay, false, true);
-                getExtruder().setMotor(true);
-                machineWait(eDelay, false, true);
-            }
-            //getExtruder().setMotor(false);  // What's this for?  - AB
-        } catch (final Exception e) {
-            // If anything goes wrong, we'll let someone else catch it.
+        if (eDelay >= vDelay) {
+            getExtruder().setMotor(true);
+            machineWait(eDelay - vDelay, false, true);
+            getExtruder().setValve(true);
+            machineWait(vDelay, false, true);
+        } else {
+            getExtruder().setValve(true);
+            machineWait(vDelay - eDelay, false, true);
+            getExtruder().setMotor(true);
+            machineWait(eDelay, false, true);
         }
     }
 
@@ -1457,82 +1058,18 @@ public class GCodePrinter {
      * Extrude backwards for the given time in milliseconds, so that polymer is
      * stopped flowing at the end of a track. Return the amount reversed.
      */
-
-    public double printEndReverse() {
-        // Extrude motor and valve delays (ms)
+    public double printEndReverse() throws Exception {
         final double delay = getExtruder().getExtrusionReverseDelay();
 
         if (delay <= 0) {
             return 0;
         }
 
-        try {
-            getExtruder().setExtrusion(getExtruder().getExtruderSpeed(), true);
-            machineWait(delay, true, true);
-            getExtruder().stopExtruding();
-            getExtruder().getExtruderState().setRetraction(getExtruder().getExtruderState().retraction() + delay);
-        } catch (final Exception e) {
-        }
-        try {
-            return getExtruder().getExtruderState().retraction();
-        } catch (final Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-    /**
-     * Occasionally re-zero X and Y if that option is selected (i.e.
-     * xYReZeroInterval > 0)
-     * 
-     * @throws Exception
-     */
-    protected void maybeReZero() throws Exception {
-        if (xYReZeroInterval <= 0) {
-            return;
-        }
-        distanceFromLastZero += totalDistanceMoved - distanceAtLastCall;
-        distanceAtLastCall = totalDistanceMoved;
-        if (distanceFromLastZero < xYReZeroInterval) {
-            return;
-        }
-        distanceFromLastZero = 0;
-
-        final double oldFeedrate = getFeedrate();
-
-        getExtruder().setValve(false);
-        getExtruder().setMotor(false);
-        if (!excludeZ) {
-            final double liftedZ = currentZ + (getExtruder().getMinLiftedZ());
-            moveTo(currentX, currentY, liftedZ, getFastFeedrateZ(), false, false);
-        }
-
-        final double oldX = currentX;
-        final double oldY = currentY;
-        homeToZeroX();
-        homeToZeroY();
-        moveTo(oldX, oldY, currentZ, getExtruder().getFastXYFeedrate(), false, false);
-
-        if (!excludeZ) {
-            final double liftedZ = currentZ - (getExtruder().getMinLiftedZ());
-            moveTo(currentX, currentY, liftedZ, getFastFeedrateZ(), false, false);
-        }
-
-        moveTo(currentX, currentY, currentZ, oldFeedrate, false, false);
-        printStartDelay(false);
-    }
-
-    /**
-     * @param enable
-     * @throws Exception
-     */
-    public void setCooling(final boolean enable) throws Exception {
-        getExtruder().setCooler(enable, true);
-    }
-
-    public double getFeedrate() {
-        return currentFeedrate;
+        getExtruder().setExtrusion(getExtruder().getExtruderSpeed(), true);
+        machineWait(delay, true, true);
+        getExtruder().stopExtruding();
+        getExtruder().getExtruderState().setRetraction(getExtruder().getExtruderState().retraction() + delay);
+        return getExtruder().getExtruderState().retraction();
     }
 
     private void setFastFeedrateZ(final double feedrate) {
@@ -1543,18 +1080,7 @@ public class GCodePrinter {
         return fastFeedrateZ;
     }
 
-    public void setZManual() throws IOException {
-        setZManual(0.0);
-    }
-
-    public void setZManual(final double zeroPoint) throws IOException {
-    }
-
-    public int getExtruderNumber() {
-        return extruder;
-    }
-
-    public double getMaxFeedrateZ() {
+    private double getMaxFeedrateZ() {
         return maxFeedrateZ;
     }
 
@@ -1586,20 +1112,6 @@ public class GCodePrinter {
 
     /**
      * Set the source checkbox used to determine if there should be a pause
-     * between segments.
-     * 
-     * @param segmentPause
-     *            The source checkbox used to determine if there should be a
-     *            pause. This is a checkbox rather than a boolean so it can be
-     *            changed on the fly.
-     */
-
-    public void setSegmentPause(final JCheckBoxMenuItem segmentPause) {
-        segmentPauseCheckbox = segmentPause;
-    }
-
-    /**
-     * Set the source checkbox used to determine if there should be a pause
      * between layers.
      * 
      * @param layerPause
@@ -1607,12 +1119,8 @@ public class GCodePrinter {
      *            pause. This is a checkbox rather than a boolean so it can be
      *            changed on the fly.
      */
-
     public void setLayerPause(final JCheckBoxMenuItem layerPause) {
         layerPauseCheckbox = layerPause;
-    }
-
-    public void setMessage(final String message) {
     }
 
     public boolean isCancelled() {
@@ -1627,63 +1135,8 @@ public class GCodePrinter {
     }
 
     /**
-     * Load an STL file to be made.
-     * 
-     * @return the name of the file
-     */
-
-    public String addSTLFileForMaking() {
-        gcodeLoaded = false;
-        stlLoaded = true;
-        final File f = org.reprap.Main.gui.onOpen("STL triangulation file", new String[] { "stl" }, "");
-        if (f == null) {
-            return "";
-        } else {
-            return f.getName();
-        }
-    }
-
-    /**
-     * Load an RFO file to be made.
-     * 
-     * @return the name of the file
-     */
-
-    public String loadRFOFileForMaking() {
-        gcodeLoaded = false;
-        stlLoaded = true;
-        final File f = org.reprap.Main.gui.onOpen("RFO multiple-object file", new String[] { "rfo" }, "");
-        if (f == null) {
-            return "";
-        } else {
-            return f.getName();
-        }
-    }
-
-    /**
-     * Load an RFO file to be made.
-     * 
-     * @return the name of the file
-     */
-
-    public String saveRFOFile(final String filerRoot) {
-        return org.reprap.Main.gui.saveRFO(filerRoot);
-    }
-
-    /**
-     * @return the flag that decided which direction to compute the layers
-     */
-
-    public boolean getTopDown() {
-        return true;
-    }
-
-    /**
      * Set all the extruders' separating mode
-     * 
-     * @param s
      */
-
     public void setSeparating(final boolean s) {
         for (final GCodeExtruder extruder2 : extruders) {
             extruder2.setSeparating(s);
@@ -1692,18 +1145,14 @@ public class GCodePrinter {
 
     /**
      * Get the feedrate currently being used
-     * 
-     * @return
      */
-
     public double getCurrentFeedrate() {
         return currentFeedrate;
     }
 
     /**
-     * @return slow XY movement feedrate in mm/minute
+     * @return fast XY movement feedrate in mm/minute
      */
-
     public double getFastXYFeedrate() {
         return fastXYFeedrate;
     }
@@ -1711,7 +1160,6 @@ public class GCodePrinter {
     /**
      * @return slow XY movement feedrate in mm/minute
      */
-
     public double getSlowXYFeedrate() {
         return slowXYFeedrate;
     }
@@ -1719,63 +1167,16 @@ public class GCodePrinter {
     /**
      * @return the fastest the machine can accelerate
      */
-
     public double getMaxXYAcceleration() {
         return maxXYAcceleration;
     }
 
-    /**
-     * @return slow XY movement feedrate in mm/minute
-     */
-
-    public double getSlowZFeedrate() {
+    private double getSlowZFeedrate() {
         return slowZFeedrate;
     }
 
-    /**
-     * @return the fastest the machine can accelerate
-     */
-
-    public double getMaxZAcceleration() {
+    private double getMaxZAcceleration() {
         return maxZAcceleration;
-    }
-
-    /**
-     * Set the position at the end of the topmost layer
-     * 
-     * @param x
-     * @param y
-     * @param z
-     */
-
-    public void setTop(final double x, final double y, final double z) {
-        topX = x;
-        topY = y;
-        topZ = z;
-    }
-
-    /**
-     * The location of the dump for purging extruders
-     * 
-     * @return
-     */
-
-    public double getDumpX() {
-        return layerRules.getPurgeMiddle().x();
-    }
-
-    public double getDumpY() {
-        return layerRules.getPurgeMiddle().y();
-    }
-
-    /**
-     * The temperature we want the bed to be at
-     * 
-     * @return
-     */
-
-    public double getBedTemperatureTarget() {
-        return bedTemperatureTarget;
     }
 
     public void forceNextExtruder() {
@@ -1784,28 +1185,14 @@ public class GCodePrinter {
 
     /**
      * Return the current layer rules
-     * 
-     * @return
      */
-
     public LayerRules getLayerRules() {
         return layerRules;
     }
 
     /**
-     * Return the diagnostic graphics window (or null if there isn't one)
-     * 
-     * @return
-     */
-
-    public RrGraphics getGraphics() {
-        return org.reprap.Main.gui.getGraphics();
-    }
-
-    /**
      * The XY point furthest from the origin
      */
-
     public Point2D getBedNorthEast() {
         return bedNorthEast;
     }

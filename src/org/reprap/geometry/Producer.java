@@ -18,30 +18,15 @@ import org.reprap.utilities.Debug;
 import org.reprap.utilities.RrGraphics;
 
 public class Producer {
-
-    private boolean paused = false;
-
-    //private LayerProducer layer = null;
-
-    protected LayerRules layerRules = null;
-
+    private LayerRules layerRules = null;
     private RrGraphics simulationPlot = null;
 
     /**
      * The list of objects to be built
      */
-    protected RepRapBuild bld;
+    private final RepRapBuild bld;
+    private final AllSTLsToBuild allSTLs;
 
-    //	protected boolean interLayerCooling;
-
-    //protected STLSlice stlc;
-    protected AllSTLsToBuild allSTLs;
-
-    /**
-     * @param preview
-     * @param builder
-     * @throws Exception
-     */
     public Producer(final GCodePrinter pr, final RepRapBuild builder) throws Exception {
         bld = builder;
 
@@ -59,19 +44,6 @@ public class Producer {
 
     /**
      * Set the source checkbox used to determine if there should be a pause
-     * between segments.
-     * 
-     * @param segmentPause
-     *            The source checkbox used to determine if there should be a
-     *            pause. This is a checkbox rather than a boolean so it can be
-     *            changed on the fly.
-     */
-    public void setSegmentPause(final JCheckBoxMenuItem segmentPause) {
-        layerRules.getPrinter().setSegmentPause(segmentPause);
-    }
-
-    /**
-     * Set the source checkbox used to determine if there should be a pause
      * between layers.
      * 
      * @param layerPause
@@ -83,36 +55,6 @@ public class Producer {
         layerRules.getPrinter().setLayerPause(layerPause);
     }
 
-    public void setCancelled(final boolean c) {
-        layerRules.getPrinter().setCancelled(c);
-    }
-
-    public void pause() {
-        paused = true;
-        //		if(layer != null)
-        //			layer.pause();
-    }
-
-    public void resume() {
-        paused = false;
-        //		if(layer != null)
-        //			layer.resume();
-    }
-
-    /**
-     * NB - this does not call wait - this is a purely interactive function and
-     * does not control the machine
-     * 
-     */
-    private void waitWhilePaused() {
-        while (paused) {
-            try {
-                Thread.sleep(200);
-            } catch (final Exception ex) {
-            }
-        }
-    }
-
     public int getLayers() {
         return layerRules.getMachineLayerMax();
     }
@@ -122,24 +64,13 @@ public class Producer {
     }
 
     public void produce() throws Exception {
-        if (Preferences.Subtractive()) {
-            produceSubtractive();
-        } else {
-            if (layerRules.getTopDown()) {
-                produceAdditiveTopDown();
-            } else {
-                Debug.e("Producer.produce(): bottom-up builds no longer supported.");
-                //produceAdditiveGroundUp(gp);
-            }
-        }
+        produceAdditiveTopDown();
     }
 
     private void fillFoundationRectangle(final GCodePrinter reprap, final Rectangle gp) throws Exception {
         final PolygonList shield = new PolygonList();
         final GCodeExtruder e = reprap.getExtruder();
         final Attributes fa = new Attributes(e.getMaterial(), null, null, e.getAppearance());
-        //		if(Preferences.loadGlobalBool("Shield")) // Should the foundation have a shield, or not?
-        //			shield.add(allSTLs.shieldPolygon(fa));
         final CSG2D rect = CSG2D.RrCSGFromBox(gp);
         final BooleanGrid bg = new BooleanGrid(rect, gp.scale(1.1), fa);
         final PolygonList h[] = { shield,
@@ -147,35 +78,7 @@ public class Producer {
         final LayerProducer lp = new LayerProducer(h, layerRules, simulationPlot);
         lp.plot();
         reprap.getExtruder().stopExtruding();
-        //reprap.setFeedrate(reprap.getFastFeedrateXY());
     }
-
-    //	private void layFoundationGroundUp(RrRectangle gp) throws Exception
-    //	{
-    //		if(layerRules.getFoundationLayers() <= 0)
-    //			return;
-    //		
-    //		Printer reprap = layerRules.getPrinter();
-    //
-    //		while(layerRules.getMachineLayer() < layerRules.getFoundationLayers()) 
-    //		{
-    //			
-    //			if (reprap.isCancelled())
-    //				break;
-    //			waitWhilePaused();
-    //			
-    //			Debug.d("Commencing foundation layer at " + layerRules.getMachineZ());
-    //
-    //			reprap.startingLayer(layerRules);
-    //			// Change Z height
-    //			//reprap.singleMove(reprap.getX(), reprap.getY(), layerRules.getMachineZ(), reprap.getFastFeedrateZ());
-    //			fillFoundationRectangle(reprap, gp);
-    //			reprap.finishedLayer(layerRules);
-    //			reprap.betweenLayers(layerRules);
-    //			layerRules.stepMachine(reprap.getExtruder());
-    //		}
-    //		layerRules.setLayingSupport(false);
-    //	}
 
     private void layFoundationTopDown(final Rectangle gp) throws Exception {
         if (layerRules.getFoundationLayers() <= 0) {
@@ -184,40 +87,20 @@ public class Producer {
 
         layerRules.setLayingSupport(true);
         layerRules.getPrinter().setSeparating(false);
-
         final GCodePrinter reprap = layerRules.getPrinter();
-
         while (layerRules.getMachineLayer() >= 0) {
-
-            if (reprap.isCancelled()) {
-                break;
-            }
-            waitWhilePaused();
-
             Debug.d("Commencing foundation layer at " + layerRules.getMachineZ());
-
             reprap.startingLayer(layerRules);
-            // Change Z height
-            //reprap.singleMove(reprap.getX(), reprap.getY(), layerRules.getMachineZ(), reprap.getFastFeedrateZ());
             fillFoundationRectangle(reprap, gp);
             reprap.finishedLayer(layerRules);
-            reprap.betweenLayers(layerRules);
             layerRules.stepMachine();
         }
     }
 
-    /**
-     * @throws Exception
-     */
     private void produceAdditiveTopDown() throws Exception {
         bld.mouseToWorld();
-
         final GCodePrinter reprap = layerRules.getPrinter();
-
         layerRules.setLayingSupport(false);
-
-        //BooleanGridList slice, previousSlice;
-
         int lastExtruder = -1;
         int totalPhysicalExtruders = 0;
         for (int extruder = 0; extruder < reprap.getExtruders().length; extruder++) {
@@ -237,8 +120,6 @@ public class Producer {
         final PolygonList tempBorderPolygons[] = new PolygonList[totalPhysicalExtruders];
         final PolygonList tempFillPolygons[] = new PolygonList[totalPhysicalExtruders];
 
-        boolean firstTimeRound = true;
-
         while (layerRules.getModelLayer() > 0) {
             if (layerRules.getModelLayer() == 0) {
                 reprap.setSeparating(true);
@@ -246,30 +127,18 @@ public class Producer {
                 reprap.setSeparating(false);
             }
 
-            if (reprap.isCancelled()) {
-                break;
-            }
-
-            waitWhilePaused();
-
             Debug.d("Commencing model layer " + layerRules.getModelLayer() + " at " + layerRules.getMachineZ());
-
             reprap.startingLayer(layerRules);
-
-            reprap.waitWhileBufferNotEmpty();
-            reprap.slowBuffer();
 
             for (int physicalExtruder = 0; physicalExtruder < allPolygons.length; physicalExtruder++) {
                 allPolygons[physicalExtruder] = new PolygonList();
             }
 
-            //boolean shield = true;
             Point2D startNearHere = new Point2D(0, 0);
             for (int stl = 0; stl < allSTLs.size(); stl++) {
                 PolygonList fills = allSTLs.computeInfill(stl);
-                final PolygonList borders = allSTLs.computeOutlines(stl, fills); //, shield);
+                final PolygonList borders = allSTLs.computeOutlines(stl, fills);
                 fills = fills.cullShorts();
-                //shield = false;
                 final PolygonList support = allSTLs.computeSupport(stl);
 
                 for (int physicalExtruder = 0; physicalExtruder < allPolygons.length; physicalExtruder++) {
@@ -325,64 +194,10 @@ public class Producer {
 
             final LayerProducer lp = new LayerProducer(allPolygons, layerRules, simulationPlot);
             lp.plot();
-
             reprap.finishedLayer(layerRules);
-            reprap.betweenLayers(layerRules);
-
-            if (firstTimeRound) {
-                reprap.setTop(reprap.getX(), reprap.getY(), reprap.getZ());
-                firstTimeRound = false;
-            }
-
-            allSTLs.destroyLayer();
-
             layerRules.step();
-
         }
-
         layFoundationTopDown(layerRules.getBox());
-
         layerRules.reverseLayers();
     }
-
-    private void produceSubtractive() throws Exception {
-        Debug.e("Need to implement the Producer.produceSubtractive() function... :-)");
-    }
-
-    /**
-     * The total distance moved is the total distance extruded plus plus
-     * additional movements of the extruder when no materials was deposited
-     * 
-     * @return total distance the extruder has moved
-     */
-    public double getTotalDistanceMoved() {
-        return layerRules.getPrinter().getTotalDistanceMoved();
-    }
-
-    /**
-     * @return total distance that has been extruded in millimeters
-     */
-    public double getTotalDistanceExtruded() {
-        return layerRules.getPrinter().getTotalDistanceExtruded();
-    }
-
-    /**
-     * TODO: This figure needs to get added up as we go along to allow for
-     * different extruders
-     * 
-     * @return total volume that has been extruded
-     */
-    public double getTotalVolumeExtruded() {
-        return layerRules.getPrinter().getTotalDistanceExtruded() * layerRules.getPrinter().getExtruder().getExtrusionHeight()
-                * layerRules.getPrinter().getExtruder().getExtrusionSize();
-    }
-
-    /**
-     * @return total elapsed time in seconds between start and end of building
-     *         the 3D object
-     */
-    public double getTotalElapsedTime() {
-        return layerRules.getPrinter().getTotalElapsedTime();
-    }
-
 }

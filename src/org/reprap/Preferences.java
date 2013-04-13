@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -32,8 +33,6 @@ import org.reprap.utilities.RepRapUtils;
  * space.
  */
 public class Preferences {
-
-    private static String propsFile = "reprap.properties";
     private static final String propsFolder = ".reprap";
     private static final String MachineFile = "Machine";
     private static final String propsDirDist = "reprap-configurations";
@@ -41,73 +40,35 @@ public class Preferences {
     private static final String epilogueFile = "epilogue.gcode";
     private static final String baseFile = "base.stl";
     private static final char activeFlag = '*';
+    private static final int grid = 100;
+    private static final double gridRes = 1.0 / grid;
+    private static final double tiny = 1.0e-12; // A small number
+    private static final double machineResolution = 0.05; // RepRap step size in mm
+    private static final double inToMM = 25.4;
+    private static final Color3f black = new Color3f(0, 0, 0);
 
+    private static String propsFile = "reprap.properties";
     private static Preferences globalPrefs = null;
     private static String[] allMachines = null;
+    private static boolean displaySimulation = false;
 
-    //Properties fallbackPreferences;
-    Properties mainPreferences;
-
-    /*
-     * This section deals with internal (i.e. not RepRap machine, but this code or
-     * physics) precisions and accuracies
-     */
-
-    // standard file names for the top and tail for G Code files
-    //public static final String prologue = "prologue.gcode";
-    //public static final String epilogue = "epilogue.gcode";
-
-    private static final int grid = 100; // Click outline polygons to a...
-
-    public static int grid() {
-        return grid;
-    }
-
-    private static final double gridRes = 1.0 / grid; // ...10 micron grid
+    private final Properties mainPreferences = new Properties();
 
     public static double gridRes() {
         return gridRes;
     }
 
-    private static final double lessGridSquare = gridRes * gridRes * 0.01; // Small squared size of a gridsquare
-
-    public static double lessGridSquare() {
-        return lessGridSquare;
-    }
-
-    private static final double tiny = 1.0e-12; // A small number
-
     public static double tiny() {
         return tiny;
     }
-
-    private static final double swell = 1.01; // Quad tree swell factor
-
-    public static double swell() {
-        return swell;
-    }
-
-    private static final double machineResolution = 0.05; // RepRap step size in mm
 
     public static double machineResolution() {
         return machineResolution;
     }
 
-    private static final double absoluteZero = -273;
-
-    public static double absoluteZero() {
-        return absoluteZero;
-    }
-
-    private static final double inToMM = 25.4;
-
     public static double inchesToMillimetres() {
         return inToMM;
     }
-
-    private static final Color3f black = new Color3f(0, 0, 0);
-
-    private static boolean displaySimulation = false;
 
     public static boolean simulate() {
         return displaySimulation;
@@ -117,37 +78,11 @@ public class Preferences {
         displaySimulation = s;
     }
 
-    private static boolean subtractive = false;
-
-    public static boolean Subtractive() {
-        return subtractive;
-    }
-
-    public static void setSubtractive(final boolean s) {
-        subtractive = s;
-    }
-
-    private static boolean gCodeUseSerial = false;
-
-    public static boolean GCodeUseSerial() {
-        return gCodeUseSerial;
-    }
-
-    public static void setGCodeUseSerial(final boolean s) {
-        gCodeUseSerial = s;
-    }
-
-    // Main preferences constructor
-
     public Preferences() throws IOException {
-        // Construct location of user's properties file
         final File mainDir = new File(getUsersRootDir());
-        // If it's not there copy the system one
         if (!mainDir.exists()) {
             copySystemConfigurations(mainDir);
         }
-
-        mainPreferences = new Properties();
 
         // Construct URL of user properties file
         final String path = getPropertiesPath();
@@ -155,37 +90,29 @@ public class Preferences {
         final URL mainUrl = mainFile.toURI().toURL();
 
         if (mainFile.exists()) {
-            mainPreferences.load(mainUrl.openStream());
+            final InputStream preferencesStream = mainUrl.openStream();
+            try {
+                mainPreferences.load(preferencesStream);
+            } finally {
+                preferencesStream.close();
+            }
             comparePreferences();
         } else {
             Debug.e("Can't find your RepRap configurations: " + getPropertiesPath());
         }
-
     }
 
-    /**
-     * Copy the standard RepRap configurations to the user's space
-     * 
-     * @param usersDir
-     */
     private static void copySystemConfigurations(final File usersDir) {
-        if (usersDir.exists()) {
-            Debug.e("Attempt to copy system RepRap configurations to existing directory: " + usersDir.toString());
-            return;
-        }
         final String sysConfig = getSystemConfigurationDir();
         try {
             RepRapUtils.copyTree(new File(sysConfig), usersDir);
         } catch (final Exception e) {
             Debug.e("Error copying RepRap configurations to user's directory: " + usersDir.toString());
         }
-
     }
 
     /**
      * Where the user stores all their configuration files
-     * 
-     * @return
      */
     public static String getUsersRootDir() {
         return System.getProperty("user.home") + File.separatorChar + propsFolder + File.separatorChar;
@@ -194,8 +121,6 @@ public class Preferences {
     /**
      * The master file that lists the user's machines and flags the active one
      * with a * character at the start of its name.
-     * 
-     * @return
      */
     public static String getMachineFilePath() {
         return getUsersRootDir() + MachineFile;
@@ -203,8 +128,6 @@ public class Preferences {
 
     /**
      * List of all the available RepRap machine types
-     * 
-     * @return
      */
     private static String[] getAllMachines() {
         final File mf = new File(getMachineFilePath());
@@ -231,8 +154,6 @@ public class Preferences {
     /**
      * The name of the user's active machine configuration (without the leading
      * *)
-     * 
-     * @return
      */
     public static String getActiveMachineName() {
         if (allMachines == null) {
@@ -251,8 +172,6 @@ public class Preferences {
     /**
      * The directory containing all the user's configuration files for their
      * active machine
-     * 
-     * @return
      */
     public static String getActiveMachineDir() {
         return getUsersRootDir() + getActiveMachineName() + File.separatorChar;
@@ -260,8 +179,6 @@ public class Preferences {
 
     /**
      * Set the active machine to the one named
-     * 
-     * @param newActiveMachine
      */
     public static void setActiveMachine(final String newActiveMachine) {
         if (allMachines == null) {
@@ -288,8 +205,6 @@ public class Preferences {
 
     /**
      * Where the user's properties file is
-     * 
-     * @return
      */
     public static String getPropertiesPath() {
         return getActiveMachineDir() + propsFile;
@@ -297,8 +212,6 @@ public class Preferences {
 
     /**
      * Where are the system-wide master copies?
-     * 
-     * @return
      */
     public static String getSystemConfigurationDir() {
         final URL sysConfig = ClassLoader.getSystemResource(propsDirDist);
@@ -311,8 +224,6 @@ public class Preferences {
 
     /**
      * Where the system version of the user's properties file is
-     * 
-     * @return
      */
     public static String getSystemPropertiesDir() {
         return getSystemConfigurationDir() + getActiveMachineName() + File.separator;
@@ -320,8 +231,6 @@ public class Preferences {
 
     /**
      * Where the user's build-base STL file is
-     * 
-     * @return
      */
     public static String getBasePath() {
         return getActiveMachineDir() + baseFile;
@@ -329,8 +238,6 @@ public class Preferences {
 
     /**
      * Where the user's GCode prologue file is
-     * 
-     * @return
      */
     public static String getProloguePath() {
         return getActiveMachineDir() + prologueFile;
@@ -338,8 +245,6 @@ public class Preferences {
 
     /**
      * Where the user's GCode epilogue file is
-     * 
-     * @return
      */
     public static String getEpiloguePath() {
         return getActiveMachineDir() + epilogueFile;
@@ -523,18 +428,8 @@ public class Preferences {
         return propsFile;
     }
 
-    /**
-     * Set a new value
-     * 
-     * @param name
-     * @param value
-     * @throws IOException
-     */
     public static void setGlobalString(final String name, final String value) throws IOException {
         initIfNeeded();
-
-        //Debug.e("Setting global " + name + ":" + value);
-
         globalPrefs.setString(name, value);
     }
 
@@ -543,20 +438,12 @@ public class Preferences {
         globalPrefs.setString(name, value ? "true" : "false");
     }
 
-    /**
-     * @param name
-     * @param value
-     */
     private void setString(final String name, final String value) {
-
-        //Debug.e("Setting " + name + ":" + value);
-
         mainPreferences.setProperty(name, value);
     }
 
     /**
      * @return an array of all the names of all the materials in extruders
-     * @throws IOException
      */
     public static String[] allMaterials() throws IOException {
         final int extruderCount = globalPrefs.loadInt("NumberOfExtruders");
@@ -622,5 +509,4 @@ public class Preferences {
         unselectedApp.setMaterial(new Material(unselectedColour, black, unselectedColour, black, 0f));
         return unselectedApp;
     }
-
 }

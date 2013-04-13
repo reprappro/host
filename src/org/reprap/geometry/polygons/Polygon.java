@@ -118,11 +118,6 @@ public class Polygon {
     private Rectangle box = null;
 
     /**
-     * Flag to prevent cyclic graphs going round forever
-     */
-    private final boolean beingDestroyed = false;
-
-    /**
      * The index of the last point to draw to, if there are more that should
      * just be moved over
      */
@@ -183,7 +178,6 @@ public class Polygon {
      * @return i-th point object of polygon
      */
     public Point2D point(final int i) {
-        //return new Rr2Point(points.get(i));
         return points.get(i);
     }
 
@@ -199,7 +193,6 @@ public class Polygon {
     /**
      * Get the speed
      * 
-     * @param i
      * @return i-th point object of polygon
      */
     public double speed(final int i) {
@@ -210,11 +203,6 @@ public class Polygon {
         return speeds.get(i).doubleValue();
     }
 
-    /**
-     * As a string
-     * 
-     * @return string representation of polygon
-     */
     @Override
     public String toString() {
         String result = " Polygon -  vertices: ";
@@ -235,8 +223,6 @@ public class Polygon {
 
     /**
      * Do we loop back on ourself?
-     * 
-     * @return
      */
     public boolean isClosed() {
         return closed;
@@ -253,19 +239,11 @@ public class Polygon {
                 extrudeEndDistance2 = 0;
                 return;
             }
-            final double d2 = 0;
-            System.out.println("Updating e...");
         }
-        if (valveEnd >= 0) {
-            System.out.println("Updating v...");
-        }
-        // if speeds are set, interpolate
     }
 
     /**
      * What's the last point to plot to?
-     * 
-     * @return
      */
     public int extrudeEnd() {
         if (extrudeEnd < 0) {
@@ -277,8 +255,6 @@ public class Polygon {
 
     /**
      * What's the last point at which the valve should be open to?
-     * 
-     * @return
      */
     public int valveEnd() {
         if (valveEnd < 0) {
@@ -289,8 +265,6 @@ public class Polygon {
     }
 
     /**
-     * Length
-     * 
      * @return number of points in polygon
      */
     public int size() {
@@ -299,8 +273,6 @@ public class Polygon {
 
     /**
      * Deep copy - NB: Attributes _not_ deep copied, but PolygonAttribute are.
-     * 
-     * @param p
      */
     public Polygon(final Polygon p) {
         this(p.att, p.closed);
@@ -327,8 +299,6 @@ public class Polygon {
 
     /**
      * Set the polygon attribute
-     * 
-     * @return
      */
     public void setPolygonAttribute(final PolygonAttributes p) {
         pa = p;
@@ -336,9 +306,6 @@ public class Polygon {
 
     /**
      * Add a new point to the polygon
-     * 
-     * @param p
-     * @param f
      */
     public void add(final Point2D p) {
         if (speeds != null) {
@@ -351,9 +318,6 @@ public class Polygon {
 
     /**
      * Insert a new point into the polygon
-     * 
-     * @param i
-     * @param p
      */
     public void add(final int i, final Point2D p) {
         if (speeds != null) {
@@ -380,9 +344,6 @@ public class Polygon {
 
     /**
      * Set a point to be p
-     * 
-     * @param i
-     * @param p
      */
     public void set(final int i, final Point2D p) {
         if (speeds != null) {
@@ -395,10 +356,6 @@ public class Polygon {
 
     /**
      * Insert a new point and speed into the polygon
-     * 
-     * @param i
-     * @param p
-     * @param s
      */
     public void add(final int i, final Point2D p, final double s) {
         if (speeds == null) {
@@ -426,10 +383,6 @@ public class Polygon {
 
     /**
      * Set a new point and speed
-     * 
-     * @param i
-     * @param p
-     * @param s
      */
     public void set(final int i, final Point2D p, final double s) {
         if (speeds == null) {
@@ -443,9 +396,6 @@ public class Polygon {
 
     /**
      * Add a speed to the polygon
-     * 
-     * @param p
-     * @param f
      */
     public void setSpeed(final int i, final double s) {
         // Lazy initialization
@@ -459,9 +409,7 @@ public class Polygon {
     }
 
     /**
-     * Eet the last point to plot to
-     * 
-     * @param d
+     * Set the last point to plot to
      */
     public void setExtrudeEnd(final int d, final double d2) {
         extrudeEnd = d;
@@ -470,17 +418,12 @@ public class Polygon {
 
     /**
      * Eet the last point to valve-open to
-     * 
-     * @param d
      */
     public void setValveEnd(final int d, final double d2) {
         valveEnd = d;
         valveEndDistance2 = d2;
     }
 
-    /**
-     * @return the attributes
-     */
     public Attributes getAttributes() {
         return att;
     }
@@ -494,8 +437,6 @@ public class Polygon {
 
     /**
      * Sum of the edge lengths
-     * 
-     * @return
      */
     public double getLength() {
         double len = 0;
@@ -511,8 +452,6 @@ public class Polygon {
     /**
      * Put a new polygon on the end (N.B. Attributes of the new polygon are
      * ignored)
-     * 
-     * @param p
      */
     public void add(final Polygon p) {
         if (p.size() == 0) {
@@ -546,9 +485,6 @@ public class Polygon {
      * Put a new polygon in the middle (at vertex k, which will be at the end of
      * the inserted polygon afterwards). (N.B. Attributes of the new polygon are
      * ignored)
-     * 
-     * @param k
-     * @param p
      */
     public void add(int k, final Polygon p) {
         if (p.size() == 0) {
@@ -572,8 +508,6 @@ public class Polygon {
 
     /**
      * Remove a point. N.B. This does not amend the enclosing box
-     * 
-     * @param i
      */
     public void remove(final int i) {
         points.remove(i);
@@ -595,8 +529,6 @@ public class Polygon {
 
     /**
      * Output the polygon in SVG XML format This ignores any speeds
-     * 
-     * @param opf
      */
     public String svg() {
         String result = "<polygon points=\"";
@@ -679,9 +611,6 @@ public class Polygon {
 
     /**
      * Find the nearest vertex on a polygon to a given point
-     * 
-     * @param p
-     * @return
      */
     public int nearestVertex(final Point2D p) {
         double d = Double.POSITIVE_INFINITY;
@@ -705,10 +634,6 @@ public class Polygon {
      * The reordering is only done if the distance^2 is less than linkUp. If no
      * reordering and merging are done false is returned, otherwise true is
      * returned.
-     * 
-     * @param p
-     * @param linkUp
-     * @return
      */
     public boolean nearestVertexReorderMerge(final Polygon p, final double linkUp) {
         if (!p.isClosed()) {
@@ -741,9 +666,6 @@ public class Polygon {
     /**
      * Find the index of the polygon point that has the maximal parametric
      * projection onto a line.
-     * 
-     * @param ln
-     * @return
      */
     public int maximalVertex(final Line ln) {
         double d = Double.NEGATIVE_INFINITY;
@@ -764,9 +686,6 @@ public class Polygon {
     /**
      * Find the index of the polygon point that is at the start of the polygon's
      * longest edge.
-     * 
-     * @param ln
-     * @return
      */
     public int longestEdgeStart() {
         double d = Double.NEGATIVE_INFINITY;
@@ -809,8 +728,6 @@ public class Polygon {
 
     /**
      * Return the mean edge length
-     * 
-     * @return
      */
     public double meanEdge() {
         double result = 0;
@@ -965,7 +882,6 @@ public class Polygon {
      * Search back from the end of the polygon to find the vertex nearest to d
      * back from the end
      * 
-     * @param d
      * @return the index of the nearest vertex
      */
     public int findBackPoint(final double d) {
@@ -998,8 +914,6 @@ public class Polygon {
     }
 
     /**
-     * @param v1
-     * @param d2
      * @return the vertex at which the polygon deviates from a (nearly) straight
      *         line from v1
      */
@@ -1024,7 +938,6 @@ public class Polygon {
      * Simplify a polygon by deleting points from it that are closer than d to
      * lines joining other points NB - this ignores speeds
      * 
-     * @param d
      * @return simplified polygon object
      */
     public Polygon simplify(final double d) {
@@ -1068,53 +981,7 @@ public class Polygon {
             }
             r.add(point(v2 % leng));
         }
-        // The compiler is very clever to spot that no return
-        // is needed here...
     }
-
-    /**
-     * Remove solitary edges that are shorter than tiny from the polygon if they
-     * are preceeded and followed by gap material.
-     * 
-     * @param tiny
-     * @return filtered polygon object
-     */
-
-    //	public RrPolygon filterShort(double tiny)
-    //	{
-    //		RrPolygon r = new RrPolygon(att);
-    //		int oldEdgeFlag = flag(size()-1);
-    //		int i, ii;
-    //		
-    //		for(i = 1; i <= size(); i++)
-    //		{
-    //			ii = i%size();
-    //			if(oldEdgeFlag == LayerProducer.gapMaterial() && flag(ii) == LayerProducer.gapMaterial())
-    //			{
-    //				double d = Rr2Point.sub(point(ii), point(i - 1)).mod();
-    //				if(d > tiny)
-    //					r.add(point(i - 1), flag(i - 1));
-    //				//else
-    //					//System.out.println("Tiny edge removed.");
-    //			} else
-    //				r.add(point(i - 1), flag(i - 1));
-    //			oldEdgeFlag = flag(i - 1);
-    //		}
-    //		
-    //		// Anything left?
-    //		
-    //		for(i = 0; i < r.size(); i++)
-    //		{
-    //			if(r.flag(i) != LayerProducer.gapMaterial())
-    //				return r;
-    //		}
-    //		
-    //		// Nothing left
-    //		
-    //		return new RrPolygon(att);
-    //	}
-
-    // ****************************************************************************
 
     /**
      * Offset (some of) the points in the polygon to allow for the fact that
@@ -1130,20 +997,15 @@ public class Polygon {
         final GCodeExtruder e = att.getExtruder();
 
         // Multiply the geometrically correct result by factor
-
         final double factor = e.getArcCompensationFactor();
         if (factor < Preferences.tiny()) {
             return this;
         }
 
         // The points making the arc must be closer than this together
-
         final double shortSides = e.getArcShortSides();
-
         final double thickness = e.getExtrusionSize();
-
         final Polygon result = new Polygon(att, closed);
-
         Point2D previous = point(size() - 1);
         Point2D current = point(0);
         Point2D next;
@@ -1186,23 +1048,18 @@ public class Polygon {
         return result;
     }
 
-    // *****************************************************************************************************
-    //
-    // Speed and acceleration calculations
-
     private Interval accRange(final double startV, final double s, final double acc) {
         final double vMax = Math.sqrt(2 * acc * s + startV * startV);
         double vMin = -2 * acc * s + startV * startV;
         if (vMin <= 0) {
-            vMin = 0; //-Math.sqrt(-vMin);
+            vMin = 0;
         } else {
             vMin = Math.sqrt(vMin);
         }
         return new Interval(vMin, vMax);
     }
 
-    private void backTrack(int j, double v, final double vAccMin, final double minSpeed, final double acceleration,
-            final boolean fixup[]) {
+    private void backTrack(int j, double v, final double acceleration, final boolean fixup[]) {
         Point2D a, b, ab;
         double backV, s;
         int i = j - 1;
@@ -1230,19 +1087,8 @@ public class Polygon {
     /**
      * Set the speeds at each vertex so that the polygon can be plotted as fast
      * as possible
-     * 
-     * @param minSpeed
-     * @param maxSpeed
-     * @param maxAcceleration
      */
     public void setSpeeds(final double airSpeed, final double minSpeed, final double maxSpeed, final double acceleration) {
-        //if(isClosed())System.out.println(toString());
-        //RrPolygon pg = simplify(Preferences.gridRes());
-
-        //points = pg.points;
-        //box = pg.box;
-        //if(isClosed())System.out.println(toString());
-
         // If not doing RepRap style accelerations, just move in air to the
         // first point and then go round as fast as possible.
         try {
@@ -1254,13 +1100,10 @@ public class Polygon {
                 return;
             }
         } catch (final IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return;
+            throw new RuntimeException(e);
         }
 
         // RepRap-style accelerations
-
         final boolean fixup[] = new boolean[size()];
         setSpeed(0, minSpeed);
         Point2D a, b, c, ab, bc;
@@ -1293,7 +1136,7 @@ public class Polygon {
             final Interval aRange = accRange(oldV, s, acceleration);
 
             if (vCorner <= aRange.low()) {
-                backTrack(i, vCorner, aRange.low(), minSpeed, acceleration, fixup);
+                backTrack(i, vCorner, acceleration, fixup);
             } else if (vCorner < aRange.high()) {
                 setSpeed(i, vCorner);
                 fixup[i] = true;
@@ -1347,15 +1190,11 @@ public class Polygon {
         }
     }
 
-    // ****************************************************************************
-
-    // Convex hull code - this uses the QuickHull algorithm
-    // It finds the convex hull of a list of points from the polygon
-    // (which can be the whole polygon if the list is all the points.
-    // of course).
-    // This completely ignores speeds
-
     /**
+     * Convex hull code - this uses the QuickHull algorithm It finds the convex
+     * hull of a list of points from the polygon (which can be the whole polygon
+     * if the list is all the points. of course). This completely ignores speeds
+     * 
      * @return Convex hull as a polygon
      */
     public Polygon convexHull() {
@@ -1390,10 +1229,6 @@ public class Polygon {
 
     /**
      * find a point from a list of polygon points
-     * 
-     * @Param i
-     * @param a
-     * @return the point
      */
     private Point2D listPoint(final int i, final List<Integer> a) {
         return point((a.get(i)).intValue());
@@ -1443,8 +1278,6 @@ public class Polygon {
 
     /**
      * Put the points on a triangle (list a) in the right order
-     * 
-     * @param a
      */
     private void clockWise(final List<Integer> a) {
         if (a.size() == 3) {
@@ -1462,9 +1295,6 @@ public class Polygon {
 
     /**
      * Turn the list of hull points into a CSG convex polygon
-     * 
-     * @param hullPoints
-     * @return CSG representation
      */
     private CSG2D toCSGHull(final List<Integer> hullPoints) {
         Point2D p, q;
@@ -1481,9 +1311,6 @@ public class Polygon {
 
     /**
      * Remove all the points in a list that are within or on the hull
-     * 
-     * @param inConsideration
-     * @param hull
      */
     private void outsideHull(final List<Integer> inConsideration, final CSG2D hull) {
         Point2D p;
@@ -1499,7 +1326,6 @@ public class Polygon {
     /**
      * Compute the convex hull of all the points in the list
      * 
-     * @param points
      * @return list of point index pairs of the points on the hull
      */
     private List<Integer> convexHull(final List<Integer> points) {
@@ -1513,7 +1339,6 @@ public class Polygon {
         int i;
 
         // The top-most and bottom-most points must be on the hull
-
         final List<Integer> result = new ArrayList<Integer>();
         final int t = topPoint(inConsideration);
         final int b = bottomPoint(inConsideration);
@@ -1528,7 +1353,6 @@ public class Polygon {
         }
 
         // Repeatedly add the point that's farthest outside the current hull
-
         int corner, after;
         CSG2D hull;
         double v, vMax;
@@ -1565,13 +1389,11 @@ public class Polygon {
             }
 
             // Get the first triangle in the right order
-
             if (result.size() == 3) {
                 clockWise(result);
             }
 
             // Remove all points within the current hull from further consideration
-
             hull = toCSGHull(result);
             outsideHull(inConsideration, hull);
         }
@@ -1579,29 +1401,19 @@ public class Polygon {
         return result;
     }
 
-    // **************************************************************************
-
-    // Convert polygon to CSG form 
-    // using Kai Tang and Tony Woo's algorithm.
-    // This completely ignores speeds
-
     /**
-     * Construct a list of all the points in the polygon
-     * 
      * @return list of indices of points in the polygons
      */
     private List<Integer> allPoints() {
-        final List<Integer> points = new ArrayList<Integer>();
+        final List<Integer> result = new ArrayList<Integer>();
         for (int i = 0; i < size(); i++) {
-            points.add(new Integer(i));
+            result.add(new Integer(i));
         }
-        return points;
+        return result;
     }
 
     /**
      * Set all the flag values in a list the same
-     * 
-     * @param f
      */
     private void flagSet(final int f, final List<Integer> a, final int[] flags) {
         for (int i = 0; i < a.size(); i++) {
@@ -1612,8 +1424,6 @@ public class Polygon {
     /**
      * Get the next whole section to consider from list a
      * 
-     * @param a
-     * @param level
      * @return the section (null for none left)
      */
     private List<Integer> polSection(final List<Integer> a, final int level, final int[] flags) {
@@ -1658,10 +1468,6 @@ public class Polygon {
 
     /**
      * Compute the CSG representation of a (sub)list recursively
-     * 
-     * @param a
-     * @param level
-     * @return CSG representation
      */
     private CSG2D toCSGRecursive(final List<Integer> a, int level, final boolean closed, final int[] flags) {
         flagSet(level, a, flags);
@@ -1682,7 +1488,6 @@ public class Polygon {
         }
 
         // Set-theoretically combine all the real edges on the convex hull
-
         int i, oldi, flag, oldFlag, start;
 
         if (closed) {
@@ -1694,8 +1499,8 @@ public class Polygon {
         }
 
         for (i = start; i < a.size(); i++) {
-            oldFlag = flags[a.get(oldi).intValue()]; //listFlag(oldi, a);
-            flag = flags[a.get(i).intValue()]; //listFlag(i, a);
+            oldFlag = flags[a.get(oldi).intValue()];
+            flag = flags[a.get(i).intValue()];
 
             if (oldFlag == level && flag == level) {
                 final HalfPlane hp = new HalfPlane(listPoint(oldi, a), listPoint(i, a));
@@ -1711,7 +1516,6 @@ public class Polygon {
 
         // Finally deal with the sections on polygons that form the hull that
         // are not themselves on the hull.
-
         List<Integer> section = polSection(a, level, flags);
         while (section != null) {
             if (level % 2 == 1) {
@@ -1728,10 +1532,9 @@ public class Polygon {
     /**
      * Convert a polygon to CSG representation
      * 
-     * @param tolerance
      * @return CSG polygon object based on polygon and tolerance
      */
-    public CSG2D toCSG(final double tolerance) {
+    public CSG2D toCSG() {
 
         Polygon copy = new Polygon(this);
         if (copy.area() < 0) {
@@ -1742,13 +1545,6 @@ public class Polygon {
         final int[] flags = new int[copy.size()];
         final CSG2D expression = copy.toCSGRecursive(all, 0, true, flags);
 
-        //RrRectangle b = copy.box.scale(1.1);
-        //expression = expression.simplify(tolerance);
-        //if(att == null)
-        //	Debug.e("toCSG(): null attribute!");
-        //RrCSGPolygon result = new RrCSGPolygon(expression, b, att);
-
         return expression;
     }
-
 }

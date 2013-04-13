@@ -67,7 +67,6 @@ import org.reprap.utilities.Debug;
  * Holds a polygon index and the index of a point within it
  * 
  * @author ensab
- * 
  */
 class PolPoint {
     private int pNear;
@@ -164,38 +163,12 @@ class PolPoint {
 }
 
 /**
- * chPair - small class to hold double pointers for convex hull calculations.
+ * chPair - holds double pointers for convex hull calculations.
  */
 class chPair {
-    /**
-	 * 
-	 */
     public int polygon;
-
-    /**
-	 * 
-	 */
     public int vertex;
 
-    /**
-     * Destroy me and all I point to
-     */
-    public void destroy() {
-        // I don't point to anything
-    }
-
-    /**
-     * Destroy just me
-     */
-    //	protected void finalize() throws Throwable
-    //	{
-    //		super.finalize();
-    //	}
-
-    /**
-     * @param p
-     * @param v
-     */
     chPair(final int p, final int v) {
         polygon = p;
         vertex = v;
@@ -249,19 +222,7 @@ class treeList {
     }
 
     /**
-     * Destroy just me
-     */
-    //	protected void finalize() throws Throwable
-    //	{
-    //		children = null;
-    //		parent = null;	
-    //		super.finalize();
-    //	}
-
-    /**
      * Constructor builds from a polygon index
-     * 
-     * @param i
      */
     public treeList(final int i) {
         index = i;
@@ -271,8 +232,6 @@ class treeList {
 
     /**
      * Add a polygon as a child of this one
-     * 
-     * @param t
      */
     public void addChild(final treeList t) {
         if (children == null) {
@@ -283,9 +242,6 @@ class treeList {
 
     /**
      * Get the ith polygon child of this one
-     * 
-     * @param i
-     * @return
      */
     public treeList getChild(final int i) {
         if (children == null) {
@@ -297,8 +253,6 @@ class treeList {
 
     /**
      * Get the parent
-     * 
-     * @return
      */
     public treeList getParent() {
         return parent;
@@ -306,8 +260,6 @@ class treeList {
 
     /**
      * How long is the list (if any)
-     * 
-     * @return
      */
     public int size() {
         if (children != null) {
@@ -342,8 +294,6 @@ class treeList {
 
     /**
      * Remove every instance of polygon t from the list
-     * 
-     * @param t
      */
     public void remove(final treeList t) {
         for (int i = size() - 1; i >= 0; i--) {
@@ -437,47 +387,9 @@ class treeList {
  * maintains a maximum enclosing rectangle.
  */
 public class PolygonList {
-    /**
-	 * 
-	 */
     private List<Polygon> polygons = null;
-
-    /**
-	 * 
-	 */
     private Rectangle box = null;
 
-    /**
-     * Flag to prevent cyclic graphs going round forever
-     */
-    private final boolean beingDestroyed = false;
-
-    //	/**
-    //	 * Destroy me and all that I point to
-    //	 */
-    //	public void destroy() 
-    //	{
-    //		if(beingDestroyed) // Prevent infinite loop
-    //			return;
-    //		beingDestroyed = true;
-    //		if(polygons != null)
-    //		{
-    //			for(int i = 0; i < size(); i++)
-    //			{
-    //				polygons.get(i).destroy();
-    //				polygons.set(i,null);
-    //			}
-    //			polygons = null;
-    //		}
-    //		if(box != null)
-    //			box.destroy();
-    //		box = null;
-    //		beingDestroyed = false;
-    //	}
-
-    /**
-     * Empty constructor
-     */
     public PolygonList() {
         polygons = new ArrayList<Polygon>();
         box = new Rectangle();
@@ -1174,9 +1086,6 @@ public class PolygonList {
      * point is the most extreme one in the current hatch direction.
      * 
      * Only hatches and outlines whose physical extruders match are altered.
-     * 
-     * @param hatching
-     * @param lc
      */
     public void middleStarts(final PolygonList hatching, final LayerRules lc, final BooleanGridList slice) {
         for (int i = 0; i < size(); i++) {
@@ -1195,18 +1104,14 @@ public class PolygonList {
                 boolean failed = true;
                 if (pp != null) {
                     pp.findLongEnough(10, 30);
-
                     final int st = pp.near();
                     final int en = pp.end();
-
                     final Polygon pg = pp.polygon();
 
                     // Check that the line from the start of the outline polygon to the first point
                     // of the tail-in is in solid.  If not, we have jumped between polygons and don't
                     // want to use that as a lead in.
-
                     final Point2D pDif = Point2D.sub(pg.point(st), start);
-
                     final Point2D pq1 = Point2D.add(start, Point2D.mul(0.25, pDif));
                     final Point2D pq2 = Point2D.add(start, Point2D.mul(0.5, pDif));
                     final Point2D pq3 = Point2D.add(start, Point2D.mul(0.5, pDif));
@@ -1230,9 +1135,7 @@ public class PolygonList {
                                 }
                             }
                         }
-
                         set(i, outline);
-
                         hatching.cutPolygon(pp.pIndex(), st, en);
                         failed = false;
                     }
@@ -1257,8 +1160,6 @@ public class PolygonList {
      * 
      * Only hatches and outlines whose physical extruders match are altered.
      * 
-     * @param hatching
-     * @param lc
      */
     public void joinAndWipe(final PolygonList hatching, final LayerRules lc, final BooleanGridList slice) {
         // We should all be closed for this to work
@@ -1339,8 +1240,6 @@ public class PolygonList {
      * Offset (some of) the points in the polygons to allow for the fact that
      * extruded circles otherwise don't come out right. See
      * http://reprap.org/bin/view/Main/ArcCompensation.
-     * 
-     * @param es
      */
     public PolygonList arcCompensate() {
         final PolygonList r = new PolygonList();
@@ -1355,8 +1254,6 @@ public class PolygonList {
 
     /**
      * Remove polygons shorter than 3 times the infillwidth
-     * 
-     * @return
      */
     public PolygonList cullShorts() {
         final PolygonList r = new PolygonList();
@@ -1373,9 +1270,6 @@ public class PolygonList {
     /**
      * Is polygon i inside CSG polygon j? (Check twice to make sure...)
      * 
-     * @param i
-     * @param j
-     * @param csgPols
      * @return true if the polygon is inside the CSG polygon, false if otherwise
      */
     private boolean inside(final int i, final int j, final List<CSG2D> csgPols) {
@@ -1398,8 +1292,6 @@ public class PolygonList {
      * the same index in this class, classify each as being inside other(s) (or
      * not), and hence form a single CSG expression representing them all.
      * 
-     * @param csgPols
-     * @param polAttributes
      * @return single CSG expression based on csgPols list
      */
     private CSG2D resolveInsides(final List<CSG2D> csgPols) {
@@ -1410,25 +1302,21 @@ public class PolygonList {
 
         // For each polygon construct a list of all the others that
         // are inside it (if any).
-
         for (i = 0; i < size() - 1; i++) {
             treeList isList = universe.walkFind(i);
             if (isList == null) {
                 isList = new treeList(i);
                 universe.addChild(isList);
             }
-
             for (j = i + 1; j < size(); j++) {
                 treeList jsList = universe.walkFind(j);
                 if (jsList == null) {
                     jsList = new treeList(j);
                     universe.addChild(jsList);
                 }
-
                 if (inside(j, i, csgPols)) {
                     isList.addChild(jsList);
                 }
-
                 if (inside(i, j, csgPols)) {
                     jsList.addChild(isList);
                 }
@@ -1436,12 +1324,8 @@ public class PolygonList {
         }
 
         // Set all the parent pointers
-
         universe.setParents();
-        //System.out.println("---\n" + universe.toString() + "\n---\n");
-
         // Eliminate each leaf from every part of the tree except the node immediately above itself
-
         for (i = 0; i < size(); i++) {
             final treeList isList = universe.walkFind(i);
             if (isList == null) {
@@ -1456,17 +1340,7 @@ public class PolygonList {
                 }
             }
         }
-        //System.out.println("---\n" + universe.toString() + "\n---\n");
-
-        // We now have a tree of containment.  universe is the root.
-        // Walk the tree turning it into a single CSG expression
-
-        final CSG2D expression = universe.buildCSG(csgPols);
-
-        //RrCSGPolygon res = new RrCSGPolygon(expression, box.scale(1.1), polygon(0).getAttributes());
-        //res.divide(0.0001, 0);
-        //RrGraphics g2 = new RrGraphics(res, true);
-        return expression;
+        return universe.buildCSG(csgPols);
     }
 
     /**
@@ -1474,24 +1348,19 @@ public class PolygonList {
      * 
      * @return CSG representation
      */
-    public CSG2D toCSG(final double tolerance) {
+    public CSG2D toCSG() {
         if (size() == 0) {
             return CSG2D.nothing();
         }
         if (size() == 1) {
-            return polygon(0).toCSG(tolerance);
+            return polygon(0).toCSG();
         }
 
         final List<CSG2D> csgPols = new ArrayList<CSG2D>();
-
         for (int i = 0; i < size(); i++) {
-            csgPols.add(polygon(i).toCSG(tolerance));
+            csgPols.add(polygon(i).toCSG());
         }
 
-        final CSG2D polygons = resolveInsides(csgPols);
-        //expression = expression.simplify(tolerance);
-
-        return polygons;
+        return resolveInsides(csgPols);
     }
-
 }

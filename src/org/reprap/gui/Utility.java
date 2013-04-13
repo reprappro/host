@@ -9,50 +9,24 @@ import javax.swing.JFrame;
 
 public class Utility {
 
-	public static void centerWindowOnScreen(Window w) {
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		w.setLocation((screenSize.width - w.getSize().width) / 2,
-				(screenSize.height - w.getSize().height) / 2);
-	}
+    public static void centerWindowOnScreen(final Window w) {
+        final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        w.setLocation((screenSize.width - w.getSize().width) / 2, (screenSize.height - w.getSize().height) / 2);
+    }
 
-	public static Dimension getDefaultAppSize() {
-//		try {
-//			Preferences prefs = Preferences.getGlobalPreferences();
-//			if (prefs.loadBool("RememberWindowPosition")) {
-//				int width = prefs.loadInt("MainWindowWidth");
-//				int height = prefs.loadInt("MainWindowHeight");
-//				return new Dimension(width, height);
-//			}
-//		} catch (Exception ex) {
-//			// Ignore exception and continue with defaults
-//		}
-		
-	  	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		//return new Dimension(4 * screenSize.width / 5, 4 * screenSize.height / 5);
-	  	return new Dimension(1000, 800);
-	}
+    public static Dimension getDefaultAppSize() {
+        return new Dimension(1000, 800);
+    }
 
-	public static void positionWindowOnScreen(Window w) {
-//		try {
-//			Preferences prefs = Preferences.getGlobalPreferences();
-//			if (prefs.loadBool("RememberWindowPosition")) {
-//				int left = prefs.loadInt("MainWindowLeft");
-//				int top = prefs.loadInt("MainWindowTop");
-//				w.setLocation(left, top);
-//				return;
-//			}
-//		} catch (Exception ex) {
-//			// Ignore exception and continue with defaults
-//		}
-		centerWindowOnScreen(w);
-	}
-	
-	public static void centerWindowOnParent(Window w, JFrame parent) {
-		Rectangle bounds = parent.getBounds();
-		int cx = bounds.x + bounds.width / 2;
-		int cy = bounds.y + bounds.height / 2;
-		Dimension mySize = w.getSize();
-		w.setLocation(cx - mySize.width / 2, cy - mySize.height / 2);
-	}
-	
+    public static void positionWindowOnScreen(final Window w) {
+        centerWindowOnScreen(w);
+    }
+
+    public static void centerWindowOnParent(final Window w, final JFrame parent) {
+        final Rectangle bounds = parent.getBounds();
+        final int cx = bounds.x + bounds.width / 2;
+        final int cy = bounds.y + bounds.height / 2;
+        final Dimension mySize = w.getSize();
+        w.setLocation(cx - mySize.width / 2, cy - mySize.height / 2);
+    }
 }

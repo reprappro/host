@@ -52,16 +52,6 @@ public class LayerRules {
     private final double[] layerZ;
 
     /**
-     * The name of the first file of output
-     */
-    private String prologueFileName;
-
-    /**
-     * The name of the last file of output
-     */
-    private String epilogueFileName;
-
-    /**
      * The names of all the files for all the layers
      */
     private final String[] layerFileNames;
@@ -79,7 +69,7 @@ public class LayerRules {
     /**
      * The machine
      */
-    private GCodePrinter printer;
+    private final GCodePrinter printer;
 
     /**
      * How far up the model we are in mm
@@ -142,11 +132,6 @@ public class LayerRules {
     private double addToStep = 0;
 
     /**
-     * Are we going top to bottom or ground up?
-     */
-    private boolean topDown = false;
-
-    /**
      * This is true until it is first read, when it becomes false
      */
     private boolean notStartedYet;
@@ -176,15 +161,6 @@ public class LayerRules {
      */
     private int maxAddress = -1;
 
-    /**
-     * 
-     * @param p
-     * @param modZMax
-     * @param macZMax
-     * @param modLMax
-     * @param macLMax
-     * @param found
-     */
     public LayerRules(final GCodePrinter p, final AllSTLsToBuild astls, final boolean found) {
         printer = p;
         reversing = false;
@@ -204,12 +180,6 @@ public class LayerRules {
         bBox = new Rectangle(new Point2D(gp.x().low() - 6, gp.y().low() - 6), new Point2D(gp.x().high() + 6, gp.y().high() + 6));
 
         modelZMax = astls.maxZ();
-
-        topDown = printer.getTopDown();
-        if (!topDown) {
-            Debug.e("LayerRules(): Bottom-up slice calculations no longer supported.");
-            topDown = true;
-        }
 
         // Run through the extruders checking their layer heights and the
         // Actual physical extruder used.
@@ -236,11 +206,6 @@ public class LayerRules {
                 }
                 if (es[i].getPhysicalExtruderNumber() > maxAddress) {
                     maxAddress = es[i].getPhysicalExtruderNumber();
-                    /*
-                    if(Math.abs(es[i].getExtrusionHeight() - zStep) > Preferences.tiny())
-                    	Debug.e("Not all extruders extrude the same height of filament: " + 
-                    			zStep + " and " + es[i].getExtrusionHeight());
-                    */
                 }
             }
         }
@@ -258,17 +223,10 @@ public class LayerRules {
         modelLayerMax = (int) (modelZMax / zStep) + 1;
         machineLayerMax = modelLayerMax + foundationLayers;
         machineZMax = modelZMax + foundationLayers * zStep;
-        if (topDown) {
-            modelZ = modelZMax;
-            machineZ = machineZMax;
-            modelLayer = modelLayerMax;
-            machineLayer = machineLayerMax;
-        } else {
-            modelZ = 0;
-            machineZ = 0;
-            modelLayer = -1;
-            machineLayer = 0;
-        }
+        modelZ = modelZMax;
+        machineZ = machineZMax;
+        modelLayer = modelLayerMax;
+        machineLayer = machineLayerMax;
         addToStep = 0;
 
         // Set up the records of the layers for later reversing (top->down ==>> bottom->up)
@@ -286,13 +244,8 @@ public class LayerRules {
                 extruderUsedThisLayer[i][j] = false;
             }
         }
-        prologueFileName = null;
-        epilogueFileName = null;
-
         astls.setUpShield();
-
         astls.setBoxes();
-
         gp = astls.ObjectPlanRectangle();
         bBox = new Rectangle(new Point2D(gp.x().low() - 6, gp.y().low() - 6), new Point2D(gp.x().high() + 6, gp.y().high() + 6));
     }
@@ -301,11 +254,6 @@ public class LayerRules {
         final Point2D middle = Point2D.mul(0.5, printer.getBedNorthEast());
         return Math.abs(middle.y() - purge.y()) > Math.abs(middle.x() - purge.x());
     }
-
-    //	public void setPurgePoint(Point2D p)
-    //	{
-    //		purge = new Point2D(p);
-    //	}
 
     public Point2D getPurgeEnd(final boolean low, final int pass) {
         double a = purgeL * 0.5;
@@ -325,20 +273,8 @@ public class LayerRules {
         return purge;
     }
 
-    public double getPurgeLength() {
-        return purgeL;
-    }
-
     public Rectangle getBox() {
         return new Rectangle(bBox); // Something horrible happens to return by reference here; hence copy...
-    }
-
-    public boolean getTopDown() {
-        return topDown;
-    }
-
-    public void setPrinter(final GCodePrinter p) {
-        printer = p;
     }
 
     public GCodePrinter getPrinter() {
@@ -369,9 +305,6 @@ public class LayerRules {
      * MIGHT an extruder be used in this layer. I.e. is this layer the correct
      * multiple of the microlayering heights for this extruder possibly to be
      * required.
-     * 
-     * @param e
-     * @return
      */
     public boolean extruderLiveThisLayer(final int e) {
         final GCodeExtruder[] es = printer.getExtruders();
@@ -436,23 +369,7 @@ public class LayerRules {
         return rtl;
     }
 
-    public String getPrologueFileName() {
-        return prologueFileName;
-    }
-
-    public String getEpilogueFileName() {
-        return epilogueFileName;
-    }
-
-    public void setPrologueFileName(final String s) {
-        prologueFileName = s;
-    }
-
-    public void setEpilogueFileName(final String s) {
-        epilogueFileName = s;
-    }
-
-    public String getLayerFileName(final int layer) {
+    private String getLayerFileName(final int layer) {
         return layerFileNames[layer];
     }
 
@@ -464,7 +381,7 @@ public class LayerRules {
         layerFileNames[machineLayer] = s;
     }
 
-    public Point2D getFirstPoint(final int layer) {
+    private Point2D getFirstPoint(final int layer) {
         return firstPoint[layer];
     }
 
@@ -472,60 +389,8 @@ public class LayerRules {
         return lastPoint[layer];
     }
 
-    public int getFirstExtruder(final int layer) {
-        return firstExtruder[layer];
-    }
-
-    public int getLastExtruder(final int layer) {
-        return lastExtruder[layer];
-    }
-
     public double getLayerZ(final int layer) {
         return layerZ[layer];
-    }
-
-    public void setPhysicalExtruderUsed(final GCodeExtruder e, final int layer) {
-        extruderUsedThisLayer[layer][e.getPhysicalExtruderNumber()] = true;
-    }
-
-    public boolean getPhysicalExtruderUsed(final GCodeExtruder e, final int layer) {
-        return extruderUsedThisLayer[layer][e.getPhysicalExtruderNumber()];
-    }
-
-    private int oneThisLayer(final int layer) {
-        int r = -1;
-        for (int i = 0; i < maxAddress; i++) {
-            if (extruderUsedThisLayer[layer][i]) {
-                if (r == -1) {
-                    r = i;
-                } else {
-                    return -1;
-                }
-            }
-        }
-        if (r == -1) {
-            return -2;
-        } else {
-            return r;
-        }
-    }
-
-    public int onlyOneHereOnUp(final int layer) {
-        final int start = oneThisLayer(layer);
-        if (start < 0) {
-            return -1;
-        }
-        for (int i = layer + 1; i < machineLayerMax + 1; i++) {
-            final int el = oneThisLayer(i);
-            if (el != start) {
-                return -1;
-            }
-        }
-        return start;
-    }
-
-    public int getModelLayerMax() {
-        return modelLayerMax;
     }
 
     public int getMachineLayerMax() {
@@ -538,10 +403,6 @@ public class LayerRules {
 
     public int getFoundationLayers() {
         return machineLayerMax - modelLayerMax;
-    }
-
-    public double getModelZMAx() {
-        return modelZMax;
     }
 
     public double getMachineZMAx() {
@@ -569,23 +430,12 @@ public class LayerRules {
     }
 
     /**
-     * Does the layer about to be produced need to be recomputed?
-     * 
-     * @return
-     */
-    public boolean recomputeLayer() {
-        return getFoundationLayers() - getMachineLayer() <= 2;
-    }
-
-    /**
      * The hatch pattern is:
      * 
      * Foundation: X and Y rectangle
      * 
      * Model: Alternate even then odd (which can be set to the same angle if
      * wanted).
-     * 
-     * @return
      */
     public HalfPlane getHatchDirection(final GCodeExtruder e, final boolean support) {
         final double myHeight = e.getExtrusionHeight();
@@ -595,9 +445,6 @@ public class LayerRules {
         double angle;
 
         if (getMachineLayer() < getFoundationLayers()) {
-            //			if(getMachineLayer() == getFoundationLayers() - 2)
-            //				angle = e.getEvenHatchDirection();
-            //			else
             angle = e.getOddHatchDirection();
         } else {
             if (mylayer % 2 == 0) {
@@ -624,9 +471,6 @@ public class LayerRules {
      * which is the model fill width
      * 
      * Model: The model fill width
-     * 
-     * @param e
-     * @return
      */
     public double getHatchWidth(final GCodeExtruder e) {
         if (getMachineLayer() < getFoundationLayers()) {
@@ -638,66 +482,29 @@ public class LayerRules {
 
     /**
      * Move the machine up/down, but leave the model's layer where it is.
-     * 
-     * @param e
      */
     public void stepMachine() {
-
-        if (topDown) {
-            //machineZ -= (sZ + addToStep);
-            machineLayer--;
-            machineZ = zStep * machineLayer + addToStep;
-            //			ld = getFoundationLayers() - getMachineLayer();
-            //			if(ld == 2)
-            //				addToStep = zStep*(1 - e.getSeparationFraction());
-            //			else if(ld == 1)
-            //				addToStep = -zStep*(1 - e.getSeparationFraction());
-            //			else
-            //				addToStep = 0;
-        } else {
-            //machineZ += (sZ + addToStep);
-            machineLayer++;
-            machineZ = zStep * machineLayer + addToStep;
-            //			ld = getFoundationLayers() - getMachineLayer();
-            //			if(ld == 2)
-            //				addToStep = -zStep*(1 - e.getSeparationFraction());
-            //			else if(ld == 1)
-            //				addToStep = zStep*(1 - e.getSeparationFraction());
-            //			else
-            //				addToStep = 0;
-        }
+        machineLayer--;
+        machineZ = zStep * machineLayer + addToStep;
     }
 
     public void moveZAtStartOfLayer(final boolean really) {
         final double z = getMachineZ();
-
-        if (topDown) {
-            printer.setZ(z - (zStep + addToStep));
-        }
+        printer.setZ(z - (zStep + addToStep));
         printer.singleMove(printer.getX(), printer.getY(), z, printer.getFastFeedrateZ(), really);
     }
 
     /**
      * Move both the model and the machine up/down a layer
-     * 
-     * @param e
      */
     public void step() {
-        if (topDown) {
-            //modelZ -= (sZ + addToStep);
-            modelLayer--;
-        } else {
-            //modelZ += (sZ + addToStep);
-            modelLayer++;
-        }
+        modelLayer--;
         modelZ = modelLayer * zStep + addToStep;
         addToStep = 0;
         stepMachine();
     }
 
     public void setFractionDone() {
-        // Set -ve to force the system to query the layer rules
-
         org.reprap.gui.botConsole.SlicerFrame.getBotConsoleFrame().setFractionDone(-1, -1, -1);
     }
 
@@ -709,7 +516,6 @@ public class LayerRules {
             int character;
             while ((character = fr.read()) >= 0) {
                 ps.print((char) character);
-                //System.out.print((char)character);
             }
             ps.flush();
             fr.close();
@@ -753,10 +559,6 @@ public class LayerRules {
                         getPrinter().getFastXYFeedrate(), true);
                 copyFile(fileOutStream, getLayerFileName(machineLayer));
 
-                //System.out.println("Layer: " + machineLayer + " z: " + machineZ +
-                //		" first point: " + getFirstPoint(machineLayer) + " last point: " + getLastPoint(machineLayer)
-                //		+ " " + getLayerFileName(machineLayer));
-
                 if (Preferences.loadGlobalBool("RepRapAccelerations")) {
                     getPrinter().singleMove(getLastPoint(machineLayer).x(), getLastPoint(machineLayer).y(), machineZ,
                             getPrinter().getSlowXYFeedrate(), false);
@@ -765,7 +567,6 @@ public class LayerRules {
                             getPrinter().getFastXYFeedrate(), false);
                 }
                 getPrinter().finishedLayer(this);
-                getPrinter().betweenLayers(this);
             }
             getPrinter().terminate(this);
         } catch (final Exception e) {
@@ -773,10 +574,6 @@ public class LayerRules {
         }
         fileOutStream.close();
         reversing = false;
-        //copyFile(fileOutStream, getEpilogueFileName());
-
-        //System.out.println("layerRules.reverseLayers(): exception at layer: " + i + " " + e.toString());
-
     }
 
 }

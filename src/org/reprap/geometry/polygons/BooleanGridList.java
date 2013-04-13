@@ -1,6 +1,7 @@
 package org.reprap.geometry.polygons;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.reprap.Attributes;
@@ -9,42 +10,28 @@ import org.reprap.geometry.LayerRules;
 import org.reprap.utilities.Debug;
 
 /**
- * Class to hold a list of BooleanGrids with associated atributes for each
+ * Class to hold a list of BooleanGrids with associated attributes for each
  * 
  * @author ensab
- * 
  */
+public class BooleanGridList implements Iterable<BooleanGrid> {
 
-public class BooleanGridList {
-
-    private List<BooleanGrid> shapes = null;
+    private final List<BooleanGrid> shapes = new ArrayList<BooleanGrid>();
 
     public BooleanGridList() {
-        shapes = new ArrayList<BooleanGrid>();
     }
 
     /**
      * Deep copy
-     * 
-     * @param a
      */
     public BooleanGridList(final BooleanGridList a) {
-        shapes = new ArrayList<BooleanGrid>();
-
-        if (a == null) {
-            return;
-        }
-
-        for (int i = 0; i < a.size(); i++) {
-            shapes.add(new BooleanGrid(a.get(i)));
+        for (final BooleanGrid booleanGrid : a) {
+            shapes.add(new BooleanGrid(booleanGrid));
         }
     }
 
     /**
      * Return the ith shape
-     * 
-     * @param i
-     * @return
      */
     public BooleanGrid get(final int i) {
         return shapes.get(i);
@@ -52,9 +39,6 @@ public class BooleanGridList {
 
     /**
      * Is a point in any of the shapes?
-     * 
-     * @param p
-     * @return
      */
     public boolean membership(final Point2D p) {
         for (int i = 0; i < size(); i++) {
@@ -67,9 +51,6 @@ public class BooleanGridList {
 
     /**
      * Return the ith attribute
-     * 
-     * @param i
-     * @return
      */
     public Attributes attribute(final int i) {
         return shapes.get(i).attribute();
@@ -77,8 +58,6 @@ public class BooleanGridList {
 
     /**
      * How many shapes are there in the list?
-     * 
-     * @return
      */
     public int size() {
         return shapes.size();
@@ -86,8 +65,6 @@ public class BooleanGridList {
 
     /**
      * Remove an entry and close the gap
-     * 
-     * @param i
      */
     public void remove(final int i) {
         shapes.remove(i);
@@ -95,8 +72,6 @@ public class BooleanGridList {
 
     /**
      * Add a shape on the end
-     * 
-     * @param p
      */
     public void add(final BooleanGrid b) {
         if (b == null) {
@@ -110,8 +85,6 @@ public class BooleanGridList {
 
     /**
      * Add another list of shapes on the end
-     * 
-     * @param a
      */
     public void add(final BooleanGridList aa) {
         for (int i = 0; i < aa.size(); i++) {
@@ -121,8 +94,6 @@ public class BooleanGridList {
 
     /**
      * Reverse the order of the list
-     * 
-     * @return
      */
     public BooleanGridList reverse() {
         final BooleanGridList result = new BooleanGridList();
@@ -134,11 +105,6 @@ public class BooleanGridList {
 
     /**
      * Offset all the shapes in the list for this layer
-     * 
-     * @param lc
-     * @param outline
-     * @param multiplier
-     * @return
      */
     public BooleanGridList offset(final LayerRules lc, final boolean outline, final double multiplier) //, int shellOverride)
     {
@@ -163,8 +129,6 @@ public class BooleanGridList {
                     e = att.getExtruder();
                     shells = e.getShells();
                 }
-                //					if(shellOverride > 0)
-                //						shells = shellOverride;
                 if (outline) {
                     int shell = 0;
                     boolean carryOn = true;
@@ -212,8 +176,6 @@ public class BooleanGridList {
 
     /**
      * Work out all the polygons forming a set of borders
-     * 
-     * @return
      */
     public PolygonList borders() {
         final PolygonList result = new PolygonList();
@@ -229,15 +191,9 @@ public class BooleanGridList {
      * it's false they are in the interior. If overrideDirection is not null,
      * that is used as the hatch direction. Otherwise the hatch is provided by
      * layerConditions.
-     * 
-     * @param layerConditions
-     * @param surface
-     * @param overrideDirection
-     * @return
      */
     public PolygonList hatch(final LayerRules layerConditions, final boolean surface, final HalfPlane overrideDirection,
-            final boolean support) //, Rr2Point startNearHere)
-    {
+            final boolean support) {
         final PolygonList result = new PolygonList();
         final boolean foundation = layerConditions.getLayingSupport();
         final GCodeExtruder[] es = layerConditions.getPrinter().getExtruders();
@@ -321,10 +277,6 @@ public class BooleanGridList {
      * the same extruder are unioned. If an element of a has no corresponding
      * element in b, or vice versa, then those elements are returned unmodified
      * in the result.
-     * 
-     * @param a
-     * @param b
-     * @return
      */
     public static BooleanGridList unions(final BooleanGridList a, final BooleanGridList b) {
         final BooleanGridList result = new BooleanGridList();
@@ -380,10 +332,6 @@ public class BooleanGridList {
      * with the same extruder are intersected. If an element of a has no
      * corresponding element in b, or vice versa, then no entry is returned for
      * them.
-     * 
-     * @param a
-     * @param b
-     * @return
      */
     public static BooleanGridList intersections(final BooleanGridList a, final BooleanGridList b) {
         final BooleanGridList result = new BooleanGridList();
@@ -412,8 +360,6 @@ public class BooleanGridList {
     /**
      * Return only those elements in the list that have no support material
      * specified
-     * 
-     * @return
      */
     public BooleanGridList cullNoSupport() {
         final BooleanGridList result = new BooleanGridList();
@@ -430,8 +376,6 @@ public class BooleanGridList {
     /**
      * Return only those elements in the list that have support material
      * specified
-     * 
-     * @return
      */
     public BooleanGridList cullSupport() {
         final BooleanGridList result = new BooleanGridList();
@@ -454,11 +398,6 @@ public class BooleanGridList {
      * 
      * If onlyNullSupport is true then only entries in a with support equal to
      * null are considered. Otherwise ordinary set difference is returned.
-     * 
-     * @param a
-     * @param b
-     * @param onlyNullSupport
-     * @return
      */
     public static BooleanGridList differences(final BooleanGridList a, final BooleanGridList b, final boolean ignoreAttributes) {
         final BooleanGridList result = new BooleanGridList();
@@ -499,4 +438,8 @@ public class BooleanGridList {
         return result.unionDuplicates();
     }
 
+    @Override
+    public Iterator<BooleanGrid> iterator() {
+        return shapes.iterator();
+    }
 }

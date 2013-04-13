@@ -13,10 +13,7 @@ import org.reprap.utilities.Debug;
 public class SlicerFrame extends javax.swing.JFrame {
     private static final long serialVersionUID = 1L;
     private static SlicerFrame bcf = null;
-    private static int exPanelNumber;
-
     private Thread pollThread = null;
-    private boolean carryOnPolling = true;
     private double fractionDone = -1;
     private int layer = -1;
     private int outOf = -1;
@@ -38,7 +35,6 @@ public class SlicerFrame extends javax.swing.JFrame {
         /*
          * Fork off a thread to keep the panels up-to-date
          */
-        exPanelNumber = 0;
         pollThread = new Thread() {
             @Override
             public void run() {
@@ -88,7 +84,6 @@ public class SlicerFrame extends javax.swing.JFrame {
      * call (deprecated anyway) to prevent resource locking.
      */
     public void suspendPolling() {
-        carryOnPolling = false;
         try {
             Thread.sleep(200);
         } catch (final InterruptedException ex) {
@@ -102,7 +97,6 @@ public class SlicerFrame extends javax.swing.JFrame {
         } catch (final InterruptedException ex) {
             Thread.interrupted();
         }
-        carryOnPolling = true;
     }
 
     private void checkPrefs() throws IOException {
