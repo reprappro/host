@@ -10,7 +10,7 @@ RELEASE=${1:-`date -u +%Y%m%d`}
 
 RELEASENAME="$SOFTWARE_NAME-$RELEASE"
 
-FILELIST="jar/reprap.jar lib/*.jar lib/reprap-icon.png lib/reprap.ico\
+FILELIST="lib/*.jar lib/reprap-icon.png lib/reprap.ico\
 	lib/reprappro_logo-0.5.png lib/rr-logo-green-url.png\
 	lib/reprap-configurations lib/system-dependent lib/reprap lib/reprap32.bat lib/reprap64.bat"
 
@@ -27,9 +27,6 @@ CLASSPATH=$CLASSPATH:./lib/swing-layout-1.0.4.jar
 CLASSPATH=$CLASSPATH:.
 export CLASSPATH
 
-# Remove any old jar directory
-[ -d jar ] && rm -rf jar
-
 # Clean out old executable directory
 
 [ -d "$DESTINATION" ] && rm -rf "$DESTINATION"
@@ -37,6 +34,7 @@ mkdir "$DESTINATION"
 
 # Recompile java files and create reprap.jar
 ant clean jar || exit 1
+mv jar/reprap.jar $DESTINATION && rmdir jar
 
 # Copy files into $DESTINATION directory
 for F in $FILELIST
