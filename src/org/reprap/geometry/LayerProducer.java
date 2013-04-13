@@ -152,7 +152,7 @@ public class LayerProducer {
                 if (Preferences.loadGlobalBool("Shield")) {
                     rec.expand(Point2D.add(rec.sw(), new Point2D(-7, -7))); // TODO: Yuk - this should be a parameter
                 }
-                simulationPlot.init(rec, false, "" + lc.getModelLayer() + " (z=" + lc.getModelZ() + ")");
+                simulationPlot.init(rec, "" + lc.getModelLayer() + " (z=" + lc.getModelZ() + ")");
             } else {
                 simulationPlot.cleanPolygons("" + lc.getModelLayer() + " (z=" + lc.getModelZ() + ")");
             }

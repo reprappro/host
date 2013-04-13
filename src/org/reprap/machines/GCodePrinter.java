@@ -15,7 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 import org.reprap.Attributes;
 import org.reprap.Preferences;
@@ -24,8 +24,6 @@ import org.reprap.devices.GCodeExtruder;
 import org.reprap.geometry.LayerRules;
 import org.reprap.geometry.polygons.Point2D;
 import org.reprap.geometry.polygons.Rectangle;
-import org.reprap.gui.ContinuationMesage;
-import org.reprap.gui.StatusMessage;
 import org.reprap.utilities.Debug;
 import org.reprap.utilities.RrGraphics;
 import org.reprap.utilities.Timer;
@@ -45,7 +43,6 @@ public class GCodePrinter {
      * Have we actually used this extruder?
      */
     protected boolean physicalExtruderUsed[];
-    protected StatusMessage statusWindow;
     protected JCheckBoxMenuItem layerPauseCheckbox = null;
     protected JCheckBoxMenuItem segmentPauseCheckbox = null;
     /**
@@ -159,7 +156,6 @@ public class GCodePrinter {
         XYEAtZero = false;
         startTime = System.currentTimeMillis();
         startCooling = -1;
-        statusWindow = new StatusMessage(new JFrame());
         forceSelection = true;
 
         //load extruder prefs
@@ -355,10 +351,6 @@ public class GCodePrinter {
 
     public void moveTo(double x, double y, double z, double feedrate, final boolean startUp, final boolean endUp)
             throws Exception {
-        if (isCancelled()) {
-            return;
-        }
-
         try {
             if (x > Preferences.loadGlobalDouble("WorkingX(mm)") || x < 0) {
                 Debug.e("Attempt to move x to " + x + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingX(mm)")
@@ -435,9 +427,6 @@ public class GCodePrinter {
         if (!endUp && startUp) {
             qZMove(liftedZ - liftIncrement, zFeedrate);
             qFeedrate(feedrate);
-        }
-        if (isCancelled()) {
-            return;
         }
 
         checkCoordinates(x, y, z);
@@ -710,15 +699,8 @@ public class GCodePrinter {
             layerPause();
         }
 
-        if (isCancelled()) {
-            getExtruder().setCooler(false, lc.getReversing());
-            getExtruder().stopExtruding(); // Shouldn't be needed, but no harm
-            return;
-        }
         // Cooling period
-
         // How long has the fan been on?
-
         double cool = Timer.elapsed();
         if (startCooling >= 0) {
             cool = cool - startCooling;
@@ -727,14 +709,12 @@ public class GCodePrinter {
         }
 
         // Wait the remainder of the cooling period
-
         if (startCooling >= 0) {
             cool = coolTime - cool;
             // NB - if cool is -ve machineWait will return immediately
             machineWait(1000 * cool, false, lc.getReversing());
         }
         // Fan off
-
         if (coolTime > 0) {
             getExtruder().setCooler(false, lc.getReversing());
         }
@@ -1153,7 +1133,7 @@ public class GCodePrinter {
             if (really) {
                 oldExtruder.stopExtruding();
 
-                if (!isCancelled()) {
+                if (!false) {
                     if (materialIndex < 0 || materialIndex >= extruders.length) {
                         Debug.e("Selected material (" + materialIndex + ") is out of range.");
                         extruder = 0;
@@ -1588,43 +1568,20 @@ public class GCodePrinter {
             getExtruder().setMotor(false);
         } catch (final Exception ex) {
         }
-        final ContinuationMesage msg = new ContinuationMesage(null, "A new segment is about to be produced");
-        msg.setVisible(true);
+        JOptionPane.showMessageDialog(null, "A new segment is about to be produced");
         try {
-            synchronized (msg) {
-                msg.wait();
-            }
+            getExtruder().setExtrusion(getExtruder().getExtruderSpeed(), false);
+            getExtruder().setValve(false);
         } catch (final Exception ex) {
         }
-        if (msg.getResult() == false) {
-            setCancelled(true);
-        } else {
-            try {
-                getExtruder().setExtrusion(getExtruder().getExtruderSpeed(), false);
-                getExtruder().setValve(false);
-            } catch (final Exception ex) {
-            }
-        }
-        msg.dispose();
     }
 
     /**
      * Display a message indicating a layer is about to be printed and wait for
      * the user to acknowledge
      */
-    protected void layerPause() {
-        final ContinuationMesage msg = new ContinuationMesage(null, "A new layer is about to be produced");
-        msg.setVisible(true);
-        try {
-            synchronized (msg) {
-                msg.wait();
-            }
-        } catch (final Exception ex) {
-        }
-        if (msg.getResult() == false) {
-            setCancelled(true);
-        }
-        msg.dispose();
+    private void layerPause() {
+        JOptionPane.showMessageDialog(null, "A new layer is about to be produced");
     }
 
     /**
@@ -1656,20 +1613,13 @@ public class GCodePrinter {
     }
 
     public void setMessage(final String message) {
-        if (message == null) {
-            statusWindow.setVisible(false);
-        } else {
-            statusWindow.setMessage(message);
-            statusWindow.setVisible(true);
-        }
     }
 
     public boolean isCancelled() {
-        return statusWindow.isCancelled();
+        return false;
     }
 
     public void setCancelled(final boolean isCancelled) {
-        statusWindow.setCancelled(isCancelled);
     }
 
     public int getFoundationLayers() {
