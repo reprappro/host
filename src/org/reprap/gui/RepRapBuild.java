@@ -107,7 +107,6 @@ import javax.vecmath.Vector3d;
 
 import org.reprap.Attributes;
 import org.reprap.Preferences;
-import org.reprap.Printer;
 import org.reprap.RFO;
 import org.reprap.geometry.polygons.Point2D;
 import org.reprap.geometry.polyhedra.AllSTLsToBuild;
@@ -295,7 +294,7 @@ public class RepRapBuild extends Panel3D implements MouseListener {
         }
     }
 
-    public void anotherSTLFile(final String s, final Printer printer, final boolean centre) {
+    public void anotherSTLFile(final String s, final boolean centre) {
         if (s == null) {
             return;
         }
@@ -303,7 +302,7 @@ public class RepRapBuild extends Panel3D implements MouseListener {
         final Attributes att = stl.addSTL(s, null, Preferences.unselectedApp(), lastPicked);
         if (lastPicked == null && centre) {
 
-            final Point2D middle = Point2D.mul(0.5, printer.getBedNorthEast());
+            final Point2D middle = Point2D.mul(0.5, new Point2D(200, 200));
             final Vector3d v = new Vector3d(middle.x(), middle.y(), 0);
             final Vector3d e = stl.extent();
             e.z = 0;

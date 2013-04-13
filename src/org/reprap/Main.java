@@ -26,8 +26,8 @@ import javax.swing.filechooser.FileFilter;
 import org.reprap.geometry.Producer;
 import org.reprap.gui.RepRapBuild;
 import org.reprap.gui.Utility;
-import org.reprap.gui.botConsole.BotConsoleFrame;
-import org.reprap.machines.MachineFactory;
+import org.reprap.gui.botConsole.SlicerFrame;
+import org.reprap.machines.GCodeRepRap;
 import org.reprap.utilities.Debug;
 import org.reprap.utilities.ExtensionFileFilter;
 import org.reprap.utilities.RrDeleteOnExit;
@@ -80,7 +80,7 @@ public class Main {
             chooser.setFileFilter(filter);
         }
         try {
-            printer = MachineFactory.create();
+            printer = new GCodeRepRap();
         } catch (final Exception ex) {
             Debug.e("MachineFactory.create() failed.\n");
             ex.printStackTrace();
@@ -349,7 +349,7 @@ public class Main {
                 builder.addRFOFile(result);
             }
             if (extensions[0].toUpperCase().contentEquals("STL")) {
-                builder.anotherSTLFile(result, printer, true);
+                builder.anotherSTLFile(result, true);
             }
             return f;
         }
@@ -469,7 +469,7 @@ public class Main {
                 }
                 gui.mainFrame.setFocusable(true);
                 gui.mainFrame.requestFocus();
-                BotConsoleFrame.main(null);
+                SlicerFrame.main(null);
             }
         });
 
