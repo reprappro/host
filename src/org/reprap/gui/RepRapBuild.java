@@ -88,9 +88,6 @@ package org.reprap.gui;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
@@ -105,623 +102,387 @@ import javax.media.j3d.Group;
 import javax.media.j3d.Node;
 import javax.media.j3d.TransformGroup;
 import javax.media.j3d.ViewPlatform;
-import javax.media.j3d.Transform3D;
-
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.SwingConstants;
-
 import javax.vecmath.Color3f;
 import javax.vecmath.Vector3d;
+
+import org.reprap.Attributes;
+import org.reprap.Preferences;
+import org.reprap.Printer;
+import org.reprap.RFO;
+import org.reprap.geometry.polygons.Point2D;
+import org.reprap.geometry.polyhedra.AllSTLsToBuild;
+import org.reprap.geometry.polyhedra.STLObject;
+import org.reprap.utilities.RrGraphics;
 
 import com.sun.j3d.utils.picking.PickCanvas;
 import com.sun.j3d.utils.picking.PickResult;
 import com.sun.j3d.utils.picking.PickTool;
 
-import org.reprap.Attributes;
-import org.reprap.Printer;
-import org.reprap.RFO;
-import org.reprap.Preferences;
-import org.reprap.geometry.LayerRules;
-import org.reprap.geometry.polygons.Point2D;
-import org.reprap.geometry.polyhedra.AllSTLsToBuild;
-import org.reprap.geometry.polyhedra.STLObject;
-import org.reprap.utilities.Debug;
-import org.reprap.utilities.RrGraphics;
-
-/**
- * Little class to put up a radiobutton menu so you can set
- * what material something is to be made from.
- * 
- * @author adrian
- *
- */
-class MaterialRadioButtons extends JPanel {
-	private static final long serialVersionUID = 1L;
-	private static Attributes att;
-	private static JDialog dialog;
-	private static JTextField copies;
-	private static RepRapBuild rrb;
-	private static int stlIndex; 
-	
-	private MaterialRadioButtons(double volume)
-	{
-		super(new BorderLayout());
-		JPanel radioPanel;
-		ButtonGroup bGroup = new ButtonGroup();
-		String[] names;
-		radioPanel = new JPanel(new GridLayout(0, 1));
-		radioPanel.setSize(300,200);
-		
-		JLabel jLabel0 = new JLabel();
-	    radioPanel.add(jLabel0);
-	    jLabel0.setText("Volume of object: " + Math.round(volume) + " mm^3");
-		jLabel0.setHorizontalAlignment(SwingConstants.CENTER);
-		
-	    JLabel jLabel2 = new JLabel();
-	    radioPanel.add(jLabel2);
-	    jLabel2.setText(" Number of copies of the object just loaded to print: ");
-		jLabel2.setHorizontalAlignment(SwingConstants.CENTER);
-		copies = new JTextField("1");
-	    copies.setSize(20, 10);
-		copies.setHorizontalAlignment(SwingConstants.CENTER);
-		radioPanel.add(copies);
-		
-		JLabel jLabel1 = new JLabel();
-		radioPanel.add(jLabel1);
-		jLabel1.setText(" Select the material for the object(s): ");
-		jLabel1.setHorizontalAlignment(SwingConstants.CENTER);
-		
-		try
-		{
-			names = Preferences.allMaterials();
-			String matname = att.getMaterial();
-			if(matname == null)
-				matname = "";
-			int matnumber = -1;
-			for(int i = 0; i < names.length; i++)
-			{
-				if(matname.contentEquals(names[i]))
-					matnumber = i;
-				JRadioButton b = new JRadioButton(names[i]);
-		        b.setActionCommand(names[i]);
-		        b.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						att.setMaterial(e.getActionCommand());
-					}});
-		        if(i == matnumber)
-		        	b.setSelected(true);
-		        bGroup.add(b);
-		        radioPanel.add(b);
-			}
-			if(matnumber < 0)
-			{
-				att.setMaterial(names[0]);
-				JRadioButton b = (JRadioButton)bGroup.getElements().nextElement();
-				b.setSelected(true);
-			} else
-				copies.setEnabled(false);  // If it's already loaded, don't make multiple copies (FUTURE: why not...?)
-			
-			JButton okButton = new JButton();
-			radioPanel.add(okButton);
-			okButton.setText("OK");
-			okButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-					OKHandler();
-				}
-			});
-			
-			add(radioPanel, BorderLayout.LINE_START);
-			setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
-			
-		} catch (Exception ex)
-		{
-			Debug.e(ex.toString());
-			ex.printStackTrace();
-		}	
-	}
-	
-	public static void OKHandler()
-	{
-		//System.out.println("Copies: " + copies.getText());
-		int number = Integer.parseInt(copies.getText().trim()) - 1;
-		STLObject stl = rrb.getSTLs().get(stlIndex);
-		rrb.moreCopies(stl, att, number);
-		dialog.dispose();
-	}
-    
-    public static void createAndShowGUI(Attributes a, RepRapBuild r, int index, double volume) 
-    {
-    	att = a;
-    	rrb = r;
-    	stlIndex = index;
-        //Create and set up the window.
-    	JFrame f = new JFrame();
-    	dialog = new JDialog(f, "Material selector");
-        dialog.setLocation(500, 400);
-        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-
-        //Create and set up the content pane.
-        JComponent newContentPane = new MaterialRadioButtons(volume);
-        newContentPane.setOpaque(true); //content panes must be opaque
-        dialog.setContentPane(newContentPane);
-
-        //Display the window.
-        dialog.pack();
-        dialog.setModalityType(JDialog.DEFAULT_MODALITY_TYPE);
-        dialog.setVisible(true);
-    }	 
-    
-    public static void createAndShowGUI(Attributes a, RepRapBuild r, STLObject lastPicked) 
-    {
-    	if(lastPicked == null)
-    		return;
-    	int index = -1;
-		for(int i = 0; i < r.getSTLs().size(); i++)
-		{
-			if(r.getSTLs().get(i) == lastPicked)
-			{
-				index = i;
-				break;
-			}
-		}
-		if (index >= 0) 
-			createAndShowGUI(a, r, index, r.getSTLs().get(index).volume());
-    }
-	
-}
-
-//************************************************************************
-
 /**
  * This is the main public class that creates a virtual world of the RepRap
- * working volume, allows you to put STL-file objects in it, move them about
- * to arrange them, and build them in the machine.
+ * working volume, allows you to put STL-file objects in it, move them about to
+ * arrange them, and build them in the machine.
  */
 
 public class RepRapBuild extends Panel3D implements MouseListener {
-	
+    private static final long serialVersionUID = 1L;
+    private MouseObject mouse = null;
+    private PickCanvas pickCanvas = null; // The thing picked by a mouse click
+    private STLObject lastPicked = null; // The last thing picked
+    private final AllSTLsToBuild stls;
+    private boolean reordering;
+    private RrGraphics graphics;
 
-	
-	
-	private static final long serialVersionUID = 1L;
-	private MouseObject mouse = null;
-	private PickCanvas pickCanvas = null; // The thing picked by a mouse click
-	private STLObject lastPicked = null; // The last thing picked
-	//private java.util.List<STLObject> stls = new ArrayList<STLObject>(); // All the STLObjects to be built
-	private AllSTLsToBuild stls;
-	//private int objectIndex = 0; // Counter for STLs as they are loaded
-	private boolean reordering;
-	private RrGraphics graphics;
+    public RepRapBuild() throws IOException {
+        initialise();
+        stls = new AllSTLsToBuild();
+        reordering = false;
+        graphics = null;
+        setPreferredSize(new Dimension(600, 400));
+    }
 
-	// Constructors
-	public RepRapBuild() throws Exception {
-		initialise();
-		stls = new AllSTLsToBuild();
-		reordering = false;
-		graphics = null;
-		setPreferredSize(new Dimension(600, 400));
-	}
-	
-	public AllSTLsToBuild getSTLs()
-	{
-		return stls;
-	}
-	
-	/**
-	 * Set the material to make an STL object from.
-	 * @param stl 
-	 */
-//	private void getMaterialName(STLObject stl)
-//	{
-//		try {
-//			MaterialRadioButtons.createAndShowGUI(stl);
-//		}
-//      	catch (Exception ex) {
-//     		JOptionPane.showMessageDialog(null, "RepRapBuild material select exception: " + ex);
-// 			ex.printStackTrace();
-//     	}
-//	}
-	
-	// Set bg light grey
-	protected Background createBackground() {
-		Background back = new Background(bgColour);
-		back.setApplicationBounds(createApplicationBounds());
-		return back;
-	}
+    public AllSTLsToBuild getSTLs() {
+        return stls;
+    }
 
-	protected BranchGroup createViewBranchGroup(TransformGroup[] tgArray,
-			ViewPlatform vp) {
-		BranchGroup vpBranchGroup = new BranchGroup();
+    @Override
+    protected Background createBackground() {
+        final Background back = new Background(bgColour);
+        back.setApplicationBounds(createApplicationBounds());
+        return back;
+    }
 
-		if (tgArray != null && tgArray.length > 0) {
-			Group parentGroup = vpBranchGroup;
-			TransformGroup curTg = null;
+    @Override
+    protected BranchGroup createViewBranchGroup(final TransformGroup[] tgArray, final ViewPlatform vp) {
+        final BranchGroup vpBranchGroup = new BranchGroup();
 
-			for (int n = 0; n < tgArray.length; n++) {
-				curTg = tgArray[n];
-				parentGroup.addChild(curTg);
-				parentGroup = curTg;
-			}
+        if (tgArray != null && tgArray.length > 0) {
+            Group parentGroup = vpBranchGroup;
+            TransformGroup curTg = null;
 
-			tgArray[tgArray.length - 1].addChild(vp);
-		} else
-			vpBranchGroup.addChild(vp);
+            for (final TransformGroup element : tgArray) {
+                curTg = element;
+                parentGroup.addChild(curTg);
+                parentGroup = curTg;
+            }
 
-		return vpBranchGroup;
-	}
+            tgArray[tgArray.length - 1].addChild(vp);
+        } else {
+            vpBranchGroup.addChild(vp);
+        }
 
-	// Set up the RepRap working volume
+        return vpBranchGroup;
+    }
 
-	protected BranchGroup createSceneBranchGroup() throws Exception {
-		sceneBranchGroup = new BranchGroup();
+    @Override
+    protected BranchGroup createSceneBranchGroup() {
+        sceneBranchGroup = new BranchGroup();
 
-		BranchGroup objRoot = sceneBranchGroup;
+        final BranchGroup objRoot = sceneBranchGroup;
+        final Bounds lightBounds = getApplicationBounds();
+        final AmbientLight ambLight = new AmbientLight(true, new Color3f(1.0f, 1.0f, 1.0f));
+        ambLight.setInfluencingBounds(lightBounds);
+        objRoot.addChild(ambLight);
 
-		Bounds lightBounds = getApplicationBounds();
+        final DirectionalLight headLight = new DirectionalLight();
+        headLight.setInfluencingBounds(lightBounds);
+        objRoot.addChild(headLight);
 
-		AmbientLight ambLight = new AmbientLight(true, new Color3f(1.0f, 1.0f,
-				1.0f));
-		ambLight.setInfluencingBounds(lightBounds);
-		objRoot.addChild(ambLight);
+        mouse = new MouseObject(getApplicationBounds(), mouse_tf, mouse_zf);
 
-		DirectionalLight headLight = new DirectionalLight();
-		headLight.setInfluencingBounds(lightBounds);
-		objRoot.addChild(headLight);
+        wv_and_stls.setCapability(Group.ALLOW_CHILDREN_EXTEND);
+        wv_and_stls.setCapability(Group.ALLOW_CHILDREN_WRITE);
+        wv_and_stls.setCapability(Group.ALLOW_CHILDREN_READ);
 
-		mouse = new MouseObject(getApplicationBounds(), mouse_tf, mouse_zf);
+        // Load the STL file for the working volume
 
-		wv_and_stls.setCapability(Group.ALLOW_CHILDREN_EXTEND);
-		wv_and_stls.setCapability(Group.ALLOW_CHILDREN_WRITE);
-		wv_and_stls.setCapability(Group.ALLOW_CHILDREN_READ);
+        world = new STLObject(wv_and_stls, worldName);
 
-		// Load the STL file for the working volume
+        final String stlFile = getStlBackground();
 
-		world = new STLObject(wv_and_stls, worldName);
+        workingVolume = new STLObject();
+        workingVolume.addSTL(stlFile, wv_offset, wv_app, null);
+        wv_and_stls.addChild(workingVolume.top());
 
-		String stlFile = getStlBackground();
+        // Set the mouse to move everything
 
-		workingVolume = new STLObject();
-		workingVolume.addSTL(stlFile, wv_offset, wv_app, null);
-		wv_and_stls.addChild(workingVolume.top());
+        mouse.move(world, false);
+        objRoot.addChild(world.top());
 
-		// Set the mouse to move everything
+        return objRoot;
+    }
 
-		mouse.move(world, false);
-		objRoot.addChild(world.top());
+    // Action on mouse click
 
-		return objRoot;
-	}
+    @Override
+    public void mouseClicked(final MouseEvent e) {
+        pickCanvas.setShapeLocation(e);
 
-	// Action on mouse click
+        final PickResult pickResult = pickCanvas.pickClosest();
+        STLObject picked = null;
 
-	public void mouseClicked(MouseEvent e) {
-		pickCanvas.setShapeLocation(e);
+        if (pickResult != null) {
+            final Node actualNode = pickResult.getObject();
 
-		PickResult pickResult = pickCanvas.pickClosest();
-		STLObject picked = null;
+            final Attributes att = (Attributes) actualNode.getUserData();
+            picked = att.getParent();
+            if (picked != null) {
+                if (picked != workingVolume) {
+                    picked.setAppearance(picked_app); // Highlight it
+                    if (lastPicked != null && !reordering) {
+                        lastPicked.restoreAppearance(); // lowlight
+                    }
+                    if (!reordering) {
+                        mouse.move(picked, true); // Set the mouse to move it
+                    }
+                    lastPicked = picked;
+                    reorder();
+                } else {
+                    if (!reordering) {
+                        mouseToWorld();
+                    }
+                }
+            }
+        }
+    }
 
-		if (pickResult != null) // Got anything?
-		{
-			Node actualNode = pickResult.getObject();
+    public void mouseToWorld() {
+        if (lastPicked != null) {
+            lastPicked.restoreAppearance();
+        }
+        mouse.move(world, false);
+        lastPicked = null;
+    }
 
-			Attributes att = (Attributes)actualNode.getUserData();
-			picked = att.getParent();
-			if (picked != null) // Really got something?
-			{
-				if (picked != workingVolume) // STL object picked?
-				{
-					//picked = findSTL(name);
-					if (picked != null) {
-						picked.setAppearance(picked_app); // Highlight it
-						if (lastPicked != null  && !reordering)
-							lastPicked.restoreAppearance(); // lowlight
-						// the last
-						// one
-						if(!reordering)
-							mouse.move(picked, true); // Set the mouse to move it
-						lastPicked = picked; // Remember it
-						reorder();
-					}
-				} else { // Picked the working volume - deselect all and...
-					if(!reordering)
-						mouseToWorld();
-				}
-			}
-		}
-	}
-	
-	public void mouseToWorld()
-	{
-		if (lastPicked != null)
-			lastPicked.restoreAppearance();
-		mouse.move(world, false); // ...switch the mouse to moving the world
-		lastPicked = null;
-	}
+    @Override
+    public void mouseEntered(final MouseEvent e) {
+    }
 
-	// Find the stl object in the scene with the given name
+    @Override
+    public void mouseExited(final MouseEvent e) {
+    }
 
-//	protected STLObject findSTL(String name) {
-//		STLObject stl;
-//		for (int i = 0; i < stls.size(); i++) {
-//			stl = stls.get(i);
-//			if (stl.name == name)
-//				return stl;
-//		}
-//		return null;
-//	}
+    @Override
+    public void mousePressed(final MouseEvent e) {
+    }
 
-	public void mouseEntered(MouseEvent e) {
-	}
+    @Override
+    public void mouseReleased(final MouseEvent e) {
+    }
 
-	public void mouseExited(MouseEvent e) {
-	}
+    public void moreCopies(final STLObject original, final Attributes originalAttributes, final int number) {
+        if (number <= 0) {
+            return;
+        }
+        final String fileName = original.fileAndDirectioryItCameFrom(0);
+        final double increment = original.extent().x + 5;
+        final Vector3d offset = new Vector3d();
+        offset.x = increment;
+        offset.y = 0;
+        offset.z = 0;
+        for (int i = 0; i < number; i++) {
+            final STLObject stl = new STLObject();
+            final Attributes newAtt = stl.addSTL(fileName, null, original.getAppearance(), null);
+            if (newAtt != null) {
+                newAtt.setMaterial(originalAttributes.getMaterial());
+                stl.translate(offset);
+                if (stl.numChildren() > 0) {
+                    wv_and_stls.addChild(stl.top());
+                    stls.add(stl);
+                }
+            }
+            offset.x += increment;
+        }
+    }
 
-	public void mousePressed(MouseEvent e) {
-	}
+    public void anotherSTLFile(final String s, final Printer printer, final boolean centre) {
+        if (s == null) {
+            return;
+        }
+        final STLObject stl = new STLObject();
+        final Attributes att = stl.addSTL(s, null, Preferences.unselectedApp(), lastPicked);
+        if (lastPicked == null && centre) {
 
-	public void mouseReleased(MouseEvent e) {
-	}
+            final Point2D middle = Point2D.mul(0.5, printer.getBedNorthEast());
+            final Vector3d v = new Vector3d(middle.x(), middle.y(), 0);
+            final Vector3d e = stl.extent();
+            e.z = 0;
+            e.x = -0.5 * e.x;
+            e.y = -0.5 * e.y;
+            v.add(e);
+            stl.translate(v);
+        }
+        if (att != null) {
+            // New separate object, or just appended to lastPicked?
+            if (stl.numChildren() > 0) {
+                wv_and_stls.addChild(stl.top());
+                stls.add(stl);
+            }
 
-	
-	public void moreCopies(STLObject original, Attributes originalAttributes, int number)
-	{
-		if (number <= 0)
-			return;
-		String fileName = original.fileAndDirectioryItCameFrom(0);
-		double increment = original.extent().x + 5;
-		Vector3d offset = new Vector3d();
-		offset.x = increment;
-		offset.y = 0;
-		offset.z = 0;
-		for(int i = 0; i < number; i++)
-		{
-			STLObject stl = new STLObject();
-			Attributes newAtt = stl.addSTL(fileName, null, original.getAppearance(), null);
-			if(newAtt != null)
-			{
-				newAtt.setMaterial(originalAttributes.getMaterial());
-				stl.translate(offset);
-				if(stl.numChildren() > 0)
-				{
-					wv_and_stls.addChild(stl.top());
-					stls.add(stl);
-				}
-			}
-			offset.x += increment;
-		}
-	}
-	
-	// Callback for when the user selects an STL file to load
+            MaterialRadioButtons.createAndShowGUI(att, this, stls.size() - 1, stl.volume());
+        }
+    }
 
-	public void anotherSTLFile(String s, Printer printer, boolean centre) 
-	{
-		if (s == null)
-			return;
-		//objectIndex++;
-		STLObject stl = new STLObject();
-		Attributes att = stl.addSTL(s, null, Preferences.unselectedApp(), lastPicked);
-		if(lastPicked == null && centre)
-		{
+    // Callback for when the user has a pre-loaded STL and attribute
+    public void anotherSTL(final STLObject stl, final Attributes att, final int index) {
+        if (stl == null || att == null) {
+            return;
+        }
 
-			Point2D middle = Point2D.mul(0.5, printer.getBedNorthEast());
-			Vector3d v = new Vector3d(middle.x(), middle.y(), 0);
-			Vector3d e = stl.extent();
-			e.z = 0;
-			e.x = -0.5*e.x;
-			e.y = -0.5*e.y;
-			v.add(e);
-			stl.translate(v);
-		}
-		if(att != null)
-		{
-			// New separate object, or just appended to lastPicked?
-			if(stl.numChildren() > 0)
-			{
-				wv_and_stls.addChild(stl.top());
-				stls.add(stl);
-			}
+        // New separate object, or just appended to lastPicked?
+        if (stl.numChildren() > 0) {
+            wv_and_stls.addChild(stl.top());
+            stls.add(index, stl);
+        }
+    }
 
-			MaterialRadioButtons.createAndShowGUI(att, this, stls.size() - 1, stl.volume());
-		}
-	}
-	
-	// Callback for when the user has a pre-loaded STL and attribute
+    public void changeMaterial() {
+        if (lastPicked == null) {
+            return;
+        }
+        MaterialRadioButtons.createAndShowGUI(lastPicked.attributes(0), this, lastPicked);
+    }
 
-	public void anotherSTL(STLObject stl, Attributes att, int index) 
-	{
-		if (stl == null || att == null)
-			return;
+    // Callback for when the user selects an RFO file to load
+    public void addRFOFile(final String s) {
+        if (s == null) {
+            return;
+        }
+        final AllSTLsToBuild newStls = RFO.load(s);
+        for (int i = 0; i < newStls.size(); i++) {
+            wv_and_stls.addChild(newStls.get(i).top());
+        }
+        stls.add(newStls);
+    }
 
-		// New separate object, or just appended to lastPicked?
-		if(stl.numChildren() > 0)
-		{
-			wv_and_stls.addChild(stl.top());
-			stls.add(index, stl);
-		}
-	}
-	
-	public void changeMaterial()
-	{
-		if(lastPicked == null)
-			return;
-		MaterialRadioButtons.createAndShowGUI(lastPicked.attributes(0), this, lastPicked);
-	}
-	
-	// Callback for when the user selects an RFO file to load
+    public void saveRFOFile(final String s) {
+        RFO.save(s, stls);
+    }
 
-	public void addRFOFile(String s) 
-	{
-		if (s == null)
-			return;
-		//deleteAllSTLs();
-		AllSTLsToBuild newStls = RFO.load(s);
-		for(int i = 0; i < newStls.size(); i++)
-			wv_and_stls.addChild(newStls.get(i).top());
-		stls.add(newStls);
-	}
-	
-	public void saveRFOFile(String s)
-	{
-		RFO.save(s, stls);
-	}
-	
-	public void saveSCADFile(String s)
-	{
-		stls.saveSCAD(s);
-	}
-	
+    public void saveSCADFile(final String s) {
+        stls.saveSCAD(s);
+    }
 
+    public void start() throws Exception {
+        if (pickCanvas == null) {
+            initialise();
+        }
+    }
 
-	public void start() throws Exception {
-		if (pickCanvas == null)
-			initialise();
-	}
+    @Override
+    protected void addCanvas3D(final Canvas3D c3d) {
+        setLayout(new BorderLayout());
+        add(c3d, BorderLayout.CENTER);
+        doLayout();
 
-	protected void addCanvas3D(Canvas3D c3d) {
-		setLayout(new BorderLayout());
-		add(c3d, BorderLayout.CENTER);
-		doLayout();
+        if (sceneBranchGroup != null) {
+            c3d.addMouseListener(this);
 
-		if (sceneBranchGroup != null) {
-			c3d.addMouseListener(this);
+            pickCanvas = new PickCanvas(c3d, sceneBranchGroup);
+            pickCanvas.setMode(PickTool.GEOMETRY_INTERSECT_INFO);
+            pickCanvas.setTolerance(4.0f);
+        }
 
-			pickCanvas = new PickCanvas(c3d, sceneBranchGroup);
-			pickCanvas.setMode(PickTool.GEOMETRY_INTERSECT_INFO);
-			pickCanvas.setTolerance(4.0f);
-		}
+        c3d.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    }
 
-		c3d.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-	}
+    // Callbacks for when the user rotates the selected object
+    public void xRotate() {
+        if (lastPicked != null) {
+            lastPicked.xClick();
+        }
+    }
 
-	// Callbacks for when the user rotates the selected object
+    public void yRotate() {
+        if (lastPicked != null) {
+            lastPicked.yClick();
+        }
+    }
 
-	public void xRotate() {
-		if (lastPicked != null)
-			lastPicked.xClick();
-	}
+    public void zRotate(final double angle) {
+        if (lastPicked != null) {
+            lastPicked.zClick(angle);
+        }
+    }
 
-	public void yRotate() {
-		if (lastPicked != null)
-			lastPicked.yClick();
-	}
+    // Callback for a request to convert units
+    public void inToMM() {
+        if (lastPicked != null) {
+            lastPicked.inToMM();
+        }
+    }
 
-	public void zRotate(double angle) {
-		if (lastPicked != null)
-			lastPicked.zClick(angle);
-	}
-	
-	// Callback for a request to convert units
-	
-	public void inToMM() {
-		if (lastPicked != null)
-			lastPicked.inToMM();
-	}
-	
-	public void doReorder()
-	{
-		if (lastPicked != null)
-		{
-			lastPicked.restoreAppearance();
-			mouseToWorld();
-			lastPicked = null;
-		}
-		reordering = true;
-	}
-	
-	/**
-	 * User is reordering the list
-	 */
-	private void reorder()
-	{
-		if(!reordering)
-			return;
-		if(stls.reorderAdd(lastPicked))
-			return;
-		for(int i = 0; i < stls.size(); i++)
-			stls.get(i).restoreAppearance();
-		//mouseToWorld();		
-		lastPicked = null;
-		reordering = false;
-	}
-	
-	// Move to the next one in the list
-	
-	public void nextPicked()
-	{
-		if (lastPicked == null)
-			lastPicked = stls.get(0);
-		else
-		{
-			lastPicked.restoreAppearance();
-			lastPicked = stls.getNextOne(lastPicked);
-		}
-		lastPicked.setAppearance(picked_app);
-		mouse.move(lastPicked, true);
-	}
-	
-//	public void materialSTL()
-//	{
-//		if (lastPicked == null)
-//			return;
-//		getMaterialName(lastPicked);
-//		mouseToWorld();
-//	}
-	
-	// Callback to delete one of the loaded objects
-	
-	public void deleteSTL()
-	{
-		if (lastPicked == null)
-			return;
-		int index = -1;
-		for(int i = 0; i < stls.size(); i++)
-		{
-			if(stls.get(i) == lastPicked)
-			{
-				index = i;
-				break;
-			}
-		}
-		if (index >= 0) 
-		{
-			stls.remove(index);
-			index = wv_and_stls.indexOfChild(lastPicked.top());
-			mouseToWorld();
-			wv_and_stls.removeChild(index);
-			lastPicked = null;
-		}
-	}
-	
-	public void deleteAllSTLs()
-	{
-		for(int i = 0; i < stls.size(); i++)
-		{
-			STLObject s = stls.get(i);
-			stls.remove(i);
-			int index = wv_and_stls.indexOfChild(s.top());
-			wv_and_stls.removeChild(index);
-		}
-		mouseToWorld();
-		lastPicked = null;
-	}
-	
-	public void setGraphics(RrGraphics g)
-	{
-		graphics = g;
-	}
-	
-	public RrGraphics getRrGraphics()
-	{
-		return graphics;
-	}
+    public void doReorder() {
+        if (lastPicked != null) {
+            lastPicked.restoreAppearance();
+            mouseToWorld();
+            lastPicked = null;
+        }
+        reordering = true;
+    }
+
+    private void reorder() {
+        if (!reordering) {
+            return;
+        }
+        if (stls.reorderAdd(lastPicked)) {
+            return;
+        }
+        for (int i = 0; i < stls.size(); i++) {
+            stls.get(i).restoreAppearance();
+        }
+        lastPicked = null;
+        reordering = false;
+    }
+
+    public void nextPicked() {
+        if (lastPicked == null) {
+            lastPicked = stls.get(0);
+        } else {
+            lastPicked.restoreAppearance();
+            lastPicked = stls.getNextOne(lastPicked);
+        }
+        lastPicked.setAppearance(picked_app);
+        mouse.move(lastPicked, true);
+    }
+
+    public void deleteSTL() {
+        if (lastPicked == null) {
+            return;
+        }
+        int index = -1;
+        for (int i = 0; i < stls.size(); i++) {
+            if (stls.get(i) == lastPicked) {
+                index = i;
+                break;
+            }
+        }
+        if (index >= 0) {
+            stls.remove(index);
+            index = wv_and_stls.indexOfChild(lastPicked.top());
+            mouseToWorld();
+            wv_and_stls.removeChild(index);
+            lastPicked = null;
+        }
+    }
+
+    public void deleteAllSTLs() {
+        for (int i = 0; i < stls.size(); i++) {
+            final STLObject s = stls.get(i);
+            stls.remove(i);
+            final int index = wv_and_stls.indexOfChild(s.top());
+            wv_and_stls.removeChild(index);
+        }
+        mouseToWorld();
+        lastPicked = null;
+    }
+
+    public void setGraphics(final RrGraphics g) {
+        graphics = g;
+    }
+
+    public RrGraphics getRrGraphics() {
+        return graphics;
+    }
 
 }
