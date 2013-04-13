@@ -22,14 +22,12 @@ import javax.swing.SwingConstants;
 
 import org.reprap.Main;
 import org.reprap.Preferences;
-import org.reprap.comms.GCodeReaderAndWriter;
 
 /**
  * @author ensab
  */
-public class PrintTabFrame extends JInternalFrame {//AB99
+public class PrintTabFrame extends JInternalFrame {
     private static final long serialVersionUID = 1L;
-    private final GCodeReaderAndWriter gcode = new GCodeReaderAndWriter();
     private SlicerFrame parentBotConsoleFrame = null;
     private long startTime = -1;
     private int oldLayer = -1;
@@ -524,7 +522,7 @@ public class PrintTabFrame extends JInternalFrame {//AB99
         if (sp <= 0) {
             JOptionPane.showMessageDialog(null, "The loaded file is not an STL or an RFO file.");
         }
-        if (gcode.setGCodeFileForOutput(true, loadedFiles.substring(0, sp)) == null) {
+        if (Main.gui.getPrinter().setGCodeFileForOutput(loadedFiles.substring(0, sp)) == null) {
             restoreSliceButton();
             return;
         }

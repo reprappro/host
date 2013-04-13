@@ -27,7 +27,7 @@ import org.reprap.geometry.Producer;
 import org.reprap.gui.RepRapBuild;
 import org.reprap.gui.Utility;
 import org.reprap.gui.botConsole.SlicerFrame;
-import org.reprap.machines.GCodeRepRap;
+import org.reprap.machines.GCodePrinter;
 import org.reprap.utilities.Debug;
 import org.reprap.utilities.ExtensionFileFilter;
 import org.reprap.utilities.RrDeleteOnExit;
@@ -48,7 +48,7 @@ public class Main {
     private static boolean repRapAttached = false;
 
     private Producer producer = null;
-    private Printer printer = null;
+    private GCodePrinter printer = null;
     private final JFileChooser chooser;
     private JFrame mainFrame;
     private RepRapBuild builder;
@@ -80,7 +80,7 @@ public class Main {
             chooser.setFileFilter(filter);
         }
         try {
-            printer = new GCodeRepRap();
+            printer = new GCodePrinter();
         } catch (final Exception ex) {
             Debug.e("MachineFactory.create() failed.\n");
             ex.printStackTrace();
@@ -252,7 +252,7 @@ public class Main {
         ftd.killThem();
     }
 
-    public Printer getPrinter() {
+    public GCodePrinter getPrinter() {
         return printer;
     }
 
@@ -315,7 +315,6 @@ public class Main {
                     producer.setSegmentPause(segmentPause);
                     producer.setLayerPause(layerPause);
                     producer.produce();
-                    producer.dispose();
                     producer = null;
                     cancelMenuItem.setEnabled(false);
                     produceProduceB.setEnabled(true);
