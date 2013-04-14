@@ -6,13 +6,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -78,7 +75,7 @@ public class Preferences {
         displaySimulation = s;
     }
 
-    public Preferences() throws IOException {
+    private Preferences() throws IOException {
         final File mainDir = new File(getUsersRootDir());
         if (!mainDir.exists()) {
             copySystemConfigurations(mainDir);
@@ -103,8 +100,8 @@ public class Preferences {
     }
 
     private static void copySystemConfigurations(final File usersDir) throws IOException {
-        final String sysConfig = getSystemConfigurationDir();
-        RepRapUtils.copyTree(new File(sysConfig), usersDir);
+        final URL sysConfig = getSystemConfiguration();
+        RepRapUtils.copyResourceTree(sysConfig, usersDir);
     }
 
     /**
@@ -174,55 +171,21 @@ public class Preferences {
     }
 
     /**
-     * Set the active machine to the one named
-     */
-    public static void setActiveMachine(final String newActiveMachine) {
-        if (allMachines == null) {
-            allMachines = getAllMachines();
-        }
-        try {
-            final FileWriter outFile = new FileWriter(getMachineFilePath());
-            final PrintWriter out = new PrintWriter(outFile);
-            for (int i = 0; i < allMachines.length; i++) {
-                if (allMachines[i].charAt(0) == activeFlag) {
-                    allMachines[i] = allMachines[i].substring(1, allMachines[i].length());
-                }
-                if (allMachines[i].contentEquals(newActiveMachine)) {
-                    allMachines[i] = activeFlag + newActiveMachine;
-                }
-                out.println(allMachines[i]);
-                i++;
-            }
-            outFile.close();
-        } catch (final Exception e) {
-            Debug.e("Can't write to file: " + getMachineFilePath());
-        }
-    }
-
-    /**
      * Where the user's properties file is
      */
-    public static String getPropertiesPath() {
+    private static String getPropertiesPath() {
         return getActiveMachineDir() + propsFile;
     }
 
     /**
      * Where are the system-wide master copies?
      */
-    public static String getSystemConfigurationDir() {
+    private static URL getSystemConfiguration() {
         final URL sysConfig = ClassLoader.getSystemResource(propsDirDist);
         if (sysConfig == null) {
             Debug.e("Can't find system RepRap configurations: " + propsDirDist);
-            return null;
         }
-        return sysConfig.getFile() + File.separator;
-    }
-
-    /**
-     * Where the system version of the user's properties file is
-     */
-    public static String getSystemPropertiesDir() {
-        return getSystemConfigurationDir() + getActiveMachineName() + File.separator;
+        return sysConfig;
     }
 
     /**
@@ -250,29 +213,10 @@ public class Preferences {
      * Compare the user's preferences with the distribution one and report any
      * different names.
      */
-    private void comparePreferences() {
+    private void comparePreferences() throws IOException {
+        final Properties sysPreferences = loadSystemProperties();
+
         final Enumeration<?> usersLot = mainPreferences.propertyNames();
-
-        final String sysProps = getSystemPropertiesDir() + propsFile;
-        final File sysFile = new File(sysProps);
-        URL sysUrl;
-        try {
-            sysUrl = sysFile.toURI().toURL();
-        } catch (final MalformedURLException e) {
-            Debug.e("System preferences location wrong: " + sysProps);
-            return;
-        }
-        final Properties sysPreferences = new Properties();
-        if (sysFile.exists()) {
-            try {
-                sysPreferences.load(sysUrl.openStream());
-            } catch (final IOException e) {
-                Debug.e("System preferences input error: " + sysProps);
-            }
-        } else {
-            Debug.e("Can't find your System's RepRap configurations: " + sysProps);
-        }
-
         final Enumeration<?> distLot = sysPreferences.propertyNames();
 
         String result = "";
@@ -325,7 +269,24 @@ public class Preferences {
         }
     }
 
-    public void save(final boolean startUp) throws FileNotFoundException, IOException {
+    private Properties loadSystemProperties() throws IOException {
+        final Properties systemProperties = new Properties();
+        final String systemPropertiesPath = propsDirDist + "/" + getActiveMachineName() + "/" + propsFile;
+        final URL sysProperties = ClassLoader.getSystemResource(systemPropertiesPath);
+        if (sysProperties != null) {
+            final InputStream sysPropStream = sysProperties.openStream();
+            try {
+                systemProperties.load(sysPropStream);
+            } finally {
+                sysPropStream.close();
+            }
+        } else {
+            Debug.e("Can't find system properties: " + systemPropertiesPath);
+        }
+        return systemProperties;
+    }
+
+    private void save(final boolean startUp) throws FileNotFoundException, IOException {
         final String savePath = getPropertiesPath();
         final File f = new File(savePath);
         if (!f.exists()) {
@@ -340,7 +301,7 @@ public class Preferences {
         }
     }
 
-    public String loadString(final String name) {
+    private String loadString(final String name) {
         if (mainPreferences.containsKey(name)) {
             return mainPreferences.getProperty(name);
         }
@@ -348,17 +309,17 @@ public class Preferences {
         return null;
     }
 
-    public int loadInt(final String name) {
+    private int loadInt(final String name) {
         final String strVal = loadString(name);
         return Integer.parseInt(strVal);
     }
 
-    public double loadDouble(final String name) {
+    private double loadDouble(final String name) {
         final String strVal = loadString(name);
         return Double.parseDouble(strVal);
     }
 
-    public boolean loadBool(final String name) {
+    private boolean loadBool(final String name) {
         final String strVal = loadString(name);
         if (strVal == null) {
             return false;
@@ -381,7 +342,6 @@ public class Preferences {
         } catch (final IOException e) {
             return false;
         }
-
     }
 
     synchronized private static void initIfNeeded() throws IOException {
@@ -415,11 +375,6 @@ public class Preferences {
         globalPrefs.save(false);
     }
 
-    public static Preferences getGlobalPreferences() throws IOException {
-        initIfNeeded();
-        return globalPrefs;
-    }
-
     public static String getDefaultPropsFile() {
         return propsFile;
     }
@@ -427,11 +382,6 @@ public class Preferences {
     public static void setGlobalString(final String name, final String value) throws IOException {
         initIfNeeded();
         globalPrefs.setString(name, value);
-    }
-
-    public static void setGlobalBool(final String name, final boolean value) throws IOException {
-        initIfNeeded();
-        globalPrefs.setString(name, value ? "true" : "false");
     }
 
     private void setString(final String name, final String value) {

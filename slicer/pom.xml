@@ -19,6 +19,16 @@
 			<artifactId>swing-layout</artifactId>
 			<version>1.0.3</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.directory.studio</groupId>
+			<artifactId>org.apache.commons.lang</artifactId>
+			<version>2.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.directory.studio</groupId>
+			<artifactId>org.apache.commons.io</artifactId>
+			<version>2.4</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
