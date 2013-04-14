@@ -102,13 +102,9 @@ public class Preferences {
         }
     }
 
-    private static void copySystemConfigurations(final File usersDir) {
+    private static void copySystemConfigurations(final File usersDir) throws IOException {
         final String sysConfig = getSystemConfigurationDir();
-        try {
-            RepRapUtils.copyTree(new File(sysConfig), usersDir);
-        } catch (final Exception e) {
-            Debug.e("Error copying RepRap configurations to user's directory: " + usersDir.toString());
-        }
+        RepRapUtils.copyTree(new File(sysConfig), usersDir);
     }
 
     /**
