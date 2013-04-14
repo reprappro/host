@@ -24,6 +24,12 @@ import org.reprap.utilities.Debug;
 public class LayerRules 
 {
 	/**
+	 * Definitions for numbers of materials used in parts of a print
+	 */
+	public static final int NONE_USED = -1;
+	public static final int MANY_USED = -2;
+	
+	/**
 	 * The coordinates of the first point plotted in a layer
 	 */
 	private Point2D[] firstPoint;
@@ -141,7 +147,7 @@ public class LayerRules
 	/**
 	 * If we take a short step, remember it and add it on next time
 	 */
-	private double addToStep = 0;
+	//private double addToStep = 0;
 	
 	/**
 	 * Are we going top to bottom or ground up?
@@ -176,7 +182,7 @@ public class LayerRules
 	/**
 	 * How many physical extruders?
 	 */
-	private int maxAddress = -1;
+	private int maxPhysicalExtruder = -1;
 	
 	/**
 	 * 
@@ -241,8 +247,8 @@ public class LayerRules
 					zStep = es[i].getExtrusionHeight();
 				if(es[i].getSurfaceLayers() > maxSurfaceLayers)
 					maxSurfaceLayers = es[i].getSurfaceLayers();
-				if(es[i].getPhysicalExtruderNumber() > maxAddress)
-					maxAddress = es[i].getPhysicalExtruderNumber();
+				if(es[i].getPhysicalExtruderNumber() > maxPhysicalExtruder)
+					maxPhysicalExtruder = es[i].getPhysicalExtruderNumber();
 				/*
 				if(Math.abs(es[i].getExtrusionHeight() - zStep) > Preferences.tiny())
 					Debug.e("Not all extruders extrude the same height of filament: " + 
@@ -250,7 +256,12 @@ public class LayerRules
 				*/
 			}
 		}
-		
+		/*System.out.println("fineLayers; " + fineLayers + 
+				" thickestZStep: " + thickestZStep +
+				" zStep: " + zStep +
+				" maxSurfaceLayers: " + maxSurfaceLayers +
+				" maxAddress: " + maxPhysicalExtruder
+				);*/
 		long thick = Math.round(thickestZStep*1000.0);
 		for(int i = 0; i < es.length; i++)
 		{
@@ -261,6 +272,11 @@ public class LayerRules
 		}
 		
 		int foundationLayers = Math.max(0, printer.getFoundationLayers());
+		if(foundationLayers > 0)
+		{
+			Debug.e("LayerRules(): foundationlayers not yet implemented.");
+			foundationLayers = 0;
+		}
 		modelLayerMax = (int)(modelZMax/zStep) + 1;
 		machineLayerMax = modelLayerMax + foundationLayers;
 		machineZMax = modelZMax + foundationLayers*zStep;
@@ -277,7 +293,6 @@ public class LayerRules
 			modelLayer = -1;
 			machineLayer = 0;			
 		}
-		addToStep = 0;
 		
 // Set up the records of the layers for later reversing (top->down ==>> bottom->up)
 		
@@ -287,11 +302,11 @@ public class LayerRules
 		lastExtruder = new int[machineLayerMax+1];
 		layerZ = new double[machineLayerMax+1];
 		layerFileNames = new String[machineLayerMax+1];
-		extruderUsedThisLayer = new boolean[machineLayerMax+1][maxAddress];
+		extruderUsedThisLayer = new boolean[machineLayerMax+1][maxPhysicalExtruder+1];
 		for(int i = 0; i < machineLayerMax+1; i++)
 		{
 			layerFileNames[i] = null;
-			for(int j = 0; j < maxAddress; j++)
+			for(int j = 0; j < maxPhysicalExtruder+1; j++)
 				extruderUsedThisLayer[i][j] = false;
 		}
 		prologueFileName = null;
@@ -471,6 +486,74 @@ public class LayerRules
 		extruderUsedThisLayer[layer][e.getPhysicalExtruderNumber()] = true;
 	}
 	
+	public boolean extrudersIncreasing(int layer)
+	{
+		return layer%2 != 0;
+	}
+	
+	public void printOrder(int i)
+	{
+
+			System.out.print("Layer " + i + " extruders: ");
+			if(extrudersIncreasing(i))
+			{
+				for(int j = 0; j < extruderUsedThisLayer[i].length; j++)
+					if(extruderUsedThisLayer[i][j])
+						System.out.print(" " + j);
+			} else
+			{
+				for(int j = extruderUsedThisLayer[i].length - 1; j >= 0; j--)
+					if(extruderUsedThisLayer[i][j])
+						System.out.print(" " + j);
+			}
+			System.out.println(" first: " + firstUsedThisLayer(i) + " last: " + lastUsedThisLayer(i));
+	}
+	
+	public void printOrder()
+	{
+		System.out.println();
+		for(int i = 1; i < machineLayerMax; i++)
+			printOrder(i);
+	}
+	
+	public int firstUsedThisLayer(int layer)
+	{
+		if(extrudersIncreasing(layer))
+		{
+			for(int i = 0; i < extruderUsedThisLayer[layer].length; i++)
+				if(extruderUsedThisLayer[layer][i])
+					return i;	
+		} else
+		{
+			for(int i = extruderUsedThisLayer[layer].length - 1; i >= 0; i--)
+				if(extruderUsedThisLayer[layer][i])
+					return i;
+		}
+		Debug.e("LayerRules: First extruder used doesn't exist on layer: " + layer);
+		Exception e = new Exception();
+		e.printStackTrace();
+		return 0; // best we can do
+	}
+	
+	public int lastUsedThisLayer(int layer)
+	{
+		if(!extrudersIncreasing(layer))
+		{
+			for(int i = 0; i < extruderUsedThisLayer[layer].length; i++)
+				if(extruderUsedThisLayer[layer][i])
+					return i;	
+		} else
+		{
+			for(int i = extruderUsedThisLayer[layer].length - 1; i >= 0; i--)
+				if(extruderUsedThisLayer[layer][i])
+					return i;
+		}
+		Debug.e("LayerRules: Last extruder used doesn't exist on layer: " + layer);
+		Exception e = new Exception();
+		e.printStackTrace();
+		return 0; // best we can do
+	}
+	
 	public boolean getPhysicalExtruderUsed(Extruder e, int layer)
 	{
 		return extruderUsedThisLayer[layer][e.getPhysicalExtruderNumber()];
@@ -478,35 +561,48 @@ public class LayerRules
 	
 	private int oneThisLayer(int layer)
 	{
-		int r = -1;
-		for(int i = 0; i < maxAddress; i++)
+		int r = NONE_USED;
+		
+		if(layer > machineLayerMax)
+			return r;
+		
+		for(int i = 0; i < maxPhysicalExtruder; i++)
 		{
 			if(extruderUsedThisLayer[layer][i])
 			{
-				if(r == -1)
+				if(r == NONE_USED)
 					r = i;
 				else
-					return -1;
+					return MANY_USED;
 			}
 		}
-		if(r == -1)
-			return -2;
-		else
-			return r;
+		return r;
 	}
 	
 	public int onlyOneHereOnUp(int layer)
 	{
-		int start = oneThisLayer(layer);
-		if(start < 0)
-			return -1;
-		for(int i = layer+1; i < machineLayerMax+1; i++)
+		int r = NONE_USED;
+		
+		for(int i = layer; i <= machineLayerMax; i++)
 		{
 			int el = oneThisLayer(i);
-			if(el != start)
-				return -1;
+			if(el == MANY_USED)
+				return MANY_USED;
+			if(r != el)
+			{
+				if(el != NONE_USED)
+				{
+					if(r == NONE_USED)
+						r = el;
+					else
+					{
+						if(r != el)
+							return MANY_USED;
+					}
+				}
+			}
 		}
-		return start;
+		return r;
 	}
 	
 	public int getModelLayerMax() { return modelLayerMax; }
@@ -541,10 +637,10 @@ public class LayerRules
 	 * Does the layer about to be produced need to be recomputed?
 	 * @return
 	 */
-	public boolean recomputeLayer()
-	{
-		return getFoundationLayers() - getMachineLayer() <= 2;
-	}
+//	public boolean recomputeLayer()
+//	{
+//		return getFoundationLayers() - getMachineLayer() <= 2;
+//	}
 	
 	/**
 	 * The hatch pattern is:
@@ -618,32 +714,14 @@ public class LayerRules
 	 */
 	public void stepMachine()
 	{
-
-		
 		if(topDown)
 		{
-			//machineZ -= (sZ + addToStep);
 			machineLayer--;
-			machineZ = zStep*machineLayer + addToStep;
-//			ld = getFoundationLayers() - getMachineLayer();
-//			if(ld == 2)
-//				addToStep = zStep*(1 - e.getSeparationFraction());
-//			else if(ld == 1)
-//				addToStep = -zStep*(1 - e.getSeparationFraction());
-//			else
-//				addToStep = 0;
+			machineZ = zStep*machineLayer;
 		} else
 		{
-			//machineZ += (sZ + addToStep);
 			machineLayer++;
-			machineZ = zStep*machineLayer + addToStep;
-//			ld = getFoundationLayers() - getMachineLayer();
-//			if(ld == 2)
-//				addToStep = -zStep*(1 - e.getSeparationFraction());
-//			else if(ld == 1)
-//				addToStep = zStep*(1 - e.getSeparationFraction());
-//			else
-//				addToStep = 0;
+			machineZ = zStep*machineLayer;
 		}
 	}
 	
@@ -653,7 +731,7 @@ public class LayerRules
 
 		if(topDown)
 		{
-			printer.setZ(z - (zStep + addToStep));
+			printer.setZ(z - zStep);
 		}
 		printer.singleMove(printer.getX(), printer.getY(), z, printer.getFastFeedrateZ(), really);
 	}
@@ -665,16 +743,10 @@ public class LayerRules
 	public void step()
 	{		
 		if(topDown)
-		{
-			//modelZ -= (sZ + addToStep);
 			modelLayer--;
-		} else
-		{
-			//modelZ += (sZ + addToStep);
+		else
 			modelLayer++;
-		}
-		modelZ = modelLayer*zStep + addToStep;
-		addToStep = 0;
+		modelZ = modelLayer*zStep;
 		stepMachine();
 	}
 	

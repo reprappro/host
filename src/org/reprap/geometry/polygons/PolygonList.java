@@ -734,7 +734,28 @@ public class PolygonList
 		return r;
 	}
 
-	
+	public void printPhysicalExtruders()
+	{
+		System.out.print("Polygons' physical extruder order:");
+		if(size() <= 0)
+		{
+			System.out.println(" no polygons.");
+			return;
+		}
+		
+		int mat = polygon(0).getAttributes().getExtruder().getPhysicalExtruderNumber();
+		System.out.print(" " + mat);
+		for(int i = 1; i < size(); i++)
+		{
+			int matNew = polygon(i).getAttributes().getExtruder().getPhysicalExtruderNumber();
+			if(matNew != mat)
+			{
+				mat = matNew;
+				System.out.print(" " + mat);
+			}
+		}
+		System.out.println();
+	}
 	
 
 //	private void addDXFPolyLines(List plines, Attributes a)

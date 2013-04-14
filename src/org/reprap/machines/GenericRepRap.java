@@ -34,7 +34,7 @@ public abstract class GenericRepRap implements CartesianPrinter
 	/**
 	 * Force an extruder to be selected on startup
 	 */
-	protected boolean forceSelection;
+	//protected boolean forceSelection;
 	
 	// If true this starts by drawing a rectangle round everything
 	// If false the extruder purges at the purge point
@@ -217,7 +217,7 @@ public abstract class GenericRepRap implements CartesianPrinter
 		startTime = System.currentTimeMillis();
 		startCooling = -1;
 		statusWindow = new StatusMessage(new JFrame());
-		forceSelection = true;
+		//forceSelection = true;
 		
 		//load extruder prefs
 		int extruderCount = Preferences.loadGlobalInt("NumberOfExtruders");
@@ -374,7 +374,8 @@ public abstract class GenericRepRap implements CartesianPrinter
 						currentZ = lc.getMachineZ();
 					}
 					zRight = true;
-					selectExtruder(e, true, false, new Point2D(r.x().low(), r.y().low()));
+					//selectExtruder(e, true, false, new Point2D(r.x().low(), r.y().low()));
+					selectExtruder(extruders[e]);
 					singleMove(r.x().low(), r.y().low(), currentZ, getExtruder().getFastXYFeedrate(), true);
 					printStartDelay(true);
 					//getExtruder().zeroExtrudedLength(true);
@@ -604,33 +605,61 @@ public abstract class GenericRepRap implements CartesianPrinter
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#selectMaterial(int)
 	 */
-	public void selectExtruder(int materialIndex, boolean really, boolean update, Point2D next) throws Exception
+	//public void selectExtruder(int materialIndex, boolean really, boolean update, Point2D next) throws Exception
+	public void selectExtruder(Extruder extr) throws Exception
 	{
 		if (isCancelled())
 			return;
 
-		if(materialIndex < 0 || materialIndex >= extruders.length)
+		for(int i = 0; i < extruders.length; i++)
 		{
-			Debug.e("Selected material (" + materialIndex + ") is out of range.");
-			extruder = 0;
-		} else
-			extruder = materialIndex;
+			if(extruders[i] == extr)
+			{
+				extruder = i;
+				return;
+			}
+		}
+		Debug.e("selectExtruder(): Selected Extruder (" + extr + ") does not exist.");
+		extruder = 0;
 	}
+	
 	
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#selectMaterial(int)
 	 */
-	public void selectExtruder(Attributes att, Point2D next) throws Exception 
+//	public void selectExtruder(Attributes att, Point2D next) throws Exception 
+//	{
+//		for(int i = 0; i < extruders.length; i++)
+//		{
+//			if(att.getMaterial().equals(extruders[i].getMaterial()))
+//			{
+//				selectExtruder(extruders[i]); //, true, true, next);
+//				return;
+//			}
+//		}
+//		Debug.e("selectExtruder() - extruder not found for: " + att.getMaterial());
+//	}
+	
+	/**
+	 * Tell the printer it is using a different extruder to the one it is actually using
+	 * Clearly only to be used if you know what you are doing...
+	 * @param extr
+	 */
+	public void fakeExtruder(Extruder extr)
 	{
+		if (isCancelled())
+			return;
+
 		for(int i = 0; i < extruders.length; i++)
 		{
-			if(att.getMaterial().equals(extruders[i].getMaterial()))
+			if(extruders[i] == extr)
 			{
-				selectExtruder(i, true, true, next);
+				extruder = i;
 				return;
 			}
 		}
-		Debug.e("selectExtruder() - extruder not found for: " + att.getMaterial());
+		Debug.e("fakeExtruder(): Selected Extruder (" + extr + ") does not exist.");
+		extruder = 0;		
 	}
 	
 	
@@ -1379,7 +1408,7 @@ public abstract class GenericRepRap implements CartesianPrinter
 	
 	public void forceNextExtruder()
 	{
-		forceSelection = true;
+		//forceSelection = true;
 	}
 	
 	/**

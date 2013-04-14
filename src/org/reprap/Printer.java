@@ -131,14 +131,21 @@ public interface Printer {
 	 * @param attributes with name of the material
 	 * @throws Exception 
 	 */
-	public void selectExtruder(Attributes att, Point2D next) throws Exception;
+	//public void selectExtruder(Attributes att, Point2D next) throws Exception;
 	
 	/**
 	 * Select a specific material to print with
 	 * @param extr identifier of the material
 	 * @throws Exception 
 	 */
-	public void selectExtruder(int extr, boolean really, boolean update, Point2D next) throws Exception;
+	public void selectExtruder(Extruder extr) throws Exception;
+	
+	/**
+	 * Tell the printer it is using a different extruder to the one it is actually using
+	 * Clearly only to be used if you know what you are doing...
+	 * @param extr
+	 */
+	public void fakeExtruder(Extruder extr);
 	
 	/**
 	 * Start a production run (as opposed to moving the machine about

@@ -12,6 +12,7 @@
 
 package org.reprap.gui.botConsole;
 
+import org.reprap.Extruder;
 import org.reprap.Preferences;
 import org.reprap.utilities.Debug;
 
@@ -93,29 +94,29 @@ public class BotConsoleFrame extends javax.swing.JFrame {
      */
     private void updatePanels()
     {
-    	int currentExtruder = org.reprap.Main.gui.getPrinter().getExtruder().getID();
-    	
-    	try {
-			org.reprap.Main.gui.getPrinter().selectExtruder(exPanelNumber, true, false, null);
-		} catch (Exception e) {
-			handleException(e);
-		}
-    	//extruderPanels[exPanelNumber].refreshTemperature();
-    	try {
-			org.reprap.Main.gui.getPrinter().selectExtruder(currentExtruder, true, false, null);
-		} catch (Exception e) {
-			handleException(e);
-		}
-    	
-    	exPanelNumber++;
-//    	if(exPanelNumber >= extruderPanels.length)
-//    	{
-//    		xYZTabPanel.refreshTemperature();
-//    		exPanelNumber = 0;
-//    	}
-    	if(updatePosition)
-    		xYZTabPanel.recordCurrentPosition();
-    	updatePosition = false;
+//    	Extruder currentExtruder = org.reprap.Main.gui.getPrinter().getExtruder(); //.getID();
+//    	
+//    	try {
+//			org.reprap.Main.gui.getPrinter().selectExtruder(org.reprap.Main.gui.getPrinter().getExtruders()[exPanelNumber]); //, true, false, null);
+//		} catch (Exception e) {
+//			handleException(e);
+//		}
+//    	//extruderPanels[exPanelNumber].refreshTemperature();
+//    	try {
+//			org.reprap.Main.gui.getPrinter().selectExtruder(currentExtruder); //, true, false, null);
+//		} catch (Exception e) {
+//			handleException(e);
+//		}
+//    	
+//    	exPanelNumber++;
+////    	if(exPanelNumber >= extruderPanels.length)
+////    	{
+////    		xYZTabPanel.refreshTemperature();
+////    		exPanelNumber = 0;
+////    	}
+//    	if(updatePosition)
+//    		xYZTabPanel.recordCurrentPosition();
+//    	updatePosition = false;
     }
     
     public void getPosition()

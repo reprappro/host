@@ -174,12 +174,14 @@ public class AllSTLsToBuild
 		private int ringPointer;
 		private final int noLayer = Integer.MIN_VALUE;
 		private int ringSize = 10;
+		private boolean frozen;
 		
-		public SliceCache(LayerRules lr)
+		public SliceCache(LayerRules layerRules)
 		{
-			if(lr == null)
+			if(layerRules == null)
 				Debug.e("SliceCache(): null LayerRules!");
-			ringSize = lr.sliceCacheSize();
+			//ringSize = layerRules.sliceCacheSize();
+			ringSize = layerRules.getModelLayerMax() + 2;
 			sliceRing = new BooleanGridList[ringSize][stls.size()];
 			supportRing = new BooleanGridList[ringSize][stls.size()];
 			layerNumber = new int[ringSize];
@@ -191,7 +193,10 @@ public class AllSTLsToBuild
 					supportRing[layer][stl] = null;
 					layerNumber[layer] = noLayer;
 				}
+			frozen = false;
 		}
+		
+		public void freeze() { frozen = true; }
 		
 		private int getTheRingLocationForWrite(int layer)
 		{
@@ -244,6 +249,8 @@ public class AllSTLsToBuild
 			int rp = getTheRingLocationForRead(layer);
 			if(rp >= 0)
 				return sliceRing[rp][stl];
+			if(frozen)
+				Debug.d("Slice cache: non-existent slice requested from frozen cache. Layer: " + layer + ", STL: " + stl);
 			return null;
 		}
 		
@@ -252,6 +259,8 @@ public class AllSTLsToBuild
 			int rp = getTheRingLocationForRead(layer);
 			if(rp >= 0)
 				return supportRing[rp][stl];
+			if(frozen)
+				Debug.d("Slice cache: non-existent support requested from frozen cache. Layer: " + layer + ", STL: " + stl);
 			return null;
 		}
 	}
@@ -298,6 +307,11 @@ public class AllSTLsToBuild
 	private boolean frozen;
 	
 	/**
+	 * Are we using a shield?
+	 */
+	private boolean shield;
+	
+	/**
 	 * Recently computed slices
 	 */
 	private SliceCache cache;
@@ -316,6 +330,12 @@ public class AllSTLsToBuild
 		frozen = false;
 		cache = null;
 		layerRules = null;
+		try {
+			shield = Preferences.loadGlobalBool("Shield");
+		} catch (IOException e) 
+		{
+			Debug.e("AllSTLsToBuild(): no shield value in the prefereces.\n" + e.toString());
+		}
 	}
 	
 	/**
@@ -581,11 +601,39 @@ public class AllSTLsToBuild
 			return;
 		if(layerRules == null)
 			Debug.e("AllSTLsToBuild.freeze(): layerRules not set!");
-		frozen = true;
 			
+		frozen = true;
 		if(cache == null)
 			cache = new SliceCache(layerRules);
 		setBoxes();
+		
+		int layer = layerRules.getModelLayerMax();
+		
+		int startSTL, stopSTL;
+		
+		// If we have a shield, it is stl index 0
+		
+		if(shield)
+		{
+			startSTL = 1;
+			stopSTL = stls.size() + 1;
+		} else
+		{
+			startSTL = 0;
+			stopSTL = stls.size();				
+		}
+		
+		while(layer > 0)
+		{
+			org.reprap.gui.botConsole.BotConsoleFrame.getBotConsoleFrame().setFractionDone((double)(layerRules.getModelLayerMax() - layer)/(double)layerRules.getModelLayerMax(), layer, layerRules.getModelLayerMax());
+			for(int stlIndex = startSTL; stlIndex < stopSTL; stlIndex++)
+			{
+				//System.out.println("Layer: " + layer + " STL: " + stlIndex%stls.size());
+				slice(stlIndex%stls.size(), layer);
+			}
+			layer--;
+		}
+		cache.freeze();
 	}
 	
 	/**
@@ -854,7 +902,7 @@ public class AllSTLsToBuild
 		freeze();
 		
 		// We start by computing the union of everything in this layer because
-		// that is everywhere that support _isn't_ needed.
+		// that is everywhere that support _isn't_ needed in this layer.
 		// We give the union the attribute of the first thing found, though
 		// clearly it will - in general - represent many different substances.
 		// But it's only going to be subtracted from other shapes, so what it's made
@@ -1122,6 +1170,8 @@ public class AllSTLsToBuild
 	 */
 	public void setLayerRules(LayerRules lr)
 	{
+		if(layerRules != null)
+			Debug.e("AllSTLsToBuild(): overwriting layerRules.");
 		layerRules = lr;
 	}
 	
@@ -1187,6 +1237,13 @@ public class AllSTLsToBuild
 		
 		if(layer <= surfaceLayers)
 		{
+			//if(shield && stl == 0)
+			//	System.out.print("First used on layer: " + layer + " is " + layerRules.firstUsedThisLayer(layer));
+			
+			// Force it to compute the layer below, even though we don't need it here yet.
+			// It will be cached, so the effort is not wasted.
+			slice(stl, layer - 1);
+			
 			slice = slice.offset(layerRules, false, -1);
 			slice = neededThisLayer(slice, false, false);
 			infill.hatchedPolygons = slice.hatch(layerRules, true, null, false);
@@ -1307,18 +1364,11 @@ public class AllSTLsToBuild
 		if(frozen)
 			Debug.e("AllSTLsToBuild.setUpShield() called when frozen!");
 		
-		try 
-		{
-			if(!Preferences.loadGlobalBool("Shield"))
-				return;
-		} catch (IOException e) 
-		{
-			Debug.e(e.toString());
-		}
+		if(!shield)
+			return;
 		
 		setBoxes();
-		Rectangle buildPlan = ObjectPlanRectangle();
-		
+		//Rectangle buildPlan = ObjectPlanRectangle();
 		
 		double modelZMax = maxZ();
 		
@@ -1326,18 +1376,20 @@ public class AllSTLsToBuild
 		Attributes att = s.addSTL(Preferences.getActiveMachineDir()+"shield.stl", null, Preferences.unselectedApp(),  null);
 
 		Vector3d shieldSize = s.extent();
-		
-
 		Point2D shieldPos = layerRules.getPurgeMiddle();
 		double xOff = shieldPos.x();
 		double yOff = shieldPos.y();
-		
 		double zScale = modelZMax/shieldSize.z;
 		double zOff = 0.5*(modelZMax - shieldSize.z);
 		
 		s.rScale(zScale, true);
 		
-		if(!layerRules.purgeXOriented())
+		if(layerRules.purgeXOriented())
+		{
+			xOff -= 0.5*shieldSize.x;
+			yOff -= shieldSize.y;
+			s.translate(new Vector3d(xOff, yOff, zOff));
+		} else
 		{
 			s.translate(new Vector3d(-0.5*shieldSize.x, -0.5*shieldSize.y, 0));
 			Transform3D t3d1 = s.getTransform();
@@ -1345,12 +1397,7 @@ public class AllSTLsToBuild
 			t3d2.rotZ(0.5*Math.PI);
 			t3d1.mul(t3d2);
 			s.setTransform(t3d1);
-			s.translate(new Vector3d(yOff, -xOff, zOff));
-		} else
-		{
-			xOff -= 0.5*shieldSize.x;
-			yOff -= shieldSize.y;
-			s.translate(new Vector3d(xOff, yOff, zOff));
+			s.translate(new Vector3d(yOff, -xOff, zOff));	
 		}
 		
 		
@@ -1364,9 +1411,6 @@ public class AllSTLsToBuild
 		
 		org.reprap.Main.gui.getBuilder().anotherSTL(s, att, 0);
 		
-
-		
-		//layerRules.setPurgePoint(new Point2D(0.5*(buildPlan.se().x() + buildPlan.sw().x() - layerRules.getPurgeLength()), yOff + 0.5*shieldSize.y + 1.5))
 	}
 	
 	/**
@@ -1376,7 +1420,7 @@ public class AllSTLsToBuild
 	 * @param shield
 	 * @return
 	 */
-	public PolygonList computeOutlines(int stl, PolygonList hatchedPolygons) //, boolean shield)
+	public PolygonList computeOutlines(int stl, PolygonList hatchedPolygons)
 	{
 		// No more additions or movements, please
 		
@@ -1425,14 +1469,15 @@ public class AllSTLsToBuild
 		return borderPolygons;
 	}
 
+
 	
 	/**
 	 * Generate a set of pixel-map representations, one for each extruder, for
-	 * STLObject stl at height z.
-	 * 
+	 * STLObject stl
+	 *  
 	 * @param stlIndex
-	 * @param z
-	 * @param extruders
+	 * @param layer
+	 * @param shield
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
@@ -1444,7 +1489,7 @@ public class AllSTLsToBuild
 			freeze();
 		}
 		
-		if(layer < 0)
+		if(layer <= 0)
 			return new BooleanGridList();
 		
 		// Is the result in the cache?  If so, just use that.
@@ -1460,6 +1505,34 @@ public class AllSTLsToBuild
 		if(rectangles.get(stlIndex) == null)
 			return new BooleanGridList();
 		
+		
+		if(shield && stlIndex == 0) // Are we slicing the shield?
+		{
+			// No shield needed if only one (or no) materials from here up
+			
+			int onlyOne = layerRules.onlyOneHereOnUp(layer);
+			if(onlyOne != layerRules.MANY_USED) 
+				return new BooleanGridList();
+			
+			// The shield will be computed last, but printed first. Set its attribute to 
+			// the first material printed on this layer for all the other parts.
+			
+			int firstPhysicalExtruderUsed = layerRules.firstUsedThisLayer(layer);
+			//layerRules.printOrder(layer);
+			Extruder es[] = layerRules.getPrinter().getExtruders();
+			for(int i = 0; i < es.length; i++)
+			{
+				if(es[i].getPhysicalExtruderNumber() == firstPhysicalExtruderUsed)
+				{
+					stls.get(stlIndex).attributes(0).setMaterial(es[i].getMaterial());
+//					BranchGroup bg1 = stls.get(stlIndex).getSTL(0);
+//					Attributes attribute = (Attributes)(bg1.getUserData());
+//					System.out.println("Layer: " + layer + ", Shield count: " + stls.get(stlIndex).getCount() + ", material set to set to " + attribute.getExtruder().getPhysicalExtruderNumber());
+					break;
+				}
+			}
+		}
+		
 		// Probably...
 		
 		double z = layerRules.getModelZ(layer) + layerRules.getZStep()*0.5;
@@ -1473,7 +1546,7 @@ public class AllSTLsToBuild
 		
 		ArrayList<LineSegment>[] edges = new ArrayList[extruders.length];
 		ArrayList<CSG3D>[] csgs = new ArrayList[extruders.length];
-		Attributes[] atts = new Attributes[extruders.length];
+		Attributes[] attributes = new Attributes[extruders.length];
 		
 		for(extruderID = 0; extruderID < extruders.length; extruderID++)
 		{
@@ -1489,20 +1562,17 @@ public class AllSTLsToBuild
 		Transform3D trans = stlObject.getTransform();
 		Matrix4d m4 = new Matrix4d();
 		trans.get(m4);
-
-		//BranchGroup bg = stlObject.getSTL();
-
 		
 		for(int i = 0; i < stlObject.getCount(); i++)
 		{
 			BranchGroup bg1 = stlObject.getSTL(i);
-			Attributes attr = (Attributes)(bg1.getUserData());
-			atts[attr.getExtruder().getID()] = attr;
+			Attributes attribute = (Attributes)(bg1.getUserData());
+			attributes[attribute.getExtruder().getID()] = attribute;
 			CSG3D csg = stlObject.getCSG(i);
 			if(csg != null)
-				csgs[attr.getExtruder().getID()].add(csg.transform(m4));
+				csgs[attribute.getExtruder().getID()].add(csg.transform(m4));
 			else
-				recursiveSetEdges(attr.getPart(), trans, z, attr, edges);
+				recursiveSetEdges(attribute.getPart(), trans, z, attribute, edges);
 		}
 		
 		// Turn them into lists of polygons, one for each extruder, then
@@ -1515,7 +1585,7 @@ public class AllSTLsToBuild
 			for(int i = 0; i < csgs[extruderID].size(); i++)
 			{
 				csgp = CSG2D.slice(csgs[extruderID].get(i), z);
-				result.add(new BooleanGrid(csgp, rectangles.get(stlIndex), atts[extruderID]));
+				result.add(new BooleanGrid(csgp, rectangles.get(stlIndex), attributes[extruderID]));
 			}
 			
 			// Deal with STL-generated edges
@@ -1544,6 +1614,25 @@ public class AllSTLsToBuild
 				}
 			}
 		}
+		
+		// If we are not doing the shield, log the materials used
+		
+		
+		if(!(shield && stlIndex == 0))
+		{
+			//System.out.print("Layer: " + layer + " Physical extruders used:");
+			for(int material = 0; material < result.size(); material++)
+			{
+				BooleanGrid bg = result.get(material);
+				if(!bg.isEmpty())
+				{
+					//System.out.print(" " + bg.attribute().getExtruder().getPhysicalExtruderNumber());
+					layerRules.setPhysicalExtruderUsed(bg.attribute().getExtruder(), layer);
+				}
+			}
+			//System.out.println();
+		}
+		
 		
 		// We may need this later...
 		

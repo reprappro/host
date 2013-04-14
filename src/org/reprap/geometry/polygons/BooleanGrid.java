@@ -1949,7 +1949,7 @@ public class BooleanGrid
 				}				
 				break;
 			case 6:
-				Debug.e("BooleanGrid.marchRound() - dud 2x2 grid: " + m + " at " + 
+				Debug.d("BooleanGrid.marchRound() - dud 2x2 grid: " + m + " at " + 
 						here.toString() + "\n" + printNearby(here,4) + "\n\n");
 				step = false;
 				pix = here.add(neighbour[3]);
@@ -2001,7 +2001,7 @@ public class BooleanGrid
 				}						
 				break;
 			case 9:
-				Debug.e("BooleanGrid.marchRound() - dud 2x2 grid: " + m + " at " + 
+				Debug.d("BooleanGrid.marchRound() - dud 2x2 grid: " + m + " at " + 
 						here.toString() + "\n" + printNearby(here,4) + "\n\n");
 				step = false;
 				set(here, false);
@@ -2100,7 +2100,7 @@ public class BooleanGrid
 				break;
 			
 			default:
-				Debug.e("BooleanGrid.marchRound() - dud 2x2 grid: " + m + " at " + 
+				Debug.d("BooleanGrid.marchRound() - dud 2x2 grid: " + m + " at " + 
 						here.toString() + "\n" + printNearby(here,4) + "\n\n");
 				return result;
 			}

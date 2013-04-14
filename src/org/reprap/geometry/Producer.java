@@ -1,5 +1,8 @@
 package org.reprap.geometry;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 import javax.swing.JCheckBoxMenuItem;
 import org.reprap.Preferences;
 import org.reprap.Printer;
@@ -255,9 +258,9 @@ public class Producer {
 		
 		while(layerRules.getModelLayer() > 0 ) 
 		{
-			if(layerRules.getModelLayer() == 0)
-				reprap.setSeparating(true);
-			else
+//			if(layerRules.getModelLayer() == 0) //???
+//				reprap.setSeparating(true);
+//			else
 				reprap.setSeparating(false);
 			
 			if (reprap.isCancelled())
@@ -266,6 +269,11 @@ public class Producer {
 			waitWhilePaused();
 			
 			Debug.d("Commencing model layer " + layerRules.getModelLayer() + " at " + layerRules.getMachineZ());
+			
+			org.reprap.gui.botConsole.BotConsoleFrame.getBotConsoleFrame().setFractionDone(
+					(double)(layerRules.getModelLayerMax() - layerRules.getModelLayer())/(double)layerRules.getModelLayerMax(), 
+					layerRules.getModelLayer(), 
+					layerRules.getModelLayerMax());
 			
 			reprap.startingLayer(layerRules);
 			
@@ -276,14 +284,28 @@ public class Producer {
 			for(int physicalExtruder = 0; physicalExtruder < allPolygons.length; physicalExtruder++)
 				allPolygons[physicalExtruder] = new PolygonList();
 			
-			//boolean shield = true;
+			boolean shield = Preferences.loadGlobalBool("Shield");
 			Point2D startNearHere = new Point2D(0, 0);
-			for(int stl = 0; stl < allSTLs.size(); stl++)
+			int startSTL, stopSTL;
+			
+			// If we have a shield, it is stl index 0
+			
+			if(shield)
 			{
+				startSTL = 1;
+				stopSTL = allSTLs.size() + 1;
+			} else
+			{
+				startSTL = 0;
+				stopSTL = allSTLs.size();				
+			}
+			
+			for(int stlTemp = startSTL; stlTemp < stopSTL; stlTemp++)
+			{
+					int stl = stlTemp%allSTLs.size();
 					PolygonList fills = allSTLs.computeInfill(stl);
-					PolygonList borders = allSTLs.computeOutlines(stl, fills); //, shield);
+					PolygonList borders = allSTLs.computeOutlines(stl, fills);
 					fills = fills.cullShorts();
-					//shield = false;
 					PolygonList support = allSTLs.computeSupport(stl);
 					
 					for(int physicalExtruder = 0; physicalExtruder < allPolygons.length; physicalExtruder++)
@@ -307,7 +329,8 @@ public class Producer {
 						tempFillPolygons[p.getAttributes().getExtruder().getPhysicalExtruderNumber()].add(p);
 					}
 					
-					for(int physicalExtruder = 0; physicalExtruder < allPolygons.length; physicalExtruder++)
+					
+					for(int physicalExtruder = 0; physicalExtruder < totalPhysicalExtruders; physicalExtruder++)
 					{
 						if(tempBorderPolygons[physicalExtruder].size() > 0)
 						{
@@ -320,7 +343,6 @@ public class Producer {
 								Polygon last = tempBorderPolygons[physicalExtruder].polygon(tempBorderPolygons[physicalExtruder].size() - 1);
 								startNearHere = last.point(last.size() - 1);
 							}
-							allPolygons[physicalExtruder].add(tempBorderPolygons[physicalExtruder]);
 						}
 						if(tempFillPolygons[physicalExtruder].size() > 0)
 						{
@@ -333,10 +355,29 @@ public class Producer {
 								Polygon last = tempFillPolygons[physicalExtruder].polygon(tempFillPolygons[physicalExtruder].size() - 1);
 								startNearHere = last.point(last.size() - 1);
 							}
+						}
+						
+						// The shield is computed last, but goes on the beginning
+						
+						if(shield && stl == 0)
+						{
+							tempFillPolygons[physicalExtruder].add(allPolygons[physicalExtruder]);
+							allPolygons[physicalExtruder] = tempFillPolygons[physicalExtruder];
+							tempBorderPolygons[physicalExtruder].add(allPolygons[physicalExtruder]);
+							allPolygons[physicalExtruder] = tempBorderPolygons[physicalExtruder];
+						} else
+						{
+							allPolygons[physicalExtruder].add(tempBorderPolygons[physicalExtruder]);
 							allPolygons[physicalExtruder].add(tempFillPolygons[physicalExtruder]);
 						}
 					}
 			}
+			
+			if(!layerRules.extrudersIncreasing(layerRules.getModelLayer()))
+				Collections.reverse(Arrays.asList(allPolygons));
+			
+			//for(int i = 0; i < allPolygons.length; i++)
+			//	allPolygons[i].printPhysicalExtruders();
 			
 			layerRules.setFirstAndLast(allPolygons);
 
@@ -359,6 +400,7 @@ public class Producer {
 		}
 		
 		layFoundationTopDown(layerRules.getBox());
+		layerRules.printOrder();
 		
 		layerRules.reverseLayers();
 	}

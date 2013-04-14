@@ -111,11 +111,11 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
     
     public void selectExtruder()
     {
-    	try {
-			org.reprap.Main.gui.getPrinter().selectExtruder(extruderID, true, false, null);
-		} catch (Exception e) {
-			parentBotConsoleFrame.handleException(e);
-		}
+//    	try {
+//			org.reprap.Main.gui.getPrinter().selectExtruder(org.reprap.Main.gui.getPrinter().getExtruders()[extruderID]); //, true, false, null);
+//		} catch (Exception e) {
+//			parentBotConsoleFrame.handleException(e);
+//		}
     }
     
     /** This method is called from within the constructor to

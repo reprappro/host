@@ -7,6 +7,7 @@ package org.reprap.geometry;
 
 //import java.io.IOException;
 
+import org.reprap.Extruder;
 import org.reprap.Printer;
 import org.reprap.Attributes;
 import org.reprap.Preferences;
@@ -93,7 +94,7 @@ public class LayerProducer {
 	/**
 	 * 
 	 */
-	private LayerRules layerConditions = null;
+	private LayerRules layerRules = null;
 	
 	/**
 	 * 
@@ -147,7 +148,7 @@ public class LayerProducer {
 	 */
 	public LayerProducer(PolygonList ap[], LayerRules lc, RrGraphics simPlot) throws Exception 
 	{
-		layerConditions = lc;
+		layerRules = lc;
 		startNearHere = null;
 		simulationPlot = simPlot;
 		
@@ -158,8 +159,8 @@ public class LayerProducer {
 			if(!simulationPlot.isInitialised())
 			{
 				Rectangle rec = lc.getBox();
-				if(Preferences.loadGlobalBool("Shield"))
-					rec.expand(Point2D.add(rec.sw(), new Point2D(-7, -7))); // TODO: Yuk - this should be a parameter
+				//if(Preferences.loadGlobalBool("Shield"))
+				//	rec.expand(Point2D.add(rec.sw(), new Point2D(-7, -7))); // TODO: Yuk - this should be a parameter
 				simulationPlot.init(rec, false, "" + lc.getModelLayer() + " (z=" + lc.getModelZ() + ")");
 			} else
 				simulationPlot.cleanPolygons("" + lc.getModelLayer() + " (z=" + lc.getModelZ() + ")");
@@ -191,7 +192,7 @@ public class LayerProducer {
 	 */
 	private Point2D posNow()
 	{
-		return new Point2D(layerConditions.getPrinter().getX(), layerConditions.getPrinter().getY());
+		return new Point2D(layerRules.getPrinter().getX(), layerRules.getPrinter().getY());
 	}
 	
 	/**
@@ -202,7 +203,7 @@ public class LayerProducer {
 	 */
 	private boolean shortLine(Point2D p, boolean stopExtruder, boolean closeValve) throws Exception
 	{
-		Printer printer = layerConditions.getPrinter();
+		Printer printer = layerRules.getPrinter();
 		double shortLen = printer.getExtruder().getShortLength();
 		if(shortLen < 0)
 			return false;
@@ -217,7 +218,7 @@ public class LayerProducer {
 // TODO: FIX THIS
 //		printer.setSpeed(LinePrinter.speedFix(printer.getExtruder().getXYSpeed(), 
 //				printer.getExtruder().getShortSpeed()));
-		printer.printTo(p.x(), p.y(), layerConditions.getMachineZ(), printer.getExtruder().getShortLineFeedrate(), stopExtruder, closeValve);
+		printer.printTo(p.x(), p.y(), layerRules.getMachineZ(), printer.getExtruder().getShortLineFeedrate(), stopExtruder, closeValve);
 		//printer.setFeedrate(currentFeedrate);
 		return true;	
 	}
@@ -230,7 +231,7 @@ public class LayerProducer {
 	 */
 	private void plot(Point2D first, Point2D second, boolean stopExtruder, boolean closeValve) throws Exception
 	{
-		Printer printer = layerConditions.getPrinter();
+		Printer printer = layerRules.getPrinter();
 		if (printer.isCancelled()) return;
 		
 		// Don't call delay; this isn't controlling the printer
@@ -245,7 +246,7 @@ public class LayerProducer {
 		if(shortLine(first, stopExtruder, closeValve))
 			return;
 		
-		double z = layerConditions.getMachineZ();
+		double z = layerRules.getMachineZ();
 		
 		double speedUpLength = printer.getExtruder().getAngleSpeedUpLength();
 		if(speedUpLength > 0)
@@ -278,7 +279,7 @@ public class LayerProducer {
 	
 	private void singleMove(Point2D p)
 	{
-		Printer pt = layerConditions.getPrinter();
+		Printer pt = layerRules.getPrinter();
 		pt.singleMove(p.x(), p.y(), pt.getZ(), pt.getFastXYFeedrate(), true);
 	}
 	
@@ -292,7 +293,7 @@ public class LayerProducer {
 	private void move(Point2D first, Point2D second, boolean startUp, boolean endUp, boolean fast) 
 		throws Exception
 	{
-		Printer printer = layerConditions.getPrinter();
+		Printer printer = layerRules.getPrinter();
 		
 		if (printer.isCancelled()) return;
 		
@@ -305,7 +306,7 @@ public class LayerProducer {
 			} catch (Exception ex) {}
 		}
 		
-		double z = layerConditions.getMachineZ();
+		double z = layerRules.getMachineZ();
 		
 		//if(startUp)
 		if(fast)
@@ -348,11 +349,11 @@ public class LayerProducer {
 	 * @return
 	 * @throws Exception 
 	 */
-	private void plot(Polygon p, boolean firstOneInLayer, boolean firstOneThisMaterial) throws Exception
+	private void plot(Polygon p, boolean firstOneInLayer) throws Exception 
 	{
 		Attributes att = p.getAttributes();
 		PolygonAttributes pAtt = p.getPolygonAttribute();
-		Printer printer = layerConditions.getPrinter();
+		Printer printer = layerRules.getPrinter();
 		double outlineFeedrate = att.getExtruder().getOutlineFeedrate();
 		double infillFeedrate = att.getExtruder().getInfillFeedrate();
 		
@@ -375,7 +376,7 @@ public class LayerProducer {
 			lastPoint=n;
 		}
 		if (plotDist<Preferences.machineResolution()*0.5) {
-			Debug.d("Rejected line with "+p.size()+" points, length: "+plotDist);
+			Debug.d("Rejected polyline with "+p.size()+" points, length: "+plotDist);
 			//startNearHere = null;
 			return;
 		}
@@ -390,9 +391,22 @@ public class LayerProducer {
 				printer.singleMove(p.point(0).x(), p.point(0).y(), currentZ, printer.getSlowXYFeedrate(), false);
 			else
 				printer.singleMove(p.point(0).x(), p.point(0).y(), currentZ, printer.getFastXYFeedrate(), false);
-			printer.forceNextExtruder();
+			//printer.forceNextExtruder();
+			int physicalExtruderFromLastLayer;
+			if(layerRules.getModelLayer() > 1)
+				physicalExtruderFromLastLayer = layerRules.lastUsedThisLayer(layerRules.getModelLayer() - 1);
+			else
+				physicalExtruderFromLastLayer = layerRules.firstUsedThisLayer(2); // No Layer 0 to access.  This should force selection.
+			for(int i = 0; i < printer.getExtruders().length; i++)
+				if(printer.getExtruders()[i].getPhysicalExtruderNumber() == physicalExtruderFromLastLayer)
+				{
+					printer.fakeExtruder(printer.getExtruders()[i]);
+					//System.out.println("At layer " + layerRules.getModelLayer() + " fake set to:" + physicalExtruderFromLastLayer);
+					break;
+				}
 		}
-		printer.selectExtruder(att, p.point(0));
+		//System.out.println("At layer " + layerRules.getModelLayer() + " selected:" + att.getExtruder().getPhysicalExtruderNumber());
+		printer.selectExtruder(att.getExtruder());
 		
 		
 		if (printer.isCancelled()) return;
@@ -513,17 +527,14 @@ public class LayerProducer {
 	public void plot() throws Exception
 	{
 		boolean firstOneInLayer = true;
-		boolean firstOneThisMaterial = true;
 		
 		for(int i = 0; i < allPolygons.length; i++)
 		{
-			firstOneThisMaterial = true;
 			PolygonList pl = allPolygons[i];
 			for(int j = 0; j < pl.size(); j++)
 			{
-				plot(pl.polygon(j), firstOneInLayer, firstOneThisMaterial);
+				plot(pl.polygon(j), firstOneInLayer); 
 				firstOneInLayer = false;
-				firstOneThisMaterial = false;
 			}
 		}
 	}		

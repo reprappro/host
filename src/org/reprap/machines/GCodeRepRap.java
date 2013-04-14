@@ -53,7 +53,7 @@ public class GCodeRepRap extends GenericRepRap {
 		//Debug.d("Firmware configuration string: " + FirmwareConfig);
 		loadExtruders();
 		
-		forceSelection = true;
+		//forceSelection = true;
 	}
 	
 	public void loadMotors()
@@ -519,7 +519,7 @@ public class GCodeRepRap extends GenericRepRap {
 		currentZ = 0;
 		currentFeedrate = -100; // Force it to set the feedrate at the start
 		
-		forceSelection = true;  // Force it to set the extruder to use at the start
+		//forceSelection = true;  // Force it to set the extruder to use at the start
 				
 		try	{
 			super.startRun(lc);
@@ -880,10 +880,10 @@ public class GCodeRepRap extends GenericRepRap {
 		int extruderNow = extruder;
 		for(int i = 0; i < extruders.length; i++)
 		{
-			selectExtruder(i, really, false, null);
+			selectExtruder(extruders[i]); //, really, false, null);
 			extruders[i].zeroExtrudedLength(really);
 		}
-		selectExtruder(extruderNow, really, false, null);
+		selectExtruder(extruders[extruderNow]); //, really, false, null);
 		XYEAtZero = true;
 		super.homeToZeroXYE(really);
 	}
@@ -1024,22 +1024,24 @@ public class GCodeRepRap extends GenericRepRap {
 //		return layerRules.getPurgePoint().y() - (physicalExtruder*3 + pass)*e.getExtrusionSize();
 //	}
 	
-	public void selectExtruder(int materialIndex, boolean really, boolean update, Point2D next) throws Exception
+	
+	public void selectExtruder(Extruder extr) throws Exception
 	{
 		int oldPhysicalExtruder = getExtruder().getPhysicalExtruderNumber();
 		Extruder oldExtruder = getExtruder();
-		int newPhysicalExtruder = extruders[materialIndex].getPhysicalExtruderNumber();
+		int newPhysicalExtruder = extr.getPhysicalExtruderNumber();
 		double y = 0;
 		boolean shield = Preferences.loadGlobalBool("Shield");
 		Point2D purge;
 		
-		if(newPhysicalExtruder != oldPhysicalExtruder || forceSelection)
+		if(newPhysicalExtruder != oldPhysicalExtruder) // || forceSelection)
 		{
-			if(really)
-			{
+			System.out.println("selectExtruder(): old - " + oldPhysicalExtruder + ", new - " + newPhysicalExtruder);
+			//if(really)
+			//{
 				oldExtruder.stopExtruding();
-				super.selectExtruder(materialIndex, true, update, next);
-				if(update)physicalExtruderUsed[newPhysicalExtruder] = true;
+				super.selectExtruder(extr);
+				physicalExtruderUsed[newPhysicalExtruder] = true;
 				getExtruder().stopExtruding(); // Make sure we are off
 				
 				if(shield)
@@ -1097,8 +1099,8 @@ public class GCodeRepRap extends GenericRepRap {
 					getExtruder().stopExtruding();
 					getExtruder().setValve(false);
 				}
-			}
-			forceSelection = false;
+			//}
+			//forceSelection = false;
 		}
 	}
 	

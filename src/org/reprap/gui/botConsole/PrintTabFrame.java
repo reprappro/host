@@ -22,6 +22,7 @@ import org.reprap.Main;
 import org.reprap.Preferences;
 import org.reprap.Printer;
 import org.reprap.pcb.PCB;
+import org.reprap.utilities.Debug;
 
 /**
  *
@@ -45,6 +46,10 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
     private boolean slicing = false;
     private boolean sdCard = false;
     private Thread printerFilePlay;
+    private int pass;
+    private int lastLayer;
+    private final double passFrac[] = { 0.1234, 0.8518, 0.0248 };
+    private long passEnd[] = new long[3];
     /** Creates new form PrintTabFrame */
     public PrintTabFrame(boolean pref) {
         initComponents(pref);
@@ -58,6 +63,8 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
 
     	seenGCode = true;
     	printerFilePlay = null;
+    	pass = -1;
+    	lastLayer = -1;
 
     	printer = org.reprap.Main.gui.getPrinter();
     	enableSLoad();
@@ -72,8 +79,7 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
     public void updateProgress(double fractionDone, int layer, int layers)
     {
     	//System.out.println("layer marker: " + fractionDone + ", " + layer + ", " + layers);
-    	if(layer >= 0)
-    		currentLayerOutOfN.setText("" + layer + "/" + layers);
+    	
     	
     	if(layers < 0)
     	{
@@ -116,21 +122,78 @@ public class PrintTabFrame extends javax.swing.JInternalFrame {//AB99
     	if(startTime < 0)
     	{
     		startTime = e;
+    		passEnd[0] = -1;
+    		passEnd[1] = -1;
+    		passEnd[2] = -1;
     		return;
     	}
     	
+       	double fin = 0;
+       	
+       	if(lastLayer < layer || layer == 1) // Back to the beginning
+       	{
+       		if(pass < 0)
+       			pass = 0;
+       		else
+       		{
+   				if(pass > 2)
+   				{
+   					if(printerFilePlay != null)
+   					{
+   						if(!printerFilePlay.isAlive())
+   							printDone();
+   					}
+   					fin = e - startTime;
+   					System.out.println("Time split: " + (double)(passEnd[0] - startTime)/fin + ":" + (double)(passEnd[1] - passEnd[0])/fin + ":" + (double)(e - passEnd[1])/fin);
+   					return;
+   				}
+       			if(passEnd[pass] < 0)
+       			{
+       				passEnd[pass] = e;
+       				pass++;
+       			}
+       		}
+       	}
+       	lastLayer = layer;
+       	
     	//if(layer <= 0)
     		//return;
+       	
+
+       	
+       	switch(pass)
+       	{
+       	case 0:
+       		fin = (double)(e - startTime)/fractionDone;
+       		fin = fin/passFrac[0];
+       		break;
+       		
+       	case 1:
+       		fin = (double)(e - passEnd[0])/fractionDone;
+       		fin = fin/passFrac[1] + (double)passEnd[0];
+       		break;
+       		
+       	case 2:
+       		fin = (double)(e - passEnd[1])/fractionDone;
+       		fin = fin/passFrac[2] + (double)passEnd[1];
+       		break;
+       		
+       	default:
+       			break;
+       	}
     	
-    	long f = (long)((double)(e - startTime)/fractionDone);
-    	int h = (int)(f/60000)/60;
-    	int m = (int)(f/60000)%60;
+    	long f = (long)fin;
+    	int h = (int)(f/60000L)/60;
+    	int m = (int)(f/60000L)%60;
     	
     	if(m > 9)
     		expectedBuildTime.setText("" + h + ":" + m);
     	else
     		expectedBuildTime.setText("" + h + ":0" + m);
     	expectedFinishTime.setText(dateFormat.format(new Date(startTime + f)));
+    	
+    	if(layer >= 0)
+    		currentLayerOutOfN.setText("" + layer + "/" + layers + " Pass " + (pass+1) + "/3");
     	
     	if(printerFilePlay != null)
     	{
