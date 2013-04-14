@@ -1,0 +1,4 @@
+#!/bin/bash
+# reprap -- runs RepRapPro Java slicer
+
+exec java -jar slicer-0.1.0-SNAPSHOT-jar-with-dependencies.jar -Xmx1024M "$@"

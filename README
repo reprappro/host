@@ -1,144 +1,46 @@
-This the the RepRapPro Ltd Fork of the RepRap Java Host Software, which forms RepRapPro's multi-colour/multi-material slicer code.
-
-http://reprappro.com
-
-This is a beta-release of this software: it is working, but may still contain bugs.
-
-Licence: GPL
+This my fork of RepRapPro's multi-colour/multi-material
+slicer (http://reprappro.com).
 
 
 Download and installation
 =========================
+Prerequisites:
+ * java    (download from oracle.com)
+ * java3d  (download from oracle.com)
+ * maven   (download from apache.org)
 
-You need to have Java installed on your computer to run this software.  You will almost certainly already have this.  To check, open a teminal/command-prompt window and type the command:
+To run the software simply clone, run maven and execute the script reprap:
+ $ git clone git://github.com/holgero/RepRapProSlicer.git
+ $ cd RepRapProSlicer
+ $ mvn clean install
+ $ ./reprap
 
-	$ java
-
-or, on Windows:
-
-	C:\> java
-
-If you get a load of usage instructions, Java is installed.
-
-If you haven't got Java, download the Java JDK:
-
-	http://www.oracle.com/technetwork/java/javase/downloads/index.html
-
-
-If you are running 64-bit Linux you will also have to install the Java 3D JNI library.  For example, in the Ubuntu Software Centre, search for and install "libjava3d-jni".
-
-Once you have Java, to install this software download it as a .zip file.  To do that click on the little cloud and down-arrow above and to the left on its Github page:
-
-	https://github.com/reprappro/host
-
-which is this page if you are reading this README file on Github.  You will get a file called host-master.zip.
-
-Unzip the download anywhere you like on your computer, say in a directory called my_download.
-
-
-To run the RepRapPro Slicer Software
-====================================
-
-In your unzipped directory my_download/host-master there is a sub-directory called 
-
-	executable
-
-in which there is a file called
-
-	reprap
-
-for Linux and Mac users, or
-
-	reprap32.bat or reprap64.bat
-
-for Windows 32-bit or 64-bit users.
-
-On Linux or Mac, open a teminal window, move to the executable directory, and run the reprap file:
-
-	$ cd my_download/host-master/executable
-	$ ./reprap
-
-On Windows do pretty much the same in a command-prompt window:
-
-	C:\> cd my_download\host-master\executable
-	C:\> reprap32.bat
-
-(or reprap64.bat, as appropriate).
-
-You can, of course, just navigate to the appropriate point in your Windows filesystem and click on reprap32.bat or reprap64.bat to execute it.  Similarly you can set up a Linux system to put an clickable link to the executable on your desktop.  Note that your working directory has to be the same one as the one containing the reprap file for it to work. 
-
-The RepRap teardrop logo is in the file
-
-	my_download/host-master/executable/reprap-icon.png
-
-Which you can use for clickable executables as an icon (though to attach an icon to a .bat file in Windows you first have to change the .bat file to an executable, which is a bit tedious.  See: 
-
-	http://www.makeuseof.com/answers/change-icon-bat-file-windows-7/
-
-).
 
 User Documentation
 ==================
-
-For details of how to use this software, see:
-
-	http://reprap.org/wiki/RepRapPro_Slicer
+For details of how to use this software, see http://reprap.org/wiki/RepRapPro_Slicer
 
 
 Upgrades
 ======== 
-
-As described here:
-
-        http://reprap.org/wiki/RepRapPro_Slicer_Variables
-
-when you first run this software it creates a copy in your space of all its configuration files.  If you later download upgrades from Github, your configurations will not be overwritten.  That way, if you make adjustments, you keep them from one upgrade to the next.
+As described at http://reprap.org/wiki/RepRapPro_Slicer_Variables when you first run this software it creates a copy in your space of all its configuration files.  If you later download upgrades from Github, your configurations will not be overwritten.  That way, if you make adjustments, you keep them from one upgrade to the next.
 
 All the configuration files are placed in a directory called .reprap in your home directory on your computer (note that the initial "." in the name means that this directory is hidden - you have to enable the viewing of hidden files to see it).
 
 If you decide you want to revert your configuration to the standard one, then rename the .reprap directory to, say, .reprap.old then run the software.  It will now not find .reprap, and so it will create you a new .reprap containing copies of the standard files from your download.
 
-One thing you may well want to preserve even if you do this is the offsets of the heads in your Tricolor RepRap that you have set - these are unique to your machine.  (See here:
-
-      http://reprap.org/wiki/RepRapPro_Multimaterials#Step_5_-_Registration
-
-for how to set the offsets.)
+One thing you may well want to preserve even if you do this is the offsets of the heads in your Tricolor RepRap that you have set - these are unique to your machine.  (See here: http://reprap.org/wiki/RepRapPro_Multimaterials#Step_5_-_Registration for how to set the offsets.)
 
 These offsets will be in the file prologue.gcode in the directory .reprap.old/Mendel-0.5mm (or whatever RepRap machine you are using).  Compare that file to the version in .reprap/Mendel-0.5mm (they are quite short).  Edit the new file to change the G10 lines to set the offsets for your machine.
 
 
 Experiment with the source code
 ===============================
+Make sure you have m2e installed (eclipse marketplace).
 
-Download a copy of the Eclipse Java Development Environment:
-
-	http://www.eclipse.org/downloads/
-
-Rename
-
-	my_download/host-master
-
-to
-
-	my_download/host
-
-Run Eclipse, select New->Java Project from the File menu and uncheck the "Use default location" box.  Use the "Browse" button to navigate to the directory you just renamed and click "Finish".
-
-To run the software in the development environment open:
-
-	host->src->org.reprap
-
-right click on Main.java and select
-
-	Run as->Java Application
-
-and the slicer should run.
-
-You can then edit the source code and do what you like with it...
+Import the slicer module as existing maven project. And run the main class org.reprap.Main as Java Application.
 
 
-Adrian Bowyer
-RepRapPro Ltd
-4 February 2013
-
-
+Licence
+=======
+Gnu Lesser General Public License (LGPL), see file LICENSE.
