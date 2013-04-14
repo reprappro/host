@@ -530,8 +530,8 @@ public class LayerRules
 					return i;
 		}
 		Debug.e("LayerRules: First extruder used doesn't exist on layer: " + layer);
-		Exception e = new Exception();
-		e.printStackTrace();
+		//Exception e = new Exception();
+		//e.printStackTrace();
 		return 0; // best we can do
 	}
 	
@@ -549,8 +549,8 @@ public class LayerRules
 					return i;
 		}
 		Debug.e("LayerRules: Last extruder used doesn't exist on layer: " + layer);
-		Exception e = new Exception();
-		e.printStackTrace();
+		//Exception e = new Exception();
+		//e.printStackTrace();
 		return 0; // best we can do
 	}
 	

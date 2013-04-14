@@ -400,7 +400,7 @@ public class Producer {
 		}
 		
 		layFoundationTopDown(layerRules.getBox());
-		layerRules.printOrder();
+		//layerRules.printOrder();
 		
 		layerRules.reverseLayers();
 	}

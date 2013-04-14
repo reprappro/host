@@ -170,6 +170,7 @@ public class AllSTLsToBuild
 	{
 		private BooleanGridList[][] sliceRing;
 		private BooleanGridList[][] supportRing;
+		private BooleanGrid[][] unionRing;
 		private int[] layerNumber;
 		private int ringPointer;
 		private final int noLayer = Integer.MIN_VALUE;
@@ -184,6 +185,7 @@ public class AllSTLsToBuild
 			ringSize = layerRules.getModelLayerMax() + 2;
 			sliceRing = new BooleanGridList[ringSize][stls.size()];
 			supportRing = new BooleanGridList[ringSize][stls.size()];
+			unionRing = new BooleanGrid[ringSize][stls.size()];
 			layerNumber = new int[ringSize];
 			ringPointer = 0;
 			for(int layer = 0; layer < ringSize; layer++)
@@ -191,6 +193,7 @@ public class AllSTLsToBuild
 				{
 					sliceRing[layer][stl] = null;
 					supportRing[layer][stl] = null;
+					unionRing[layer][stl] = null;
 					layerNumber[layer] = noLayer;
 				}
 			frozen = false;
@@ -230,6 +233,13 @@ public class AllSTLsToBuild
 			supportRing[rp][stl] = support;
 		}
 		
+		public void setUnion(BooleanGrid union, int layer, int stl)
+		{
+			int rp = getTheRingLocationForWrite(layer);
+			layerNumber[rp] = layer;
+			unionRing[rp][stl] = union;
+		}
+		
 		private int getTheRingLocationForRead(int layer)
 		{
 			int rp = ringPointer;
@@ -261,6 +271,16 @@ public class AllSTLsToBuild
 				return supportRing[rp][stl];
 			if(frozen)
 				Debug.d("Slice cache: non-existent support requested from frozen cache. Layer: " + layer + ", STL: " + stl);
+			return null;
+		}
+		
+		public BooleanGrid getUnion(int layer, int stl)
+		{
+			int rp = getTheRingLocationForRead(layer);
+			if(rp >= 0)
+				return unionRing[rp][stl];
+			if(frozen)
+				Debug.d("Slice cache: non-existent support requested from frozen cache. Layer: " + layer);
 			return null;
 		}
 	}
@@ -629,10 +649,24 @@ public class AllSTLsToBuild
 			for(int stlIndex = startSTL; stlIndex < stopSTL; stlIndex++)
 			{
 				//System.out.println("Layer: " + layer + " STL: " + stlIndex%stls.size());
-				slice(stlIndex%stls.size(), layer);
+				slice(layer, stlIndex%stls.size());
 			}
 			layer--;
 		}
+		
+		layer = layerRules.getModelLayerMax();
+		
+		while(layer > 0)
+		{
+			org.reprap.gui.botConsole.BotConsoleFrame.getBotConsoleFrame().setFractionDone((double)(layerRules.getModelLayerMax() - layer)/(double)layerRules.getModelLayerMax(), layer, layerRules.getModelLayerMax());
+			for(int stlIndex = startSTL; stlIndex < stopSTL; stlIndex++)
+			{
+				//System.out.println("Layer: " + layer + " STL: " + stlIndex%stls.size());
+				computeSupport(layer, stlIndex%stls.size());
+			}
+			layer--;
+		}
+		
 		cache.freeze();
 	}
 	
@@ -895,11 +929,11 @@ public class AllSTLsToBuild
 	 * @param layerConditions
 	 * @return
 	 */
-	public PolygonList computeSupport(int stl)
+	private void computeSupport(int layer, int stl)
 	{
 		// No more additions or movements, please
 		
-		freeze();
+		//freeze();
 		
 		// We start by computing the union of everything in this layer because
 		// that is everywhere that support _isn't_ needed in this layer.
@@ -908,13 +942,14 @@ public class AllSTLsToBuild
 		// But it's only going to be subtracted from other shapes, so what it's made
 		// from doesn't matter.
 		
-		int layer = layerRules.getModelLayer();
+		//int layer = layerRules.getModelLayer();
 		
-		BooleanGridList thisLayer = slice(stl, layer);
+		BooleanGridList thisLayer = slice(layer, stl);
 		
 		BooleanGrid unionOfThisLayer;
 		Attributes a;
-		
+
+
 		if(thisLayer.size() > 0)
 		{
 			unionOfThisLayer = thisLayer.get(0);
@@ -926,10 +961,10 @@ public class AllSTLsToBuild
 		}
 		for(int i = 1; i < thisLayer.size(); i++)
 			unionOfThisLayer = BooleanGrid.union(unionOfThisLayer, thisLayer.get(i), a);
-		
+
 		// Expand the union of this layer a bit, so that any support is a little clear of 
 		// this layer's boundaries.
-		
+
 		BooleanGridList allThis = new BooleanGridList();
 		allThis.add(unionOfThisLayer);
 		allThis = allThis.offset(layerRules, true, 2);  // 2mm gap is a bit of a hack...
@@ -937,6 +972,8 @@ public class AllSTLsToBuild
 			unionOfThisLayer = allThis.get(0);
 		else
 			unionOfThisLayer = BooleanGrid.nullBooleanGrid();
+		cache.setUnion(unionOfThisLayer, layer, stl);
+
 
 		// Get the layer above and union it with this layer.  That's what needs
 		// support on the next layer down.
@@ -945,9 +982,109 @@ public class AllSTLsToBuild
 
 		cache.setSupport(BooleanGridList.unions(previousSupport, thisLayer), layer, stl);
 		
+		
+		
+//		// Now we subtract the union of this layer from all the stuff requiring support in the layer above.
+//		
+//		BooleanGridList support = new BooleanGridList();
+//	
+//		if(previousSupport != null)
+//		{
+//			for(int i = 0; i < previousSupport.size(); i++)
+//			{
+//				BooleanGrid above = previousSupport.get(i);
+//				a = above.attribute();
+//				Extruder e = a.getExtruder().getSupportExtruder();
+//				if(e != null)
+//				{
+//					if(layerRules.extruderLiveThisLayer(e.getID()))
+//						support.add(BooleanGrid.difference(above, unionOfThisLayer, a));
+//				}
+//			}
+//			support = support.unionDuplicates();
+//		}
+//		
+//		// Now force the attributes of the support pattern to be the support extruders
+//		// for all the materials in it.  If the material isn't active in this layer, remove it from the list
+//		
+//		for(int i = 0; i < support.size(); i++)
+//		{
+//			Extruder e = support.attribute(i).getExtruder().getSupportExtruder();
+//			if(e == null)
+//			{
+//				Debug.e("AllSTLsToBuild.computeSupport(): null support extruder specified!");
+//				continue;
+//			}
+//			support.get(i).forceAttribute(new Attributes(e.getMaterial(), null, null, e.getAppearance()));
+//		}
+//		
+//		// Finally compute the support hatch.
+//		
+//		PolygonList result = support.hatch(layerRules, false, null, true);
+//		
+//		return result;
+	}
+	
+	/**
+	 * Compute the support hatching polygons for this set of patterns
+	 * @param stl
+	 * @param layerConditions
+	 * @return
+	 */
+	public PolygonList computeSupport(int stl)
+	{
+//		// No more additions or movements, please
+//		
+//		freeze();
+//		
+//		// We start by computing the union of everything in this layer because
+//		// that is everywhere that support _isn't_ needed in this layer.
+//		// We give the union the attribute of the first thing found, though
+//		// clearly it will - in general - represent many different substances.
+//		// But it's only going to be subtracted from other shapes, so what it's made
+//		// from doesn't matter.
+//		
+		int layer = layerRules.getModelLayer();
+//		
+//		BooleanGridList thisLayer = slice(stl, layer);
+//		
+//		BooleanGrid unionOfThisLayer;
+		Attributes a;
+//		
+//		if(thisLayer.size() > 0)
+//		{
+//			unionOfThisLayer = thisLayer.get(0);
+//			a = unionOfThisLayer.attribute();
+//		}else
+//		{
+//			a = stls.get(stl).attributes(0);
+//			unionOfThisLayer = BooleanGrid.nullBooleanGrid();
+//		}
+//		for(int i = 1; i < thisLayer.size(); i++)
+//			unionOfThisLayer = BooleanGrid.union(unionOfThisLayer, thisLayer.get(i), a);
+//		
+//		// Expand the union of this layer a bit, so that any support is a little clear of 
+//		// this layer's boundaries.
+//		
+//		BooleanGridList allThis = new BooleanGridList();
+//		allThis.add(unionOfThisLayer);
+//		allThis = allThis.offset(layerRules, true, 2);  // 2mm gap is a bit of a hack...
+//		if(allThis.size() > 0)
+//			unionOfThisLayer = allThis.get(0);
+//		else
+//			unionOfThisLayer = BooleanGrid.nullBooleanGrid();
+//
+//		// Get the layer above and union it with this layer.  That's what needs
+//		// support on the next layer down.
+		
+		BooleanGridList previousSupport = cache.getSupport(layer+1, stl);
+
+		//cache.setSupport(BooleanGridList.unions(previousSupport, thisLayer), layer, stl);
+		
 		// Now we subtract the union of this layer from all the stuff requiring support in the layer above.
 		
 		BooleanGridList support = new BooleanGridList();
+		BooleanGrid unionOfThisLayer = cache.getUnion(layer, stl);
 	
 		if(previousSupport != null)
 		{
@@ -1222,7 +1359,7 @@ public class AllSTLsToBuild
 		
 		int layer = layerRules.getModelLayer();
 		
-		BooleanGridList slice = slice(stl, layer);
+		BooleanGridList slice = slice(layer, stl);
 		
 		
 		int surfaceLayers = 1;
@@ -1242,7 +1379,7 @@ public class AllSTLsToBuild
 			
 			// Force it to compute the layer below, even though we don't need it here yet.
 			// It will be cached, so the effort is not wasted.
-			slice(stl, layer - 1);
+			//slice(layer - 1, stl);
 			
 			slice = slice.offset(layerRules, false, -1);
 			slice = neededThisLayer(slice, false, false);
@@ -1257,15 +1394,15 @@ public class AllSTLsToBuild
 		// How many do we need to consider?
 		
 				
-		BooleanGridList above = slice(stl, layer+1);
+		BooleanGridList above = slice(layer+1, stl);
 		for(int i = 2; i <= surfaceLayers; i++)
-			above = BooleanGridList.intersections(slice(stl, layer+i), above);
+			above = BooleanGridList.intersections(slice(layer+i, stl), above);
 		
 		// ...nor does the intersection of those below.
 		
-		BooleanGridList below = slice(stl, layer-1);
+		BooleanGridList below = slice(layer-1, stl);
 		for(int i = 2; i <= surfaceLayers; i++)
-			below = BooleanGridList.intersections(slice(stl, layer-i), below);
+			below = BooleanGridList.intersections(slice(layer-i, stl), below);
 	
 		// The bit of the slice with nothing above it needs fine infill...
 		
@@ -1428,7 +1565,7 @@ public class AllSTLsToBuild
 		
 		// The shapes to outline.
 		
-		BooleanGridList slice = slice(stl, layerRules.getModelLayer());
+		BooleanGridList slice = slice(layerRules.getModelLayer(), stl);
 		
 		// Pick out the ones we need to do at this height
 		
@@ -1481,7 +1618,7 @@ public class AllSTLsToBuild
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	private BooleanGridList slice(int stlIndex, int layer)
+	private BooleanGridList slice(int layer, int stlIndex)
 	{
 		if(!frozen)
 		{
