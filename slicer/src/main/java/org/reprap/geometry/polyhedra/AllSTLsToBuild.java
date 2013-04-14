@@ -26,8 +26,6 @@ import org.reprap.geometry.LayerRules;
 import org.reprap.geometry.polygons.BooleanGrid;
 import org.reprap.geometry.polygons.BooleanGridList;
 import org.reprap.geometry.polygons.CSG2D;
-import org.reprap.geometry.polygons.HalfPlane;
-import org.reprap.geometry.polygons.Interval;
 import org.reprap.geometry.polygons.Point2D;
 import org.reprap.geometry.polygons.Polygon;
 import org.reprap.geometry.polygons.PolygonList;
@@ -43,104 +41,15 @@ import org.reprap.utilities.Debug;
  * space.
  * 
  * @author Adrian
- * 
  */
 public class AllSTLsToBuild {
-    /**
-     * Class to hold infill patterns
-     * 
-     * @author ensab
-     * 
-     */
-    class InFillPatterns {
-        BooleanGridList bridges;
-        BooleanGridList insides;
-        BooleanGridList surfaces;
-        PolygonList hatchedPolygons;
-
-        InFillPatterns() {
-            bridges = new BooleanGridList();
-            insides = new BooleanGridList();
-            surfaces = new BooleanGridList();
-            hatchedPolygons = new PolygonList();
-        }
-
-        InFillPatterns(final InFillPatterns ifp) {
-            bridges = ifp.bridges;
-            insides = ifp.insides;
-            surfaces = ifp.surfaces;
-            hatchedPolygons = ifp.hatchedPolygons;
-        }
-    }
-
-    /**
-     * 3D bounding box
-     * 
-     * @author ensab
-     * 
-     */
-    class BoundingBox {
-        private final Rectangle XYbox;
-        private final Interval Zint;
-
-        public BoundingBox(final Point3d p0) {
-            Zint = new Interval(p0.z, p0.z);
-            XYbox = new Rectangle(new Interval(p0.x, p0.x), new Interval(p0.y, p0.y));
-        }
-
-        public BoundingBox(final BoundingBox b) {
-            Zint = new Interval(b.Zint);
-            XYbox = new Rectangle(b.XYbox);
-        }
-
-        public void expand(final Point3d p0) {
-            Zint.expand(p0.z);
-            XYbox.expand(new Point2D(p0.x, p0.y));
-        }
-
-        public void expand(final BoundingBox b) {
-            Zint.expand(b.Zint);
-            XYbox.expand(b.XYbox);
-        }
-
-    }
-
-    /**
-     * Line segment consisting of two points.
-     * 
-     * @author Adrian
-     */
-    class LineSegment {
-        /**
-         * The ends of the line segment
-         */
-        public Point2D a = null, b = null;
-
-        /**
-         * The attribute (i.e. RepRap material) of the segment.
-         */
-        public Attributes att = null;
-
-        /**
-         * Constructor takes two intersection points with an STL triangle edge.
-         */
-        public LineSegment(final Point2D p, final Point2D q, final Attributes at) {
-            if (at == null) {
-                Debug.getInstance().errorMessage("LineSegment(): null attributes!");
-            }
-            a = p;
-            b = q;
-            att = at;
-        }
-    }
-
     /**
      * Ring buffer cache to hold previously computed slices for doing infill and
      * support material calculations.
      * 
      * @author ensab
      */
-    class SliceCache {
+    private final class SliceCache {
         private final BooleanGridList[][] sliceRing;
         private final BooleanGridList[][] supportRing;
         private final int[] layerNumber;
@@ -148,7 +57,7 @@ public class AllSTLsToBuild {
         private final int noLayer = Integer.MIN_VALUE;
         private int ringSize = 10;
 
-        public SliceCache(final LayerRules lr) {
+        private SliceCache(final LayerRules lr) {
             if (lr == null) {
                 Debug.getInstance().errorMessage("SliceCache(): null LayerRules!");
             }
@@ -185,13 +94,13 @@ public class AllSTLsToBuild {
             return rp;
         }
 
-        public void setSlice(final BooleanGridList slice, final int layer, final int stl) {
+        private void setSlice(final BooleanGridList slice, final int layer, final int stl) {
             final int rp = getTheRingLocationForWrite(layer);
             layerNumber[rp] = layer;
             sliceRing[rp][stl] = slice;
         }
 
-        public void setSupport(final BooleanGridList support, final int layer, final int stl) {
+        private void setSupport(final BooleanGridList support, final int layer, final int stl) {
             final int rp = getTheRingLocationForWrite(layer);
             layerNumber[rp] = layer;
             supportRing[rp][stl] = support;
@@ -211,7 +120,7 @@ public class AllSTLsToBuild {
             return -1;
         }
 
-        public BooleanGridList getSlice(final int layer, final int stl) {
+        private BooleanGridList getSlice(final int layer, final int stl) {
             final int rp = getTheRingLocationForRead(layer);
             if (rp >= 0) {
                 return sliceRing[rp][stl];
@@ -219,7 +128,7 @@ public class AllSTLsToBuild {
             return null;
         }
 
-        public BooleanGridList getSupport(final int layer, final int stl) {
+        private BooleanGridList getSupport(final int layer, final int stl) {
             final int rp = getTheRingLocationForRead(layer);
             if (rp >= 0) {
                 return supportRing[rp][stl];
@@ -367,7 +276,7 @@ public class AllSTLsToBuild {
      * everything in in the same pattern as it is stored here. It can then be
      * written by OpenSCAD as a single STL.
      */
-    public String toSCAD() {
+    private String toSCAD() {
         String result = "union()\n{\n";
         for (int i = 0; i < size(); i++) {
             result += get(i).toSCAD();
@@ -604,7 +513,7 @@ public class AllSTLsToBuild {
         int swap = -1;
         LineSegment temp;
         for (int i = 0; i < edges.size(); i++) {
-            final double d2 = Point2D.dSquared(edges.get(i).a, edges.get(i).b);
+            final double d2 = Point2D.dSquared(edges.get(i).getA(), edges.get(i).getB());
             if (d2 > 2.25) {
                 temp = edges.get(0);
                 edges.set(0, edges.get(i));
@@ -642,11 +551,11 @@ public class AllSTLsToBuild {
         startLong(edges);
         LineSegment next = edges.get(0);
         edges.remove(0);
-        final Polygon result = new Polygon(next.att, true);
-        result.add(next.a);
-        result.add(next.b);
-        final Point2D start = next.a;
-        Point2D end = next.b;
+        final Polygon result = new Polygon(next.getAttribute(), true);
+        result.add(next.getA());
+        result.add(next.getB());
+        final Point2D start = next.getA();
+        Point2D end = next.getB();
 
         boolean first = true;
         while (edges.size() > 0) {
@@ -658,13 +567,13 @@ public class AllSTLsToBuild {
             boolean aEnd = false;
             int index = -1;
             for (int i = 0; i < edges.size(); i++) {
-                double dd = Point2D.dSquared(edges.get(i).a, end);
+                double dd = Point2D.dSquared(edges.get(i).getA(), end);
                 if (dd < d2) {
                     d2 = dd;
                     aEnd = true;
                     index = i;
                 }
-                dd = Point2D.dSquared(edges.get(i).b, end);
+                dd = Point2D.dSquared(edges.get(i).getB(), end);
                 if (dd < d2) {
                     d2 = dd;
                     aEnd = false;
@@ -677,13 +586,13 @@ public class AllSTLsToBuild {
                 edges.remove(index);
                 final int ipt = result.size() - 1;
                 if (aEnd) {
-                    result.set(ipt, Point2D.mul(Point2D.add(next.a, result.point(ipt)), 0.5));
-                    result.add(next.b);
-                    end = next.b;
+                    result.set(ipt, Point2D.mul(Point2D.add(next.getA(), result.point(ipt)), 0.5));
+                    result.add(next.getB());
+                    end = next.getB();
                 } else {
-                    result.set(ipt, Point2D.mul(Point2D.add(next.b, result.point(ipt)), 0.5));
-                    result.add(next.a);
-                    end = next.a;
+                    result.set(ipt, Point2D.mul(Point2D.add(next.getB(), result.point(ipt)), 0.5));
+                    result.add(next.getA());
+                    end = next.getA();
                 }
             } else {
                 return result;
@@ -800,139 +709,6 @@ public class AllSTLsToBuild {
     }
 
     /**
-     * This finds an individual land in landPattern
-     */
-    private BooleanGrid findLand(final BooleanGrid landPattern) {
-        final Point2D seed = landPattern.findSeed();
-        if (seed == null) {
-            return null;
-        }
-
-        return landPattern.floodCopy(seed);
-    }
-
-    /**
-     * This finds the bridges that cover cen. It assumes that there is only one
-     * material at one point in space...
-     */
-    int findBridges(final BooleanGridList unSupported, final Point2D cen) {
-        for (int i = 0; i < unSupported.size(); i++) {
-            final BooleanGrid bridges = unSupported.get(i);
-            if (bridges.get(cen)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    /**
-     * Compute the bridge infill for unsupported polygons for a slice. This is
-     * very heuristic...
-     */
-    public InFillPatterns bridgeHatch(final InFillPatterns infill, final BooleanGridList lands, final LayerRules layerConditions) {
-        final InFillPatterns result = new InFillPatterns(infill);
-        BooleanGridList b;
-
-        for (int i = 0; i < lands.size(); i++) {
-            BooleanGrid landPattern = lands.get(i);
-            BooleanGrid land1;
-
-            while ((land1 = findLand(landPattern)) != null) {
-                // Find the middle of the land
-                final Point2D cen1 = land1.findCentroid();
-
-                // Wipe this land from the land pattern
-                landPattern = BooleanGrid.difference(landPattern, land1);
-
-                if (cen1 == null) {
-                    Debug.getInstance().errorMessage("AllSTLsToBuild.bridges(): First land found with no centroid!");
-                    continue;
-                }
-
-                // Find the bridge that goes with the land
-                final int bridgesIndex = findBridges(result.bridges, cen1);
-                if (bridgesIndex < 0) {
-                    Debug.getInstance().debugMessage("AllSTLsToBuild.bridges(): Land found with no corresponding bridge.");
-                    continue;
-                }
-                final BooleanGrid bridges = result.bridges.get(bridgesIndex);
-
-                // The bridge must cover the land too
-                final BooleanGrid bridge = bridges.floodCopy(cen1);
-                if (bridge == null) {
-                    continue;
-                }
-
-                // Find the other land (the first has been wiped)
-                BooleanGrid land2 = null;
-                land2 = BooleanGrid.intersection(bridge, landPattern);
-
-                // Find the middle of this land
-                final Point2D cen2 = land2.findCentroid();
-                if (cen2 == null) {
-                    Debug.getInstance().debugMessage("AllSTLsToBuild.bridges(): Second land found with no centroid.");
-
-                    // No second land implies a ring of support - just infill it.
-                    result.hatchedPolygons.add(bridge.hatch(
-                            layerConditions.getHatchDirection(bridge.attribute().getExtruder(), false), bridge.attribute()
-                                    .getExtruder().getExtrusionInfillWidth(), bridge.attribute()));
-
-                    // Remove this bridge (in fact, just its lands) from the other infill patterns.
-                    b = new BooleanGridList();
-                    b.add(bridge);
-                    result.insides = BooleanGridList.differences(result.insides, b, false);
-                    result.surfaces = BooleanGridList.differences(result.surfaces, b, false);
-                } else {
-                    // Wipe this land from the land pattern
-                    landPattern = BooleanGrid.difference(landPattern, land2);
-
-                    // (Roughly) what direction does the bridge go in?
-                    final Point2D centroidDirection = Point2D.sub(cen2, cen1).norm();
-                    Point2D bridgeDirection = centroidDirection;
-
-                    // Fine the edge of the bridge that is nearest parallel to that, and use that as the fill direction
-                    double spMax = Double.NEGATIVE_INFINITY;
-                    double sp;
-                    final PolygonList bridgeOutline = bridge.allPerimiters(bridge.attribute());
-                    for (int pol = 0; pol < bridgeOutline.size(); pol++) {
-                        final Polygon polygon = bridgeOutline.polygon(pol);
-
-                        for (int vertex1 = 0; vertex1 < polygon.size(); vertex1++) {
-                            int vertex2 = vertex1 + 1;
-                            if (vertex2 >= polygon.size()) {
-                                vertex2 = 0;
-                            }
-                            final Point2D edge = Point2D.sub(polygon.point(vertex2), polygon.point(vertex1));
-
-                            if ((sp = Math.abs(Point2D.mul(edge, centroidDirection))) > spMax) {
-                                spMax = sp;
-                                bridgeDirection = edge;
-                            }
-
-                        }
-                    }
-
-                    // Build the bridge
-                    result.hatchedPolygons.add(bridge.hatch(new HalfPlane(new Point2D(0, 0), bridgeDirection), bridge
-                            .attribute().getExtruder().getExtrusionInfillWidth(), bridge.attribute()));
-
-                    // Remove this bridge (in fact, just its lands) from the other infill patterns.
-                    b = new BooleanGridList();
-                    b.add(bridge);
-                    result.insides = BooleanGridList.differences(result.insides, b, false);
-                    result.surfaces = BooleanGridList.differences(result.surfaces, b, false);
-                }
-                // remove the bridge from the bridge patterns.
-                b = new BooleanGridList();
-                b.add(bridge);
-                result.bridges = BooleanGridList.differences(result.bridges, b, false);
-            }
-        }
-
-        return result;
-    }
-
-    /**
      * Set the building layer rules as soon as we know them
      */
     public void setLayerRules(final LayerRules lr) {
@@ -943,7 +719,7 @@ public class AllSTLsToBuild {
      * Select from a slice (allLayer) just those parts of it that will be
      * plotted this layer
      */
-    private BooleanGridList neededThisLayer(final BooleanGridList allLayer, final boolean infill, final boolean support) {
+    BooleanGridList neededThisLayer(final BooleanGridList allLayer, final boolean infill, final boolean support) {
         final BooleanGridList neededSlice = new BooleanGridList();
         for (int i = 0; i < allLayer.size(); i++) {
             GCodeExtruder e;
@@ -967,122 +743,9 @@ public class AllSTLsToBuild {
      * Compute the infill hatching polygons for this set of patterns
      */
     public PolygonList computeInfill(final int stl) {
-        // Where the result will be stored.
-        InFillPatterns infill = new InFillPatterns();
-
+        final InFillPatterns infill = new InFillPatterns();
         freeze();
-
-        // Where are we and what does the current slice look like?
-        final int layer = layerRules.getModelLayer();
-
-        BooleanGridList slice = slice(stl, layer);
-
-        int surfaceLayers = 1;
-        for (int i = 0; i < slice.size(); i++) {
-            final GCodeExtruder e = slice.get(i).attribute().getExtruder();
-            if (e.getSurfaceLayers() > surfaceLayers) {
-                surfaceLayers = e.getSurfaceLayers();
-            }
-        }
-
-        // Get the bottom out of the way - no fancy calculations needed.
-        if (layer <= surfaceLayers) {
-            slice = slice.offset(layerRules, false, -1);
-            slice = neededThisLayer(slice, false, false);
-            infill.hatchedPolygons = slice.hatch(layerRules, true, null, false);
-            return infill.hatchedPolygons;
-        }
-
-        // If we are solid but the slices above or below us weren't, we need some fine infill as
-        // we are (at least partly) surface.
-        // The intersection of the slices above does not need surface infill...
-        // How many do we need to consider?
-
-        BooleanGridList above = slice(stl, layer + 1);
-        for (int i = 2; i <= surfaceLayers; i++) {
-            above = BooleanGridList.intersections(slice(stl, layer + i), above);
-        }
-
-        // ...nor does the intersection of those below.
-        BooleanGridList below = slice(stl, layer - 1);
-        for (int i = 2; i <= surfaceLayers; i++) {
-            below = BooleanGridList.intersections(slice(stl, layer - i), below);
-        }
-
-        // The bit of the slice with nothing above it needs fine infill...
-        final BooleanGridList nothingabove = BooleanGridList.differences(slice, above, false);
-
-        // ...as does the bit with nothing below.
-        final BooleanGridList nothingbelow = BooleanGridList.differences(slice, below, false);
-
-        // Find the region that is not surface.
-        infill.insides = BooleanGridList.differences(slice, nothingbelow, false);
-        infill.insides = BooleanGridList.differences(infill.insides, nothingabove, false);
-
-        // Parts with nothing under them that have no support material
-        // need to have bridges constructed to do the best for in-air infill.
-        infill.bridges = nothingbelow.cullNoSupport();
-
-        // The remainder with nothing under them will be supported by support material
-        // and so needs no special treatment.
-        // All the parts of this slice that need surface infill
-
-        infill.surfaces = BooleanGridList.unions(nothingbelow, nothingabove);
-
-        // Make the bridges fatter, then crop them to the slice.
-        // This will make them interpenetrate at their ends/sides to give
-        // bridge landing areas.
-        infill.bridges = infill.bridges.offset(layerRules, false, 2);
-        infill.bridges = BooleanGridList.intersections(infill.bridges, slice);
-
-        // Find the landing areas as a separate set of shapes that go with the bridges.
-        final BooleanGridList lands = BooleanGridList.intersections(infill.bridges,
-                BooleanGridList.unions(infill.insides, infill.surfaces));
-
-        // Shapes will be outlined, and so need to be shrunk to allow for that.  But they
-        // must not also shrink from each other internally.  So initially expand them so they overlap
-        infill.bridges = infill.bridges.offset(layerRules, false, 1);
-        infill.insides = infill.insides.offset(layerRules, false, 1);
-        infill.surfaces = infill.surfaces.offset(layerRules, false, 1);
-
-        // Now intersect them with the slice so the outer edges are back where they should be.
-        infill.bridges = BooleanGridList.intersections(infill.bridges, slice);
-        infill.insides = BooleanGridList.intersections(infill.insides, slice);
-        infill.surfaces = BooleanGridList.intersections(infill.surfaces, slice);
-
-        // Now shrink them so the edges are in a bit to allow the outlines to
-        // be put round the outside.  The inner joins should now shrink back to be
-        // adjacent to each other as they should be.
-        infill.bridges = infill.bridges.offset(layerRules, false, -1);
-        infill.insides = infill.insides.offset(layerRules, false, -1);
-        infill.surfaces = infill.surfaces.offset(layerRules, false, -1);
-
-        // Generate the infill patterns.  We do the bridges first, as each bridge subtracts its
-        // lands from the other two sets of shapes.  We want that, so they don't get infilled twice.
-        infill = bridgeHatch(infill, lands, layerRules);
-        infill.insides = neededThisLayer(infill.insides, true, false);
-        infill.hatchedPolygons.add(infill.insides.hatch(layerRules, false, null, false));
-        infill.surfaces = neededThisLayer(infill.surfaces, false, false);
-        infill.hatchedPolygons.add(infill.surfaces.hatch(layerRules, true, null, false));
-
-        return infill.hatchedPolygons;
-    }
-
-    /**
-     * Compute the polygon to lay down for the machine to wipe its nose on.
-     */
-    public Polygon shieldPolygon(final Attributes a) {
-        final Rectangle rr = ObjectPlanRectangle();
-        final Point2D corner = Point2D.add(rr.sw(), new Point2D(-3, -3));
-        final Polygon ell = new Polygon(a, false);
-        ell.add(corner);
-        ell.add(Point2D.add(corner, new Point2D(0, 10)));
-        ell.add(Point2D.add(corner, new Point2D(-2, 10)));
-        ell.add(Point2D.add(corner, new Point2D(-2, -2)));
-        ell.add(Point2D.add(corner, new Point2D(20, -2)));
-        ell.add(Point2D.add(corner, new Point2D(20, 0)));
-        ell.add(corner);
-        return ell;
+        return infill.computeHatchedPolygons(stl, layerRules, this);
     }
 
     public void setUpShield() {
@@ -1142,8 +805,7 @@ public class AllSTLsToBuild {
     /**
      * Compute the outline polygons for this set of patterns.
      */
-    public PolygonList computeOutlines(final int stl, final PolygonList hatchedPolygons) //, boolean shield)
-    {
+    public PolygonList computeOutlines(final int stl, final PolygonList hatchedPolygons) {
         freeze();
 
         // The shapes to outline.
@@ -1179,7 +841,7 @@ public class AllSTLsToBuild {
      * Generate a set of pixel-map representations, one for each extruder, for
      * STLObject stl at height z.
      */
-    private BooleanGridList slice(final int stlIndex, final int layer) {
+    BooleanGridList slice(final int stlIndex, final int layer) {
         if (!frozen) {
             Debug.getInstance().errorMessage("AllSTLsToBuild.slice() called when unfrozen!");
             freeze();
@@ -1218,7 +880,8 @@ public class AllSTLsToBuild {
 
         for (extruderID = 0; extruderID < extruders.length; extruderID++) {
             if (extruders[extruderID].getID() != extruderID) {
-                Debug.getInstance().errorMessage("AllSTLsToBuild.slice(): extruder " + extruderID + "out of sequence: " + extruders[extruderID].getID());
+                Debug.getInstance().errorMessage(
+                        "AllSTLsToBuild.slice(): extruder " + extruderID + "out of sequence: " + extruders[extruderID].getID());
             }
             edges[extruderID] = new ArrayList<LineSegment>();
             csgs[extruderID] = new ArrayList<CSG3D>();

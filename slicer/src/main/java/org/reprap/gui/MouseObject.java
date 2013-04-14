@@ -77,7 +77,7 @@ public class MouseObject {
 
     // Constructor takes the bounds of the world and two factors for translate
     // and zoom movements
-    public MouseObject(final Bounds behaviorBounds, final double mouse_tf, final double mouse_zf) {
+    MouseObject(final Bounds behaviorBounds, final double mouse_tf, final double mouse_zf) {
         // Set up the free transform that allows all movements
 
         free = new TransformGroup();
@@ -137,7 +137,7 @@ public class MouseObject {
 
     // Select the STL object to control with the mouse; the boolean
     // decides whether to use free or slide.
-    public void move(final STLObject stl, final boolean slideOnly) {
+    void move(final STLObject stl, final boolean slideOnly) {
         Transform3D t3d = new Transform3D();
         trans.getTransform(t3d);
 
@@ -192,14 +192,6 @@ public class MouseObject {
 
         // Tell it we've taken over.
         movingThing.setMouse(this);
-    }
-
-    // Allow others to apply a transform to what we're controlling
-    public void mul(final Transform3D t3d) {
-        final Transform3D current = new Transform3D();
-        trans.getTransform(current);
-        current.mul(t3d);
-        trans.setTransform(current);
     }
 
     // Get and set our transform

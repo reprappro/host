@@ -634,27 +634,23 @@ public class StlFile implements Loader {
         flag = parm;
     }
 
-    public boolean getAscii() {
+    private boolean getAscii() {
         return isAscii;
     }
 
-    public void setAscii(final boolean tipo) {
+    private void setAscii(final boolean tipo) {
         isAscii = tipo;
     }
 
-    public String getFileName() {
+    private String getFileName() {
         return fileName;
     }
 
-    public void setFileName(final String filename) {
+    private void setFileName(final String filename) {
         fileName = new String(filename);
     }
 
-    public String getObjectName() {
-        return objectName;
-    }
-
-    public void setObjectName(final String name) {
+    private void setObjectName(final String name) {
         objectName = name;
     }
 

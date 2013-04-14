@@ -30,10 +30,10 @@
  RepRap is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Library General Public Licence for more details.
+ Library General private Licence for more details.
  
  For this purpose the words "software" and "library" in the GNU Library
- General Public Licence are taken to mean any and all computer programs
+ General private Licence are taken to mean any and all computer programs
  computer files data results documents and other copyright information
  available from the RepRap project.
  
@@ -64,12 +64,12 @@
  * published by Manning Publications. http://manning.com/selman
  * 
  * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
+ * the terms of the GNU General private License as published by the Free Software
  * Foundation, version 2.
  * 
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * FOR A PARTICULAR PURPOSE. See the GNU General private License for more
  * details.
  * 
  * The license can be found on the WWW at: http://www.fsf.org/copyleft/gpl.html
@@ -125,14 +125,13 @@ import org.reprap.RFO;
 import org.reprap.geometry.polygons.Point2D;
 import org.reprap.geometry.polyhedra.AllSTLsToBuild;
 import org.reprap.geometry.polyhedra.STLObject;
-import org.reprap.utilities.RrGraphics;
 
 import com.sun.j3d.utils.picking.PickCanvas;
 import com.sun.j3d.utils.picking.PickResult;
 import com.sun.j3d.utils.picking.PickTool;
 
 /**
- * This is the main public class that creates a virtual world of the RepRap
+ * This is the main private class that creates a virtual world of the RepRap
  * working volume, allows you to put STL-file objects in it, move them about to
  * arrange them, and build them in the machine.
  */
@@ -143,7 +142,6 @@ public class RepRapBuild extends JPanel implements MouseListener {
     private STLObject lastPicked = null; // The last thing picked
     private final AllSTLsToBuild stls;
     private boolean reordering;
-    private RrGraphics graphics;
     private String wv_location = null;
     private double mouse_tf = 50;
     private double mouse_zf = 50;
@@ -158,7 +156,6 @@ public class RepRapBuild extends JPanel implements MouseListener {
     private Color3f bgColour = new Color3f(0.9f, 0.9f, 0.9f);
     private Color3f selectedColour = new Color3f(0.6f, 0.2f, 0.2f);
     private Color3f machineColour = new Color3f(0.7f, 0.7f, 0.7f);
-    private Color3f unselectedColour = new Color3f(0.3f, 0.3f, 0.3f);
     private Appearance picked_app = null;
     private Appearance wv_app = null;
     private final BranchGroup wv_and_stls = new BranchGroup();
@@ -173,7 +170,6 @@ public class RepRapBuild extends JPanel implements MouseListener {
         initialise();
         stls = new AllSTLsToBuild();
         reordering = false;
-        graphics = null;
         setPreferredSize(new Dimension(600, 400));
     }
 
@@ -298,7 +294,7 @@ public class RepRapBuild extends JPanel implements MouseListener {
     public void mouseReleased(final MouseEvent e) {
     }
 
-    public void moreCopies(final STLObject original, final Attributes originalAttributes, final int number) {
+    void moreCopies(final STLObject original, final Attributes originalAttributes, final int number) {
         if (number <= 0) {
             return;
         }
@@ -389,12 +385,6 @@ public class RepRapBuild extends JPanel implements MouseListener {
 
     public void saveSCADFile(final String s) {
         stls.saveSCAD(s);
-    }
-
-    public void start() throws Exception {
-        if (pickCanvas == null) {
-            initialise();
-        }
     }
 
     private void addCanvas3D(final Canvas3D c3d) {
@@ -493,26 +483,7 @@ public class RepRapBuild extends JPanel implements MouseListener {
         }
     }
 
-    public void deleteAllSTLs() {
-        for (int i = 0; i < stls.size(); i++) {
-            final STLObject s = stls.get(i);
-            stls.remove(i);
-            final int index = wv_and_stls.indexOfChild(s.top());
-            wv_and_stls.removeChild(index);
-        }
-        mouseToWorld();
-        lastPicked = null;
-    }
-
-    public void setGraphics(final RrGraphics g) {
-        graphics = g;
-    }
-
-    public RrGraphics getRrGraphics() {
-        return graphics;
-    }
-
-    public void refreshPreferences() throws IOException {
+    private void refreshPreferences() throws IOException {
         // Set everything up from the properties file
         // All this needs to go into Preferences.java
         wv_location = Preferences.getBasePath();
@@ -532,7 +503,6 @@ public class RepRapBuild extends JPanel implements MouseListener {
         bgColour = new Color3f((float) 0.9, (float) 0.9, (float) 0.9);
         selectedColour = new Color3f((float) 0.6, (float) 0.2, (float) 0.2);
         machineColour = new Color3f((float) 0.3, (float) 0.3, (float) 0.3);
-        unselectedColour = new Color3f((float) 0.3, (float) 0.3, (float) 0.3);
     }
 
     private void initialise() throws IOException {
@@ -562,14 +532,6 @@ public class RepRapBuild extends JPanel implements MouseListener {
 
     private float getViewPlatformActivationRadius() {
         return (float) (RadiusFactor * Math.sqrt(xwv * xwv + ywv * ywv + zwv * zwv));
-    }
-
-    public Color3f getObjectColour() {
-        return unselectedColour;
-    }
-
-    public VirtualUniverse getVirtualUniverse() {
-        return universe;
     }
 
     private View createView(final ViewPlatform vp) {
@@ -603,16 +565,6 @@ public class RepRapBuild extends JPanel implements MouseListener {
         return new Canvas3D(gd[0].getBestConfiguration(gc3D));
     }
 
-    public javax.media.j3d.Locale getFirstLocale() {
-        final java.util.Enumeration<?> en = universe.getAllLocales();
-
-        if (en.hasMoreElements() != false) {
-            return (javax.media.j3d.Locale) en.nextElement();
-        }
-
-        return null;
-    }
-
     private Bounds getApplicationBounds() {
         if (applicationBounds == null) {
             applicationBounds = createApplicationBounds();
@@ -621,7 +573,7 @@ public class RepRapBuild extends JPanel implements MouseListener {
         return applicationBounds;
     }
 
-    public void initJava3d() {
+    private void initJava3d() {
         universe = createVirtualUniverse();
 
         final javax.media.j3d.Locale locale = createLocale(universe);
@@ -671,7 +623,7 @@ public class RepRapBuild extends JPanel implements MouseListener {
         return new javax.media.j3d.Locale(u);
     }
 
-    public TransformGroup[] getViewTransformGroupArray() {
+    private TransformGroup[] getViewTransformGroupArray() {
         final TransformGroup[] tgArray = new TransformGroup[1];
         tgArray[0] = new TransformGroup();
 

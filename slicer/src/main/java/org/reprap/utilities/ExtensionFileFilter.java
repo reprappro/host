@@ -10,13 +10,8 @@ import java.io.File;
 import javax.swing.filechooser.FileFilter;
 
 public class ExtensionFileFilter extends FileFilter {
-    String description;
-
-    String extensions[];
-
-    public ExtensionFileFilter(final String description, final String extension) {
-        this(description, new String[] { extension });
-    }
+    private String description;
+    private final String extensions[];
 
     public ExtensionFileFilter(final String description, final String extensions[]) {
         if (description == null) {

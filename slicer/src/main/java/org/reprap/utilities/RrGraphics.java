@@ -73,7 +73,6 @@ import javax.vecmath.Color3f;
 
 import org.reprap.Attributes;
 import org.reprap.geometry.polygons.BooleanGrid;
-import org.reprap.geometry.polygons.Interval;
 import org.reprap.geometry.polygons.Point2D;
 import org.reprap.geometry.polygons.Polygon;
 import org.reprap.geometry.polygons.PolygonList;
@@ -84,14 +83,8 @@ import org.reprap.geometry.polygons.Rectangle;
  * 
  * @author ensab
  */
-public class RrGraphics {
-    static final Color background = Color.white;
-    static final Color boxes = Color.blue;
-    static final Color polygon1 = Color.red;
-    static final Color polygon0 = Color.black;
-    static final Color infill = Color.pink;
-    static final Color hatch1 = Color.magenta;
-    static final Color hatch0 = Color.orange;
+public class RrGraphics extends JComponent {
+    private static final Color BOX_COLOR = Color.blue;
 
     /**
      * Pixels
@@ -105,28 +98,18 @@ public class RrGraphics {
      * The layer being built
      */
     private String layerNumber;
-    private BooleanGrid bg = null;
+    private final BooleanGrid bg = null;
     private boolean csgSolid = true;
     private double scale;
     private Point2D p_0;
     private Point2D pos;
     private Rectangle scaledBox, originalBox;
-    private static Graphics2D g2d;
-    private static JFrame jframe;
+    private JFrame jframe;
     private boolean plot_box = false;
 
     private String title = "RepRap diagnostics";
 
     private boolean initialised = false;
-
-    /**
-     * Constructor for just a box - add stuff later
-     */
-    public RrGraphics(final Rectangle b, final String t) {
-        p_list = null;
-        title = t;
-        init(b, "0");
-    }
 
     /**
      * Constructor for nothing - add stuff later
@@ -170,12 +153,12 @@ public class RrGraphics {
         pos = new Point2D(width * 0.5, height * 0.5);
     }
 
-    private void plotBar() {
-        g2d.setColor(boxes);
+    private void plotBar(final Graphics2D g2d) {
+        g2d.setColor(BOX_COLOR);
         Point2D p = new Point2D(scaledBox.ne().x() - 12, scaledBox.sw().y() + 5);
         move(p);
         p = new Point2D(scaledBox.ne().x() - 2, scaledBox.sw().y() + 5);
-        plot(p);
+        plot(g2d, p);
     }
 
     public void init(final Rectangle b, final String ln) {
@@ -184,7 +167,7 @@ public class RrGraphics {
 
         jframe = new JFrame();
         jframe.setSize(frameWidth, frameHeight);
-        jframe.getContentPane().add(new MyComponent());
+        jframe.getContentPane().add(this);
         jframe.setTitle(title);
         jframe.setVisible(true);
         jframe.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
@@ -201,44 +184,6 @@ public class RrGraphics {
         return initialised;
     }
 
-    /**
-     * Plot a G code
-     */
-    public void add(String gCode) {
-        if (p_list == null) {
-            p_list = new PolygonList();
-        }
-        Rectangle box = new Rectangle(new Interval(0, 200), new Interval(0, 200)); // Default is entire plot area
-        final int com = gCode.indexOf(';');
-        if (com > 0) {
-            gCode = gCode.substring(0, com);
-        }
-        if (com != 0) {
-            gCode = gCode.trim();
-            if (gCode.length() > 0) {
-                if (!isInitialised()) {
-                    Debug.getInstance().debugMessage("RrGraphics.add(G Codes) - plot area not initialized.");
-                    init(box, "0");
-                }
-            }
-            return;
-        }
-        if (gCode.startsWith(";#!LAYER:")) {
-            final int l = Integer.parseInt(gCode.substring(gCode.indexOf(" ") + 1, gCode.indexOf("/")));
-            cleanPolygons("" + l);
-        }
-        if (gCode.startsWith(";#!RECTANGLE:")) {
-            final String xs = gCode.substring(gCode.indexOf("x:") + 1, gCode.indexOf("y"));
-            final String ys = gCode.substring(gCode.indexOf("y:") + 1, gCode.indexOf(">"));
-            final double x0 = Double.parseDouble(xs.substring(xs.indexOf("l:") + 1, xs.indexOf(",")));
-            final double x1 = Double.parseDouble(xs.substring(xs.indexOf("h:") + 1, xs.indexOf("]")));
-            final double y0 = Double.parseDouble(ys.substring(ys.indexOf("l:") + 1, ys.indexOf(",")));
-            final double y1 = Double.parseDouble(ys.substring(ys.indexOf("h:") + 1, ys.indexOf("]")));
-            box = new Rectangle(new Interval(x0, x1), new Interval(y0, y1));
-            init(box, "0");
-        }
-    }
-
     public void add(final PolygonList pl) {
         if (pl == null) {
             return;
@@ -251,11 +196,6 @@ public class RrGraphics {
         } else {
             p_list.add(pl);
         }
-        jframe.repaint();
-    }
-
-    public void add(final BooleanGrid b) {
-        bg = b;
         jframe.repaint();
     }
 
@@ -283,7 +223,7 @@ public class RrGraphics {
     /**
      * Draw a straight line to a point
      */
-    private void plot(final Point2D p) {
+    private void plot(final Graphics2D g2d, final Point2D p) {
         final Point2D a = transform(p);
         g2d.drawLine((int) Math.round(pos.x()), (int) Math.round(pos.y()), (int) Math.round(a.x()), (int) Math.round(a.y()));
         pos = a;
@@ -292,23 +232,23 @@ public class RrGraphics {
     /**
      * Plot a box
      */
-    private void plot(final Rectangle b) {
+    private void plot(final Graphics2D g2d, final Rectangle b) {
         if (Rectangle.intersection(b, scaledBox).empty()) {
             return;
         }
 
-        g2d.setColor(boxes);
+        g2d.setColor(BOX_COLOR);
         move(b.sw());
-        plot(b.nw());
-        plot(b.ne());
-        plot(b.se());
-        plot(b.sw());
+        plot(g2d, b.nw());
+        plot(g2d, b.ne());
+        plot(g2d, b.se());
+        plot(g2d, b.sw());
     }
 
     /**
      * Set the colour from a RepRap attribute
      */
-    private void setColour(final Attributes at) {
+    private void setColour(final Graphics2D g2d, final Attributes at) {
         final Appearance ap = at.getAppearance();
         final Material mt = ap.getMaterial();
         final Color3f col = new Color3f();
@@ -319,7 +259,7 @@ public class RrGraphics {
     /**
      * Plot a polygon
      */
-    private void plot(final Polygon p) {
+    private void plot(final Graphics2D g2d, final Polygon p) {
         if (p.size() <= 0) {
             return;
         }
@@ -331,27 +271,27 @@ public class RrGraphics {
             return;
         }
 
-        setColour(p.getAttributes());
+        setColour(g2d, p.getAttributes());
         move(p.point(0));
         for (int i = 1; i < p.size(); i++) {
-            plot(p.point(i));
+            plot(g2d, p.point(i));
         }
         if (p.isClosed()) {
             g2d.setColor(Color.RED);
-            plot(p.point(0));
+            plot(g2d, p.point(0));
         }
     }
 
     /**
      * Fill a Boolean Grid where it's solid.
      */
-    private void fillBG(final BooleanGrid b) {
+    private void fillBG(final Graphics2D g2d, final BooleanGrid b) {
         if (b.attribute().getAppearance() == null) {
             Debug.getInstance().errorMessage("RrGraphics: booleanGrid has null appearance.");
             return;
         }
 
-        setColour(b.attribute());
+        setColour(g2d, b.attribute());
         for (int x = 0; x < frameWidth; x++) {
             for (int y = 0; y < frameHeight; y++) {
                 final boolean v = b.get(iTransform(x, y));
@@ -365,20 +305,20 @@ public class RrGraphics {
     /**
      * Master plot function - draw everything
      */
-    private void plot() {
-        plotBar();
+    private void plot(final Graphics2D g2d) {
+        plotBar(g2d);
         if (bg != null) {
-            fillBG(bg);
+            fillBG(g2d, bg);
         }
 
         if (p_list != null) {
             final int leng = p_list.size();
             for (int i = 0; i < leng; i++) {
-                plot(p_list.polygon(i));
+                plot(g2d, p_list.polygon(i));
             }
             if (plot_box) {
                 for (int i = 0; i < leng; i++) {
-                    plot(p_list.polygon(i).getBox());
+                    plot(g2d, p_list.polygon(i).getBox());
                 }
             }
         }
@@ -462,20 +402,8 @@ public class RrGraphics {
         }
     }
 
-    /**
-     * Canvas to paint on
-     */
-    class MyComponent extends JComponent {
-        private static final long serialVersionUID = 1L;
-
-        public MyComponent() {
-            super();
-        }
-
-        @Override
-        public void paint(final Graphics g) {
-            g2d = (Graphics2D) g;
-            plot();
-        }
+    @Override
+    public void paint(final Graphics g) {
+        plot((Graphics2D) g);
     }
 }

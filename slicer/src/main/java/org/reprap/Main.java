@@ -1,6 +1,8 @@
 package org.reprap;
 
 import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -26,7 +28,6 @@ import javax.swing.filechooser.FileFilter;
 
 import org.reprap.geometry.Producer;
 import org.reprap.gui.RepRapBuild;
-import org.reprap.gui.Utility;
 import org.reprap.gui.botConsole.SlicerFrame;
 import org.reprap.machines.GCodePrinter;
 import org.reprap.utilities.Debug;
@@ -96,7 +97,7 @@ public class Main {
         builderFrame.add(builder);
 
         panel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        panel.setPreferredSize(Utility.getDefaultAppSize());
+        panel.setPreferredSize(getDefaultAppSize());
         panel.setMinimumSize(new Dimension(0, 0));
         panel.setResizeWeight(0.5);
         panel.setOneTouchExpandable(true);
@@ -110,7 +111,7 @@ public class Main {
         mainFrame.setJMenuBar(menubar);
 
         mainFrame.pack();
-        Utility.positionWindowOnScreen(mainFrame);
+        positionWindowOnScreen(mainFrame);
         mainFrame.setVisible(true);
     }
 
@@ -380,6 +381,15 @@ public class Main {
 
     public void mouseToWorld() {
         builder.mouseToWorld();
+    }
+
+    private static void positionWindowOnScreen(final Window w) {
+        final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        w.setLocation((screenSize.width - w.getSize().width) / 2, (screenSize.height - w.getSize().height) / 2);
+    }
+
+    private static Dimension getDefaultAppSize() {
+        return new Dimension(1000, 800);
     }
 
     public static void main(final String[] args) {

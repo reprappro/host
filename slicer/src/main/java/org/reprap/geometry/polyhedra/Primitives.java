@@ -4,11 +4,11 @@ import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Vector3d;
 
-public class Primitives {
+class Primitives {
     /**
      * This should really be called cuboid, but let's not be pedantic...
      */
-    public static CSG3D cube(double x, double y, double z, final boolean centre) {
+    static CSG3D cube(double x, double y, double z, final boolean centre) {
         CSG3D result;
         if (centre) {
             x = 0.5 * x;
@@ -83,8 +83,8 @@ public class Primitives {
      * @param centre
      *            Z goes from -h/2 to + h/2; or 0 to h
      */
-    public static CSG3D cylinder(final int fn, final double fa, final double fs, final double h, final double r1,
-            final double r2, final boolean centre) {
+    static CSG3D cylinder(final int fn, final double fa, final double fs, final double h, final double r1, final double r2,
+            final boolean centre) {
         CSG3D result = openCylinder(fn, fa, fs, h, r1, r2);
         final Point3D p1 = new Point3D(0, 0, h);
         result = CSG3D.intersection(result, new CSG3D(new HalfSpace(p1, p1)));

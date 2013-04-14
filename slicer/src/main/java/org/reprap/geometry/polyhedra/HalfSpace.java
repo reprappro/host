@@ -72,7 +72,7 @@ public class HalfSpace {
     /**
      * Make one from three points in it
      */
-    public HalfSpace(final Point3D a, final Point3D b, final Point3D c) {
+    HalfSpace(final Point3D a, final Point3D b, final Point3D c) {
         normal = Point3D.op(Point3D.sub(b, a), Point3D.sub(c, a)).norm();
         offset = -Point3D.mul(normal, a);
     }
@@ -80,23 +80,15 @@ public class HalfSpace {
     /**
      * Make one from a normal and one point in it
      */
-    public HalfSpace(final Point3D n, final Point3D a) {
+    HalfSpace(final Point3D n, final Point3D a) {
         normal = n.norm();
         offset = -Point3D.mul(normal, a);
     }
 
     /**
-     * Make one from a normal and a distance from the origin
-     */
-    public HalfSpace(final Point3D n, final double a) {
-        normal = n.norm();
-        offset = -a;
-    }
-
-    /**
      * Deep copy
      */
-    public HalfSpace(final HalfSpace a) {
+    HalfSpace(final HalfSpace a) {
         normal = new Point3D(a.normal);
         offset = a.offset;
     }
@@ -124,7 +116,7 @@ public class HalfSpace {
      *         tolerance, -1 if one is the complement of the other within the
      *         tolerance, otherwise 1
      */
-    public static int same(final HalfSpace a, final HalfSpace b, final double tolerance) {
+    static int same(final HalfSpace a, final HalfSpace b, final double tolerance) {
         if (a == b) {
             return 0;
         }
@@ -156,7 +148,7 @@ public class HalfSpace {
      * 
      * @return complent of half plane
      */
-    public HalfSpace complement() {
+    HalfSpace complement() {
         final HalfSpace r = new HalfSpace(this);
         r.normal = r.normal.neg();
         r.offset = -r.offset;
@@ -166,7 +158,7 @@ public class HalfSpace {
     /**
      * Move somewhere else. NOTE THIS EXPECTS THE INVERSE OF THE TRANSFORM
      */
-    public HalfSpace transform(final Matrix4d iM) {
+    HalfSpace transform(final Matrix4d iM) {
         final Point3D n = new Point3D(iM.m00 * normal.x() + iM.m10 * normal.y() + iM.m20 * normal.z() + iM.m30 * offset, iM.m01
                 * normal.x() + iM.m11 * normal.y() + iM.m21 * normal.z() + iM.m31 * offset, iM.m02 * normal.x() + iM.m12
                 * normal.y() + iM.m22 * normal.z() + iM.m32 * offset);
@@ -183,7 +175,7 @@ public class HalfSpace {
      * 
      * @return offset halfplane
      */
-    public HalfSpace offset(final double d) {
+    HalfSpace offset(final double d) {
         final HalfSpace r = new HalfSpace(this);
         r.offset = r.offset - d;
         return r;
@@ -203,11 +195,10 @@ public class HalfSpace {
      * 
      * @return potential interval of box b
      */
-    public Interval value(final Box b) {
+    Interval value(final Box b) {
         final Interval x = Interval.mul(b.x(), normal.x());
         final Interval y = Interval.mul(b.y(), normal.y());
         final Interval z = Interval.mul(b.z(), normal.z());
         return Interval.add(Interval.add(Interval.add(x, y), z), offset);
     }
-
 }

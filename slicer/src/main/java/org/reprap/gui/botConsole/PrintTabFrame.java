@@ -51,7 +51,7 @@ public class PrintTabFrame extends JInternalFrame {
     private AbstractButton displayPathsCheck;
 
     /** Creates new form PrintTabFrame */
-    public PrintTabFrame() {
+    PrintTabFrame() {
         initComponents();
         printerFilePlay = null;
         enableSLoad();
@@ -63,7 +63,7 @@ public class PrintTabFrame extends JInternalFrame {
      * 
      * @param fractionDone
      */
-    public void updateProgress(double fractionDone, int layer, int layers) {
+    void updateProgress(double fractionDone, int layer, int layers) {
         if (layer >= 0) {
             currentLayerOutOfN.setText("" + layer + "/" + layers);
         }
@@ -129,7 +129,7 @@ public class PrintTabFrame extends JInternalFrame {
      * 
      * @param b
      */
-    public void setConsoleFrame(final SlicerFrame b) {
+    void setConsoleFrame(final SlicerFrame b) {
         parentBotConsoleFrame = b;
     }
 
@@ -463,7 +463,7 @@ public class PrintTabFrame extends JInternalFrame {
                                         org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).addContainerGap(24, Short.MAX_VALUE)));
     }
 
-    public void printLive(final boolean p) {
+    private void printLive(final boolean p) {
         slicing = true;
         if (p) {
             sliceButton.setText("Printing...");
@@ -480,7 +480,7 @@ public class PrintTabFrame extends JInternalFrame {
         printerFilePlay = null;
     }
 
-    public void printDone() {
+    private void printDone() {
         restoreSliceButton();
         final String[] options = { "Exit" };
         JOptionPane.showOptionDialog(null, "The file has been processed.", "Message", JOptionPane.DEFAULT_OPTION,

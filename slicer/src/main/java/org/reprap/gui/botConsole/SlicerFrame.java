@@ -21,7 +21,7 @@ public class SlicerFrame extends javax.swing.JFrame {
     private org.reprap.gui.botConsole.PrintTabFrame printTabFrame1;
     private int extruderCount;
 
-    public SlicerFrame() {
+    private SlicerFrame() {
         try {
             checkPrefs();
         } catch (final Exception e) {
@@ -53,10 +53,6 @@ public class SlicerFrame extends javax.swing.JFrame {
         pollThread.start();
     }
 
-    public void handleException(final Exception e) {
-        throw new RuntimeException(e);
-    }
-
     /**
      * The update thread calls this to update everything that is independent of
      * the RepRap machine.
@@ -83,15 +79,7 @@ public class SlicerFrame extends javax.swing.JFrame {
      * "Suspend" and "resume" the poll thread. We don't use the actual suspend
      * call (deprecated anyway) to prevent resource locking.
      */
-    public void suspendPolling() {
-        try {
-            Thread.sleep(200);
-        } catch (final InterruptedException ex) {
-            Thread.interrupted();
-        }
-    }
-
-    public void resumePolling() {
+    void suspendPolling() {
         try {
             Thread.sleep(200);
         } catch (final InterruptedException ex) {
@@ -140,9 +128,5 @@ public class SlicerFrame extends javax.swing.JFrame {
 
     public static SlicerFrame getBotConsoleFrame() {
         return bcf;
-    }
-
-    public static PrintTabFrame getPrintTabFrame() {
-        return bcf.printTabFrame1;
     }
 }

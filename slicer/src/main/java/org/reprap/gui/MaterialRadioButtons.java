@@ -116,14 +116,14 @@ class MaterialRadioButtons extends JPanel {
         }
     }
 
-    public static void OKHandler() {
+    private static void OKHandler() {
         final int number = Integer.parseInt(copies.getText().trim()) - 1;
         final STLObject stl = rrb.getSTLs().get(stlIndex);
         rrb.moreCopies(stl, att, number);
         dialog.dispose();
     }
 
-    public static void createAndShowGUI(final Attributes a, final RepRapBuild r, final int index, final double volume) {
+    static void createAndShowGUI(final Attributes a, final RepRapBuild r, final int index, final double volume) {
         att = a;
         rrb = r;
         stlIndex = index;
@@ -144,7 +144,7 @@ class MaterialRadioButtons extends JPanel {
         dialog.setVisible(true);
     }
 
-    public static void createAndShowGUI(final Attributes a, final RepRapBuild r, final STLObject lastPicked) {
+    static void createAndShowGUI(final Attributes a, final RepRapBuild r, final STLObject lastPicked) {
         if (lastPicked == null) {
             return;
         }

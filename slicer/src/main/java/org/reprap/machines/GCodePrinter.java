@@ -37,9 +37,8 @@ public class GCodePrinter {
     /**
      * Have we actually used this extruder?
      */
-    protected boolean physicalExtruderUsed[];
-    protected JCheckBoxMenuItem layerPauseCheckbox = null;
-    protected JCheckBoxMenuItem segmentPauseCheckbox = null;
+    private boolean physicalExtruderUsed[];
+    private JCheckBoxMenuItem layerPauseCheckbox = null;
     /**
      * Current X, Y and Z position of the extruder
      */
@@ -133,7 +132,7 @@ public class GCodePrinter {
         forceSelection = true;
     }
 
-    public void loadExtruders() {
+    private void loadExtruders() {
         try {
             final int extruderCount = Preferences.loadGlobalInt("NumberOfExtruders");
             extruders = new GCodeExtruder[extruderCount];
@@ -205,7 +204,8 @@ public class GCodePrinter {
         final double xyFeedrate = round(extruders[extruder].getFastXYFeedrate(), 1);
 
         if (xyFeedrate < feedrate && Math.abs(extrudeLength) > Preferences.tiny()) {
-            Debug.getInstance().debugMessage("GCodeRepRap().qXYMove: extruding feedrate (" + feedrate + ") exceeds maximum (" + xyFeedrate + ").");
+            Debug.getInstance().debugMessage(
+                    "GCodeRepRap().qXYMove: extruding feedrate (" + feedrate + ") exceeds maximum (" + xyFeedrate + ").");
             feedrate = xyFeedrate;
         }
 
@@ -250,7 +250,8 @@ public class GCodePrinter {
         final double zFeedrate = round(getMaxFeedrateZ(), 1);
 
         if (zFeedrate < feedrate) {
-            Debug.getInstance().debugMessage("GCodeRepRap().qZMove: feedrate (" + feedrate + ") exceeds maximum (" + zFeedrate + ").");
+            Debug.getInstance().debugMessage(
+                    "GCodeRepRap().qZMove: feedrate (" + feedrate + ") exceeds maximum (" + zFeedrate + ").");
             feedrate = zFeedrate;
         }
 
@@ -298,18 +299,21 @@ public class GCodePrinter {
             throws Exception {
         try {
             if (x > Preferences.loadGlobalDouble("WorkingX(mm)") || x < 0) {
-                Debug.getInstance().errorMessage("Attempt to move x to " + x + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingX(mm)")
-                + "]");
+                Debug.getInstance().errorMessage(
+                        "Attempt to move x to " + x + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingX(mm)")
+                                + "]");
                 x = Math.max(0, Math.min(x, Preferences.loadGlobalDouble("WorkingX(mm)")));
             }
             if (y > Preferences.loadGlobalDouble("WorkingY(mm)") || y < 0) {
-                Debug.getInstance().errorMessage("Attempt to move y to " + y + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingY(mm)")
-                + "]");
+                Debug.getInstance().errorMessage(
+                        "Attempt to move y to " + y + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingY(mm)")
+                                + "]");
                 y = Math.max(0, Math.min(y, Preferences.loadGlobalDouble("WorkingY(mm)")));
             }
             if (z > Preferences.loadGlobalDouble("WorkingZ(mm)") || z < 0) {
-                Debug.getInstance().debugMessage("Attempt to move z to " + z + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingZ(mm)")
-                + "]");
+                Debug.getInstance().debugMessage(
+                        "Attempt to move z to " + z + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingZ(mm)")
+                                + "]");
                 z = Math.max(0, Math.min(z, Preferences.loadGlobalDouble("WorkingZ(mm)")));
             }
         } catch (final Exception e) {
@@ -333,8 +337,9 @@ public class GCodePrinter {
         final boolean xyMove = dx != 0 || dy != 0;
 
         if (zMove && xyMove) {
-            Debug.getInstance().debugMessage("GcodeRepRap.moveTo(): attempt to move in X|Y and Z simultaneously: (x, y, z) = (" + currentX + "->" + x
-            + ", " + currentY + "->" + y + ", " + currentZ + "->" + z + ", " + ")");
+            Debug.getInstance().debugMessage(
+                    "GcodeRepRap.moveTo(): attempt to move in X|Y and Z simultaneously: (x, y, z) = (" + currentX + "->" + x
+                            + ", " + currentY + "->" + y + ", " + currentZ + "->" + z + ", " + ")");
         }
 
         final double zFeedrate = round(getMaxFeedrateZ(), 1);
@@ -385,16 +390,19 @@ public class GCodePrinter {
     private void checkCoordinates(final double x, final double y, final double z) {
         try {
             if (x > Preferences.loadGlobalDouble("WorkingX(mm)") || x < 0) {
-                Debug.getInstance().errorMessage("Attempt to move x to " + x + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingX(mm)")
-                + "]");
+                Debug.getInstance().errorMessage(
+                        "Attempt to move x to " + x + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingX(mm)")
+                                + "]");
             }
             if (y > Preferences.loadGlobalDouble("WorkingY(mm)") || y < 0) {
-                Debug.getInstance().errorMessage("Attempt to move y to " + y + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingY(mm)")
-                + "]");
+                Debug.getInstance().errorMessage(
+                        "Attempt to move y to " + y + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingY(mm)")
+                                + "]");
             }
             if (z > Preferences.loadGlobalDouble("WorkingZ(mm)") || z < 0) {
-                Debug.getInstance().errorMessage("Attempt to move z to " + z + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingZ(mm)")
-                + "]");
+                Debug.getInstance().errorMessage(
+                        "Attempt to move z to " + z + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingZ(mm)")
+                                + "]");
             }
         } catch (final Exception e) {
         }
@@ -419,8 +427,9 @@ public class GCodePrinter {
         final boolean xyMove = dx != 0 || dy != 0;
 
         if (zMove && xyMove) {
-            Debug.getInstance().debugMessage("GcodeRepRap.singleMove(): attempt to move in X|Y and Z simultaneously: (x, y, z) = (" + x + ", " + y
-            + ", " + z + ")");
+            Debug.getInstance().debugMessage(
+                    "GcodeRepRap.singleMove(): attempt to move in X|Y and Z simultaneously: (x, y, z) = (" + x + ", " + y
+                            + ", " + z + ")");
         }
 
         if (!really) {
@@ -744,7 +753,7 @@ public class GCodePrinter {
         gcode.queue(s);
     }
 
-    public void homeToZeroX() throws Exception {
+    private void homeToZeroX() throws Exception {
         String s = "G28 X0";
         if (Debug.getInstance().isDebug()) {
             s += " ; set x 0";
@@ -753,7 +762,7 @@ public class GCodePrinter {
         currentX = 0.0;
     }
 
-    public void homeToZeroY() throws Exception {
+    private void homeToZeroY() throws Exception {
         String s = "G28 Y0";
         if (Debug.getInstance().isDebug()) {
             s += " ; set y 0";
@@ -762,7 +771,7 @@ public class GCodePrinter {
         currentY = 0.0;
     }
 
-    public void homeToZeroXYE(final boolean really) throws Exception {
+    private void homeToZeroXYE(final boolean really) throws Exception {
         if (XYEAtZero) {
             return;
         }
@@ -782,18 +791,10 @@ public class GCodePrinter {
         XYEAtZero = true;
     }
 
-    public static double round(final double c, final double d) {
+    private static double round(final double c, final double d) {
         final double power = Math.pow(10.0, d);
 
         return Math.round(c * power) / power;
-    }
-
-    public void stopMotor() throws Exception {
-        getExtruder().stopExtruding();
-    }
-
-    public void stopValve() throws Exception {
-        getExtruder().setValve(false);
     }
 
     /**
@@ -806,7 +807,7 @@ public class GCodePrinter {
      * @param milliseconds
      * @throws Exception
      */
-    public void machineWait(final double milliseconds, final boolean fastExtrude, final boolean really) throws Exception {
+    private void machineWait(final double milliseconds, final boolean fastExtrude, final boolean really) throws Exception {
         if (milliseconds <= 0) {
             return;
         }
@@ -825,7 +826,7 @@ public class GCodePrinter {
         currentZ = round(z, 4);
     }
 
-    public void selectExtruder(final int materialIndex, final boolean really, final boolean update) throws Exception {
+    private void selectExtruder(final int materialIndex, final boolean really, final boolean update) throws Exception {
         final int oldPhysicalExtruder = getExtruder().getPhysicalExtruderNumber();
         final GCodeExtruder oldExtruder = getExtruder();
         final int newPhysicalExtruder = extruders[materialIndex].getPhysicalExtruderNumber();
@@ -1065,24 +1066,6 @@ public class GCodePrinter {
 
     private double getMaxFeedrateZ() {
         return maxFeedrateZ;
-    }
-
-    /**
-     * Display a message indicating a segment is about to be printed and wait
-     * for the user to acknowledge
-     */
-    protected void segmentPause() {
-        try {
-            getExtruder().setValve(false);
-            getExtruder().setMotor(false);
-        } catch (final Exception ex) {
-        }
-        JOptionPane.showMessageDialog(null, "A new segment is about to be produced");
-        try {
-            getExtruder().setExtrusion(getExtruder().getExtruderSpeed(), false);
-            getExtruder().setValve(false);
-        } catch (final Exception ex) {
-        }
     }
 
     /**

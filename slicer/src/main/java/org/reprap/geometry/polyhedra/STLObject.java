@@ -95,14 +95,12 @@ import com.sun.j3d.utils.picking.PickTool;
  * different materials.
  * 
  * @author adrian
- * 
  */
 public class STLObject {
-
     /**
-     * Little class to hold offsets of loaded STL objects
+     * Offsets of loaded STL objects
      */
-    class Offsets {
+    private static final class Offsets {
         private Vector3d centreToOrigin;
         private Vector3d bottomLeftShift;
     }
@@ -111,7 +109,7 @@ public class STLObject {
      * Little class to hold tripples of the parts of this STLObject loaded.
      * 
      */
-    class Contents {
+    private static final class Contents {
         private String sourceFile = null; // The STL file I was loaded from
         private BranchGroup stl = null; // The actual STL geometry
         private CSG3D csg = null; // CSG if available
@@ -238,15 +236,12 @@ public class STLObject {
         BranchGroup bgResult = null;
         CSG3D csgResult = null;
 
-        //STLLoader loader = new STLLoader();
         final StlFile loader = new StlFile();
 
         Scene scene;
         double volume = 0;
         try {
 
-            //location=location.substring(5);
-            //System.out.println(location);
             scene = loader.load(location);
             final CSGReader csgr = new CSGReader(location);
             if (csgr.csgAvailable()) {
@@ -259,7 +254,6 @@ public class STLObject {
                 bgResult.setCapability(Shape3D.ALLOW_APPEARANCE_WRITE);
 
                 // Recursively add its attribute
-
                 final Hashtable<?, ?> namedObjects = scene.getNamedObjects();
                 final java.util.Enumeration<?> enumValues = namedObjects.elements();
 
@@ -376,7 +370,7 @@ public class STLObject {
         return fn;
     }
 
-    public String toSCAD() {
+    String toSCAD() {
         String result = " multmatrix(m = [ [";
         final Transform3D t1 = new Transform3D();
         final Transform3D t2 = new Transform3D();
@@ -416,10 +410,6 @@ public class STLObject {
 
     public Attributes attributes(final int i) {
         return contents.get(i).att;
-    }
-
-    public BranchGroup branchGroup(final int i) {
-        return contents.get(i).stl;
     }
 
     public int size() {
@@ -579,30 +569,7 @@ public class STLObject {
     }
 
     /**
-     * Move this object elsewhere
-     * 
-     * @param s
-     * @param p
-     */
-    public void hardTranslate(final Vector3d p) {
-        for (int i = 0; i < contents.size(); i++) {
-            final Contents c = contents.get(i);
-            recursiveSetOffset(c.stl, p);
-            if (c.csg != null) {
-                final Matrix4d m = new Matrix4d();
-                m.setIdentity();
-                m.m03 = p.x;
-                m.m13 = p.y;
-                m.m23 = p.z;
-                c.csg = c.csg.transform(m);
-            }
-        }
-    }
-
-    /**
      * Soft translation
-     * 
-     * @param p
      */
     public void translate(final Vector3d p) {
         final Transform3D t3d1 = getTransform();
@@ -613,7 +580,6 @@ public class STLObject {
     }
 
     // Shift a Shape3D permanently by p
-
     private void s3dOffset(final Shape3D shape, final Tuple3d p) {
         final GeometryArray g = (GeometryArray) shape.getGeometry();
         final Point3d p3d = new Point3d();
@@ -627,7 +593,6 @@ public class STLObject {
     }
 
     // Scale the object by s permanently (i.e. don't just apply a transform).
-
     private void recursiveSetScale(final Object value, final double s, final boolean zOnly) {
         if (value instanceof SceneGraphObject != false) {
             // set the user data for the item
@@ -668,51 +633,45 @@ public class STLObject {
     }
 
     // Set my transform
-
     public void setTransform(final Transform3D t3d) {
         trans.setTransform(t3d);
     }
 
     // Get my transform
-
-    public Transform3D getTransform() {
+    Transform3D getTransform() {
         final Transform3D result = new Transform3D();
         trans.getTransform(result);
         return result;
     }
 
     // Get one of the the actual objects
-
-    public BranchGroup getSTL() {
+    BranchGroup getSTL() {
         return stl;
     }
 
-    public BranchGroup getSTL(final int i) {
+    BranchGroup getSTL(final int i) {
         return contents.get(i).stl;
     }
 
-    public int getCount() {
+    int getCount() {
         return contents.size();
     }
 
-    public CSG3D getCSG(final int i) {
+    CSG3D getCSG(final int i) {
         return contents.get(i).csg;
     }
 
     // Get the number of objects
-
     public int numChildren() {
         return stl.numChildren();
     }
 
     // The mouse calls this to tell us it is controlling us
-
     public void setMouse(final MouseObject m) {
         mouse = m;
     }
 
     // Change colour etc. - recursive private call to walk the tree
-
     private static void setAppearance_r(final Object gp, final Appearance a) {
         if (gp instanceof Group) {
             final Group g = (Group) gp;
@@ -788,7 +747,7 @@ public class STLObject {
 
     // Why the !*$! aren't these in Vector3d???
 
-    public static Vector3d add(final Vector3d a, final Vector3d b) {
+    private static Vector3d add(final Vector3d a, final Vector3d b) {
         final Vector3d result = new Vector3d();
         result.x = a.x + b.x;
         result.y = a.y + b.y;
@@ -796,13 +755,13 @@ public class STLObject {
         return result;
     }
 
-    public static Vector3d neg(final Vector3d a) {
+    private static Vector3d neg(final Vector3d a) {
         final Vector3d result = new Vector3d(a);
         result.negate();
         return result;
     }
 
-    public static Vector3d scale(final Vector3d a, final double s) {
+    private static Vector3d scale(final Vector3d a, final double s) {
         final Vector3d result = new Vector3d(a);
         result.scale(s);
         return result;
@@ -870,7 +829,7 @@ public class STLObject {
     /**
      * Rescale the STL object (for inch -> mm conversion) and stretching heights
      */
-    public void rScale(final double s, final boolean zOnly) {
+    void rScale(final double s, final boolean zOnly) {
         if (mouse == null && !zOnly) {
             return;
         }

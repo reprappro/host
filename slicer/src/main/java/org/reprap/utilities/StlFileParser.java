@@ -25,14 +25,13 @@ import java.io.StreamTokenizer;
  *          readed by Tokenizer we must then extend that class and define
  *          another getNumber
  */
-
 public class StlFileParser extends StreamTokenizer {
     public StlFileParser(final Reader r) {
         super(r);
         setup();
     }
 
-    public void setup() {
+    private void setup() {
         resetSyntax();
         eolIsSignificant(true);
         lowerCaseMode(true);

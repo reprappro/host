@@ -9,17 +9,15 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
 public class PreferencesValue {
-
     private JTextField textfieldValue = null;
     private BooleanChoice boolchoiceValue = null;
 
-    public class BooleanChoice extends JPanel {
+    private static final class BooleanChoice extends JPanel {
         private boolean userchoice;
         private JRadioButton trueButton, falseButton;
         private final ButtonGroup bgroup;
 
-        public BooleanChoice(final Boolean boolvalue) {
-
+        private BooleanChoice(final Boolean boolvalue) {
             if (boolvalue == true) {
                 trueButton = new JRadioButton("True", true);
             } else {
@@ -41,11 +39,9 @@ public class PreferencesValue {
             this.add(falseButton);
 
             userchoice = boolvalue;
-
         }
 
-        public String getText() {
-
+        private String getText() {
             if (bgroup.isSelected(trueButton.getModel())) {
                 userchoice = true;
             } else {
@@ -59,7 +55,7 @@ public class PreferencesValue {
             }
         }
 
-        public void setValue(final boolean boolvalue) {
+        private void setValue(final boolean boolvalue) {
             if (boolvalue == true) {
                 trueButton.setSelected(true);
             } else {
@@ -74,15 +70,11 @@ public class PreferencesValue {
         }
     }
 
-    public PreferencesValue(final JTextField l) {
+    PreferencesValue(final JTextField l) {
         textfieldValue = l;
     }
 
-    public PreferencesValue(final BooleanChoice b) {
-        boolchoiceValue = b;
-    }
-
-    public String getText() {
+    String getText() {
         if (textfieldValue != null) {
             return textfieldValue.getText();
         }
@@ -93,7 +85,7 @@ public class PreferencesValue {
         return null;
     }
 
-    public void setText(final String str) {
+    void setText(final String str) {
         if (textfieldValue != null) {
             textfieldValue.setText(str);
         }
@@ -102,7 +94,7 @@ public class PreferencesValue {
         }
     }
 
-    public Component getObject() {
+    Component getObject() {
         if (textfieldValue != null) {
             return textfieldValue;
         } else {
@@ -111,15 +103,10 @@ public class PreferencesValue {
     }
 
     private boolean getBoolFromString(final String strVal) {
-
-        if (strVal.compareToIgnoreCase("true") == 0) {
-            return true;
-        }
-
-        return false;
+        return strVal.compareToIgnoreCase("true") == 0;
     }
 
-    public void makeBoolean() {
+    void makeBoolean() {
         final boolean boolvalue = getBoolFromString(getText());
         textfieldValue = null;
         boolchoiceValue = new BooleanChoice(boolvalue);

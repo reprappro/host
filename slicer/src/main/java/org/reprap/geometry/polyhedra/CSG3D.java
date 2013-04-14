@@ -53,7 +53,6 @@ package org.reprap.geometry.polyhedra;
 import javax.vecmath.Matrix4d;
 
 import org.reprap.CSGOp;
-import org.reprap.geometry.polygons.Interval;
 import org.reprap.utilities.Debug;
 
 /**
@@ -63,7 +62,6 @@ import org.reprap.utilities.Debug;
  * November 2005
  */
 public class CSG3D {
-
     /**
      * Universal set
      */
@@ -103,7 +101,7 @@ public class CSG3D {
     /**
      * Make a leaf from a single half-plane
      */
-    public CSG3D(final HalfSpace h) {
+    CSG3D(final HalfSpace h) {
         hp = new HalfSpace(h);
         op = CSGOp.LEAF;
         c1 = null;
@@ -133,47 +131,15 @@ public class CSG3D {
      * 
      * @return universal or null set
      */
-    public static CSG3D universe() {
+    static CSG3D universe() {
         return u;
     }
 
     /**
      * @return nothing/null set
      */
-    public static CSG3D nothing() {
+    private static CSG3D nothing() {
         return n;
-    }
-
-    /**
-     * Deep copy
-     */
-    public CSG3D(final CSG3D c) {
-        if (c == u || c == n) {
-            Debug.getInstance().errorMessage("RrCSG deep copy: copying null or universal set.");
-        }
-
-        if (c.hp != null) {
-            hp = new HalfSpace(c.hp);
-        } else {
-            hp = null;
-        }
-
-        if (c.c1 != null) {
-            c1 = new CSG3D(c.c1);
-        } else {
-            c1 = null;
-        }
-
-        if (c.c2 != null) {
-            c2 = new CSG3D(c.c2);
-        } else {
-            c2 = null;
-        }
-
-        comp = null; // This'll be built if it's needed
-
-        op = c.op;
-        complexity = c.complexity;
     }
 
     /**
@@ -195,10 +161,6 @@ public class CSG3D {
 
     public HalfSpace hSpace() {
         return hp;
-    }
-
-    public int complexity() {
-        return complexity;
     }
 
     /**
@@ -267,7 +229,7 @@ public class CSG3D {
      * 
      * @return union of passed CSG objects
      */
-    public static CSG3D union(final CSG3D a, final CSG3D b) {
+    static CSG3D union(final CSG3D a, final CSG3D b) {
         if (a == b) {
             return a;
         }
@@ -297,7 +259,7 @@ public class CSG3D {
      * 
      * @return intersection of passed CSG objects
      */
-    public static CSG3D intersection(final CSG3D a, final CSG3D b) {
+    static CSG3D intersection(final CSG3D a, final CSG3D b) {
         if (a == b) {
             return a;
         }
@@ -327,7 +289,7 @@ public class CSG3D {
      * 
      * @return complement
      */
-    public CSG3D complement() {
+    private CSG3D complement() {
         if (comp != null) {
             return comp;
         }
@@ -400,7 +362,7 @@ public class CSG3D {
     /**
      * Go somewhere else
      */
-    public CSG3D transform(final Matrix4d m) {
+    CSG3D transform(final Matrix4d m) {
         final Matrix4d iM = new Matrix4d(m);
         iM.invert();
         return xform(iM);
@@ -411,284 +373,7 @@ public class CSG3D {
      * 
      * @return set difference as CSG object based on input CSG objects
      */
-    public static CSG3D difference(final CSG3D a, final CSG3D b) {
+    static CSG3D difference(final CSG3D a, final CSG3D b) {
         return intersection(a, b.complement());
-    }
-
-    /**
-     * Replace duplicate of leaf with leaf itself TODO: this should also use
-     * known complements
-     */
-    private void replaceAllSameLeaves(final CSG3D leaf, final double tolerance) {
-        int same;
-        switch (op) {
-        case LEAF:
-        case NULL:
-        case UNIVERSE:
-            break;
-
-        case UNION:
-        case INTERSECTION:
-            final HalfSpace hp = leaf.hp;
-            if (c1.op == CSGOp.LEAF) {
-                same = HalfSpace.same(hp, c1.hp, tolerance);
-                if (same == 0) {
-                    c1 = leaf;
-                }
-                if (same == -1) {
-                    c1 = leaf.complement();
-                }
-            } else {
-                c1.replaceAllSameLeaves(leaf, tolerance);
-            }
-
-            if (c2.op == CSGOp.LEAF) {
-                same = HalfSpace.same(hp, c2.hp, tolerance);
-                if (same == 0) {
-                    c2 = leaf;
-                }
-                if (same == -1) {
-                    c2 = leaf.complement();
-                }
-            } else {
-                c2.replaceAllSameLeaves(leaf, tolerance);
-            }
-            break;
-
-        default:
-            Debug.getInstance().errorMessage("replace_all_same(): invalid operator.");
-        }
-    }
-
-    /**
-     * Replace duplicate of all leaves with the last instance of each; also link
-     * up complements.
-     * 
-     * @return simplified CSG object
-     */
-    private void simplify_r(final CSG3D root, final double tolerance) {
-        switch (op) {
-        case LEAF:
-            root.replaceAllSameLeaves(this, tolerance);
-            break;
-
-        case NULL:
-        case UNIVERSE:
-            break;
-
-        case UNION:
-        case INTERSECTION:
-            c1.simplify_r(root, tolerance);
-            c2.simplify_r(root, tolerance);
-            break;
-
-        default:
-            Debug.getInstance().errorMessage("simplify_r(): invalid operator.");
-
-        }
-    }
-
-    /**
-     * Replace duplicate of all leaves with the last instance of each
-     * 
-     * @return simplified CSG object
-     */
-    public CSG3D simplify(final double tolerance) {
-        if (this == u || this == n) {
-            return this;
-        }
-
-        final CSG3D root = new CSG3D(this);
-        simplify_r(root, tolerance);
-        return root;
-    }
-
-    /**
-     * Offset by a distance (+ve or -ve) TODO: this should keep track of
-     * complements
-     * 
-     * @return offset CSG object by distance d
-     */
-    public CSG3D offset(final double d) {
-        CSG3D result;
-
-        switch (op) {
-        case LEAF:
-            result = new CSG3D(hp.offset(d));
-            break;
-
-        case NULL:
-        case UNIVERSE:
-            result = this;
-            break;
-
-        case UNION:
-            result = union(c1.offset(d), c2.offset(d));
-            break;
-
-        case INTERSECTION:
-            result = intersection(c1.offset(d), c2.offset(d));
-            break;
-
-        default:
-            Debug.getInstance().errorMessage("offset(): invalid operator.");
-            result = nothing();
-        }
-        return result;
-    }
-
-    /**
-     * leaf find the half-plane that generates the value for a point
-     */
-    public CSG3D leaf(final Point3D p) {
-        CSG3D result, r1, r2;
-
-        switch (op) {
-        case LEAF:
-            result = this;
-            break;
-
-        case NULL:
-            result = this;
-            break;
-
-        case UNIVERSE:
-            result = this;
-            break;
-
-        case UNION:
-            r1 = c1.leaf(p);
-            r2 = c2.leaf(p);
-            if (r1.value(p) < r2.value(p)) {
-                return r1;
-            } else {
-                return r2;
-            }
-
-        case INTERSECTION:
-            r1 = c1.leaf(p);
-            r2 = c2.leaf(p);
-            if (r1.value(p) > r2.value(p)) {
-                return r1;
-            } else {
-                return r2;
-            }
-
-        default:
-            Debug.getInstance().errorMessage("leaf(Rr2Point): invalid operator.");
-            result = nothing();
-        }
-        return result;
-    }
-
-    /**
-     * "Potential" value of a point; i.e. a membership test -ve means inside; 0
-     * means on the surface; +ve means outside
-     * 
-     * @return potential value of a point
-     */
-    public double value(final Point3D p) {
-        double result = 1;
-        switch (op) {
-        case LEAF:
-            result = hp.value(p);
-            break;
-
-        case NULL:
-            result = 1;
-            break;
-
-        case UNIVERSE:
-            result = -1;
-            break;
-
-        case UNION:
-            result = Math.min(c1.value(p), c2.value(p));
-            break;
-
-        case INTERSECTION:
-            result = Math.max(c1.value(p), c2.value(p));
-            break;
-
-        default:
-            Debug.getInstance().errorMessage("RrCSG.value(): dud operator.");
-        }
-        return result;
-    }
-
-    /**
-     * The interval value of a box (analagous to point)
-     * 
-     * @return value of a box
-     */
-    public Interval value(final Box b) {
-        Interval result;
-
-        switch (op) {
-        case LEAF:
-            result = hp.value(b);
-            break;
-
-        case NULL:
-            result = new Interval(1, 1.01); // Is this clever?  Or dumb?
-            break;
-
-        case UNIVERSE:
-            result = new Interval(-1.01, -1); // Ditto.
-            break;
-
-        case UNION:
-            result = Interval.min(c1.value(b), c2.value(b));
-            break;
-
-        case INTERSECTION:
-            result = Interval.max(c1.value(b), c2.value(b));
-            break;
-
-        default:
-            Debug.getInstance().errorMessage("value(RrBox): invalid operator.");
-            result = new Interval();
-        }
-
-        return result;
-    }
-
-    /**
-     * Prune the set to a box
-     * 
-     * @return pruned box as new CSG object
-     */
-    public CSG3D prune(final Box b) {
-        CSG3D result = this;
-
-        switch (op) {
-        case LEAF:
-            final Interval i = hp.value(b);
-            if (i.empty()) {
-                Debug.getInstance().errorMessage("RrCSG.prune(RrBox): empty interval!");
-            } else if (i.neg()) {
-                result = universe();
-            } else if (i.pos()) {
-                result = nothing();
-            }
-            break;
-
-        case NULL:
-        case UNIVERSE:
-            break;
-
-        case UNION:
-            result = union(c1.prune(b), c2.prune(b));
-            break;
-
-        case INTERSECTION:
-            result = intersection(c1.prune(b), c2.prune(b));
-            break;
-
-        default:
-            Debug.getInstance().errorMessage("RrCSG.prune(RrBox): dud op value!");
-        }
-
-        return result;
     }
 }

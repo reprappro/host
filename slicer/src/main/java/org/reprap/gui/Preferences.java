@@ -24,13 +24,6 @@ import javax.swing.JTextField;
 import org.reprap.utilities.Debug;
 
 /**
- * Boxes must contain one of three types
- */
-enum Category {
-    number, string, bool;
-}
-
-/**
  * This reads in the preferences file and constructs a set of menus from it to
  * allow entries to be edited.
  * 
@@ -57,14 +50,10 @@ public class Preferences extends JFrame {
     private int extruderCount;
     private JLabel[] globals; // Array of JLabels for the general key names
     private PreferencesValue[] globalValues; // Array of JTextFields for the general variables
-    private Category[] globalCats; // What are they?
+    private PreferenceCategory[] globalCats; // What are they?
     private final JLabel[][] extruders; // Array of Arrays of JLabels for the extruders' key names
     private final PreferencesValue[][] extruderValues; // Array of Arrays of JTextFields for the extruders' variables
-    private final Category[][] extruderCats; // What are they?
-
-    public static void main(final String[] args) {
-        new Preferences();
-    }
+    private final PreferenceCategory[][] extruderCats; // What are they?
 
     /**
      * Get the value corresponding to name from the preferences file
@@ -80,7 +69,7 @@ public class Preferences extends JFrame {
         org.reprap.Preferences.setGlobalString(name, value);
     }
 
-    public void updatePreferencesValues() {
+    private void updatePreferencesValues() {
         try {
 
             for (int i = 0; i < globals.length; i++) {
@@ -104,7 +93,7 @@ public class Preferences extends JFrame {
     /**
      * Save the lot to the preferences file
      */
-    public void savePreferences() {
+    private void savePreferences() {
         try {
             for (int i = 0; i < globals.length; i++) {
                 final String s = globalValues[i].getText();
@@ -118,11 +107,12 @@ public class Preferences extends JFrame {
             for (int j = 0; j < extruderCount; j++) {
                 final JLabel[] enames = extruders[j];
                 final PreferencesValue[] evals = extruderValues[j];
-                final Category[] cats = extruderCats[j];
+                final PreferenceCategory[] cats = extruderCats[j];
                 for (int i = 0; i < enames.length; i++) {
                     final String s = evals[i].getText();
                     if (category(s) != cats[i]) {
-                        Debug.getInstance().errorMessage("Preferences window: Dud format for " + enames[i].getText() + ": " + s);
+                        Debug.getInstance()
+                                .errorMessage("Preferences window: Dud format for " + enames[i].getText() + ": " + s);
                     } else {
                         saveString(enames[i].getText(), s);
                     }
@@ -165,7 +155,7 @@ public class Preferences extends JFrame {
         // Now build a set of arrays for each extruder in turn.
         extruders = new JLabel[extruderCount][];
         extruderValues = new PreferencesValue[extruderCount][];
-        extruderCats = new Category[extruderCount][];
+        extruderCats = new PreferenceCategory[extruderCount][];
         try {
             for (int i = 0; i < extruderCount; i++) {
                 final String[] a = org.reprap.Preferences.startsWith("Extruder" + i);
@@ -503,24 +493,24 @@ public class Preferences extends JFrame {
     /**
      * Find if a string is a boolean, a number, or a string
      */
-    private Category category(final String s) {
+    private PreferenceCategory category(final String s) {
         if (isBoolean(s)) {
-            return Category.bool;
+            return PreferenceCategory.BOOLEAN;
         }
 
         if (isNumber(s)) {
-            return Category.number;
+            return PreferenceCategory.NUMBER;
         }
 
-        return Category.string;
+        return PreferenceCategory.STRING;
     }
 
     /**
      * Generate an array of categories corresponsing to the text in an array of
      * edit boxes so they can be checked later.
      */
-    private Category[] categorise(final PreferencesValue[] a) {
-        final Category[] result = new Category[a.length];
+    private PreferenceCategory[] categorise(final PreferencesValue[] a) {
+        final PreferenceCategory[] result = new PreferenceCategory[a.length];
         for (int i = 0; i < a.length; i++) {
             result[i] = category(a[i].getText());
         }
