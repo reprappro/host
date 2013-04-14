@@ -4,20 +4,25 @@ slicer (http://reprappro.com).
 
 Download and installation
 =========================
+
 Prerequisites:
  * java    (download from oracle.com)
  * java3d  (download from oracle.com)
  * maven   (download from apache.org)
 
-To run the software simply clone, run maven and execute the script reprap:
+To compile and run the software simply clone, run maven and execute the script
+reprap:
  $ git clone git://github.com/holgero/RepRapProSlicer.git
  $ cd RepRapProSlicer
  $ mvn clean install
  $ ./reprap
 
+For binary downloads see below.
+
 
 User Documentation
 ==================
+
 For details of how to use this software, see http://reprap.org/wiki/RepRapPro_Slicer
 
 
@@ -36,9 +41,22 @@ These offsets will be in the file prologue.gcode in the directory .reprap.old/Me
 
 Experiment with the source code
 ===============================
+
 Make sure you have m2e installed (eclipse marketplace).
 
 Import the slicer module as existing maven project. And run the main class org.reprap.Main as Java Application.
+
+
+Binary Builds and Downloads
+===========================
+
+A build job is setup at cloudbees: https://xfd.ci.cloudbees.com/job/reprappro/
+
+The latest build result is stored in this snapshot repository: https://repository-xfd.forge.cloudbees.com/snapshot/de/holger_oehm/reprap/host/slicer/0.1.0-SNAPSHOT/
+
+If you just want to use the binary without compiling it yourself, locate the file slicer-*-jar-with-dependencies.jar in the snapshot repository above, download it and run the slicer as follows:
+
+ $ java -jar slicer-*-jar-with-dependencies.jar -Xmx1024M
 
 
 Licence
