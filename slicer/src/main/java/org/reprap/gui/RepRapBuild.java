@@ -97,7 +97,6 @@ import java.io.IOException;
 
 import javax.media.j3d.AmbientLight;
 import javax.media.j3d.Appearance;
-import javax.media.j3d.AudioDevice;
 import javax.media.j3d.Background;
 import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.Bounds;
@@ -128,7 +127,6 @@ import org.reprap.geometry.polyhedra.AllSTLsToBuild;
 import org.reprap.geometry.polyhedra.STLObject;
 import org.reprap.utilities.RrGraphics;
 
-import com.sun.j3d.audioengines.javasound.JavaSoundMixer;
 import com.sun.j3d.utils.picking.PickCanvas;
 import com.sun.j3d.utils.picking.PickResult;
 import com.sun.j3d.utils.picking.PickTool;
@@ -211,9 +209,7 @@ public class RepRapBuild extends JPanel implements MouseListener {
     }
 
     private BranchGroup createSceneBranchGroup() {
-        sceneBranchGroup = new BranchGroup();
-
-        final BranchGroup objRoot = sceneBranchGroup;
+        final BranchGroup objRoot = new BranchGroup();
         final Bounds lightBounds = getApplicationBounds();
         final AmbientLight ambLight = new AmbientLight(true, new Color3f(1.0f, 1.0f, 1.0f));
         ambLight.setInfluencingBounds(lightBounds);
@@ -230,7 +226,6 @@ public class RepRapBuild extends JPanel implements MouseListener {
         wv_and_stls.setCapability(Group.ALLOW_CHILDREN_READ);
 
         // Load the STL file for the working volume
-
         world = new STLObject(wv_and_stls);
 
         final String stlFile = getStlBackground();
@@ -240,7 +235,6 @@ public class RepRapBuild extends JPanel implements MouseListener {
         wv_and_stls.addChild(workingVolume.top());
 
         // Set the mouse to move everything
-
         mouse.move(world, false);
         objRoot.addChild(world.top());
 
@@ -248,7 +242,6 @@ public class RepRapBuild extends JPanel implements MouseListener {
     }
 
     // Action on mouse click
-
     @Override
     public void mouseClicked(final MouseEvent e) {
         pickCanvas.setShapeLocation(e);
@@ -585,13 +578,6 @@ public class RepRapBuild extends JPanel implements MouseListener {
         final PhysicalBody pb = createPhysicalBody();
         final PhysicalEnvironment pe = createPhysicalEnvironment();
 
-        final AudioDevice audioDevice = createAudioDevice(pe);
-
-        if (audioDevice != null) {
-            pe.setAudioDevice(audioDevice);
-            audioDevice.initialize();
-        }
-
         view.setPhysicalEnvironment(pe);
         view.setPhysicalBody(pb);
 
@@ -640,7 +626,7 @@ public class RepRapBuild extends JPanel implements MouseListener {
 
         final javax.media.j3d.Locale locale = createLocale(universe);
 
-        final BranchGroup sceneBranchGroup = createSceneBranchGroup();
+        sceneBranchGroup = createSceneBranchGroup();
 
         final ViewPlatform vp = createViewPlatform();
         final BranchGroup viewBranchGroup = createViewBranchGroup(getViewTransformGroupArray(), vp);
@@ -659,10 +645,6 @@ public class RepRapBuild extends JPanel implements MouseListener {
 
     private PhysicalBody createPhysicalBody() {
         return new PhysicalBody();
-    }
-
-    private AudioDevice createAudioDevice(final PhysicalEnvironment pe) {
-        return new JavaSoundMixer(pe);
     }
 
     private PhysicalEnvironment createPhysicalEnvironment() {
