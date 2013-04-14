@@ -25,7 +25,7 @@ public class SlicerFrame extends javax.swing.JFrame {
         try {
             checkPrefs();
         } catch (final Exception e) {
-            Debug.e("Failure trying to initialise comms in botConsole: " + e);
+            Debug.getInstance().errorMessage("Failure trying to initialise comms in botConsole: " + e);
             JOptionPane.showMessageDialog(null, e.getMessage());
             return;
         }

@@ -24,7 +24,6 @@ import org.reprap.geometry.LayerRules;
 import org.reprap.geometry.polygons.Point2D;
 import org.reprap.geometry.polygons.Rectangle;
 import org.reprap.utilities.Debug;
-import org.reprap.utilities.Timer;
 
 public class GCodePrinter {
 
@@ -93,7 +92,7 @@ public class GCodePrinter {
      * Current extruder?
      */
     private int extruder;
-    private double startCooling;
+    private long startedCooling = -1L;
     private int foundationLayers = 0;
     /**
      * The maximum X and Y point we can move to
@@ -102,7 +101,6 @@ public class GCodePrinter {
 
     public GCodePrinter() throws IOException {
         XYEAtZero = false;
-        startCooling = -1;
         forceSelection = true;
 
         //load extruder prefs
@@ -126,7 +124,7 @@ public class GCodePrinter {
 
         gcode = new GCodeWriter();
         String s = "M110";
-        if (Debug.d()) {
+        if (Debug.getInstance().isDebug()) {
             s += " ; Reset the line numbers";
         }
         gcode.queue(s);
@@ -140,7 +138,7 @@ public class GCodePrinter {
             final int extruderCount = Preferences.loadGlobalInt("NumberOfExtruders");
             extruders = new GCodeExtruder[extruderCount];
         } catch (final Exception e) {
-            Debug.e(e.toString());
+            Debug.getInstance().errorMessage(e.toString());
         }
 
         int pe;
@@ -176,7 +174,7 @@ public class GCodePrinter {
             return;
         }
         String s = "G1 F" + feedrate;
-        if (Debug.d()) {
+        if (Debug.getInstance().isDebug()) {
             s += " ; feed for start of next move";
         }
         gcode.queue(s);
@@ -207,7 +205,7 @@ public class GCodePrinter {
         final double xyFeedrate = round(extruders[extruder].getFastXYFeedrate(), 1);
 
         if (xyFeedrate < feedrate && Math.abs(extrudeLength) > Preferences.tiny()) {
-            Debug.d("GCodeRepRap().qXYMove: extruding feedrate (" + feedrate + ") exceeds maximum (" + xyFeedrate + ").");
+            Debug.getInstance().debugMessage("GCodeRepRap().qXYMove: extruding feedrate (" + feedrate + ") exceeds maximum (" + xyFeedrate + ").");
             feedrate = xyFeedrate;
         }
 
@@ -238,7 +236,7 @@ public class GCodePrinter {
             currentFeedrate = feedrate;
         }
 
-        if (Debug.d()) {
+        if (Debug.getInstance().isDebug()) {
             s += " ;horizontal move";
         }
         gcode.queue(s);
@@ -252,7 +250,7 @@ public class GCodePrinter {
         final double zFeedrate = round(getMaxFeedrateZ(), 1);
 
         if (zFeedrate < feedrate) {
-            Debug.d("GCodeRepRap().qZMove: feedrate (" + feedrate + ") exceeds maximum (" + zFeedrate + ").");
+            Debug.getInstance().debugMessage("GCodeRepRap().qZMove: feedrate (" + feedrate + ") exceeds maximum (" + zFeedrate + ").");
             feedrate = zFeedrate;
         }
 
@@ -289,7 +287,7 @@ public class GCodePrinter {
             currentFeedrate = feedrate;
         }
 
-        if (Debug.d()) {
+        if (Debug.getInstance().isDebug()) {
             s += " ;z move";
         }
         gcode.queue(s);
@@ -300,18 +298,18 @@ public class GCodePrinter {
             throws Exception {
         try {
             if (x > Preferences.loadGlobalDouble("WorkingX(mm)") || x < 0) {
-                Debug.e("Attempt to move x to " + x + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingX(mm)")
-                        + "]");
+                Debug.getInstance().errorMessage("Attempt to move x to " + x + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingX(mm)")
+                + "]");
                 x = Math.max(0, Math.min(x, Preferences.loadGlobalDouble("WorkingX(mm)")));
             }
             if (y > Preferences.loadGlobalDouble("WorkingY(mm)") || y < 0) {
-                Debug.e("Attempt to move y to " + y + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingY(mm)")
-                        + "]");
+                Debug.getInstance().errorMessage("Attempt to move y to " + y + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingY(mm)")
+                + "]");
                 y = Math.max(0, Math.min(y, Preferences.loadGlobalDouble("WorkingY(mm)")));
             }
             if (z > Preferences.loadGlobalDouble("WorkingZ(mm)") || z < 0) {
-                Debug.d("Attempt to move z to " + z + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingZ(mm)")
-                        + "]");
+                Debug.getInstance().debugMessage("Attempt to move z to " + z + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingZ(mm)")
+                + "]");
                 z = Math.max(0, Math.min(z, Preferences.loadGlobalDouble("WorkingZ(mm)")));
             }
         } catch (final Exception e) {
@@ -335,8 +333,8 @@ public class GCodePrinter {
         final boolean xyMove = dx != 0 || dy != 0;
 
         if (zMove && xyMove) {
-            Debug.d("GcodeRepRap.moveTo(): attempt to move in X|Y and Z simultaneously: (x, y, z) = (" + currentX + "->" + x
-                    + ", " + currentY + "->" + y + ", " + currentZ + "->" + z + ", " + ")");
+            Debug.getInstance().debugMessage("GcodeRepRap.moveTo(): attempt to move in X|Y and Z simultaneously: (x, y, z) = (" + currentX + "->" + x
+            + ", " + currentY + "->" + y + ", " + currentZ + "->" + z + ", " + ")");
         }
 
         final double zFeedrate = round(getMaxFeedrateZ(), 1);
@@ -387,16 +385,16 @@ public class GCodePrinter {
     private void checkCoordinates(final double x, final double y, final double z) {
         try {
             if (x > Preferences.loadGlobalDouble("WorkingX(mm)") || x < 0) {
-                Debug.e("Attempt to move x to " + x + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingX(mm)")
-                        + "]");
+                Debug.getInstance().errorMessage("Attempt to move x to " + x + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingX(mm)")
+                + "]");
             }
             if (y > Preferences.loadGlobalDouble("WorkingY(mm)") || y < 0) {
-                Debug.e("Attempt to move y to " + y + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingY(mm)")
-                        + "]");
+                Debug.getInstance().errorMessage("Attempt to move y to " + y + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingY(mm)")
+                + "]");
             }
             if (z > Preferences.loadGlobalDouble("WorkingZ(mm)") || z < 0) {
-                Debug.e("Attempt to move z to " + z + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingZ(mm)")
-                        + "]");
+                Debug.getInstance().errorMessage("Attempt to move z to " + z + " which is outside [0, " + Preferences.loadGlobalDouble("WorkingZ(mm)")
+                + "]");
             }
         } catch (final Exception e) {
         }
@@ -421,8 +419,8 @@ public class GCodePrinter {
         final boolean xyMove = dx != 0 || dy != 0;
 
         if (zMove && xyMove) {
-            Debug.d("GcodeRepRap.singleMove(): attempt to move in X|Y and Z simultaneously: (x, y, z) = (" + x + ", " + y
-                    + ", " + z + ")");
+            Debug.getInstance().debugMessage("GcodeRepRap.singleMove(): attempt to move in X|Y and Z simultaneously: (x, y, z) = (" + x + ", " + y
+            + ", " + z + ")");
         }
 
         if (!really) {
@@ -474,7 +472,7 @@ public class GCodePrinter {
                     break;
 
                 default:
-                    Debug.e("GCodeRepRap.singleMove(): dud VelocityProfile XY flat value.");
+                    Debug.getInstance().errorMessage("GCodeRepRap.singleMove(): dud VelocityProfile XY flat value.");
                 }
             }
 
@@ -505,11 +503,11 @@ public class GCodePrinter {
                     break;
 
                 default:
-                    Debug.e("GCodeRepRap.singleMove(): dud VelocityProfile Z flat value.");
+                    Debug.getInstance().errorMessage("GCodeRepRap.singleMove(): dud VelocityProfile Z flat value.");
                 }
             }
         } catch (final Exception e) {
-            Debug.e(e.toString());
+            Debug.getInstance().errorMessage(e.toString());
         }
     }
 
@@ -532,11 +530,11 @@ public class GCodePrinter {
         final String myDateString = sdf.format(myDate);
         gcode.queue("; Created: " + myDateString);
         gcode.queue(";#!RECTANGLE: " + lc.getBox() + ", height: " + lc.getMachineZMAx());
-        if (Debug.d()) {
+        if (Debug.getInstance().isDebug()) {
             gcode.queue("; Prologue:");
         }
         gcode.copyFile(Preferences.getProloguePath());
-        if (Debug.d()) {
+        if (Debug.getInstance().isDebug()) {
             gcode.queue("; ------");
         }
         currentX = 0;
@@ -552,7 +550,7 @@ public class GCodePrinter {
                 plotOutlines(lc);
             }
         } catch (final Exception E) {
-            Debug.d("Initialization error: " + E.toString());
+            Debug.getInstance().debugMessage("Initialization error: " + E.toString());
         }
     }
 
@@ -626,29 +624,17 @@ public class GCodePrinter {
             getExtruder().zeroExtrudedLength(lc.getReversing());
         }
 
-        final double coolTime = getExtruder().getCoolingPeriod();
-
         if (layerPauseCheckbox != null && layerPauseCheckbox.isSelected()) {
             layerPause();
         }
 
-        // Cooling period
-        // How long has the fan been on?
-        double cool = Timer.elapsed();
-        if (startCooling >= 0) {
-            cool = cool - startCooling;
-        } else {
-            cool = 0;
+        final double coolDuration = getExtruder().getCoolingPeriod() * 1000L;
+        if (startedCooling >= 0) {
+            final long fanHasBeenOnDuration = System.currentTimeMillis() - startedCooling;
+            machineWait((long) coolDuration - fanHasBeenOnDuration, false, lc.getReversing());
         }
-
-        // Wait the remainder of the cooling period
-        if (startCooling >= 0) {
-            cool = coolTime - cool;
-            // NB - if cool is -ve machineWait will return immediately
-            machineWait(1000 * cool, false, lc.getReversing());
-        }
-        // Fan off
-        if (coolTime > 0) {
+        if (coolDuration > 0) {
+            // Fan off
             getExtruder().setCooler(false, lc.getReversing());
         }
 
@@ -657,15 +643,14 @@ public class GCodePrinter {
 
     public void finishedLayer(final LayerRules lc) throws Exception {
         final double coolTime = getExtruder().getCoolingPeriod();
-
-        startCooling = -1;
+        startedCooling = -1;
 
         if (coolTime > 0 && !lc.notStartedYet()) {
             getExtruder().setCooler(true, lc.getReversing());
-            Debug.d("Start of cooling period");
+            Debug.getInstance().debugMessage("Start of cooling period");
             // Go home. Seek (0,0) then callibrate X first
             homeToZeroXYE(lc.getReversing());
-            startCooling = Timer.elapsed();
+            startedCooling = System.currentTimeMillis();
         }
         gcode.finishedLayer(lc);
     }
@@ -677,11 +662,11 @@ public class GCodePrinter {
         currentY = round(p.y(), 2);
         currentZ = round(lc.getLayerZ(topLayer), 1);
 
-        if (Debug.d()) {
+        if (Debug.getInstance().isDebug()) {
             gcode.queue("; Epilogue:");
         }
         gcode.copyFile(Preferences.getEpiloguePath());
-        if (Debug.d()) {
+        if (Debug.getInstance().isDebug()) {
             gcode.queue("; ------");
         }
     }
@@ -729,7 +714,7 @@ public class GCodePrinter {
                 } else {
                     s = "G1 E" + round(extruders[extruder].getExtruderState().length(), 3);
                 }
-                if (Debug.d()) {
+                if (Debug.getInstance().isDebug()) {
                     if (extruders[extruder].getReversing()) {
                         s += " ; extruder retraction";
                     } else {
@@ -753,7 +738,7 @@ public class GCodePrinter {
         }
 
         s = "G4 P" + millis;
-        if (Debug.d()) {
+        if (Debug.getInstance().isDebug()) {
             s += " ; delay";
         }
         gcode.queue(s);
@@ -761,7 +746,7 @@ public class GCodePrinter {
 
     public void homeToZeroX() throws Exception {
         String s = "G28 X0";
-        if (Debug.d()) {
+        if (Debug.getInstance().isDebug()) {
             s += " ; set x 0";
         }
         gcode.queue(s);
@@ -770,7 +755,7 @@ public class GCodePrinter {
 
     public void homeToZeroY() throws Exception {
         String s = "G28 Y0";
-        if (Debug.d()) {
+        if (Debug.getInstance().isDebug()) {
             s += " ; set y 0";
         }
         gcode.queue(s);
@@ -853,7 +838,7 @@ public class GCodePrinter {
 
                 if (!false) {
                     if (materialIndex < 0 || materialIndex >= extruders.length) {
-                        Debug.e("Selected material (" + materialIndex + ") is out of range.");
+                        Debug.getInstance().errorMessage("Selected material (" + materialIndex + ") is out of range.");
                         extruder = 0;
                     } else {
                         extruder = materialIndex;
@@ -874,7 +859,7 @@ public class GCodePrinter {
 
                 // Now tell the GCodes to select the new extruder and stabilise all temperatures
                 String s = "T" + newPhysicalExtruder;
-                if (Debug.d()) {
+                if (Debug.getInstance().isDebug()) {
                     s += " ; select new extruder";
                 }
                 gcode.queue(s);
@@ -967,14 +952,12 @@ public class GCodePrinter {
             extruders = new GCodeExtruder[extruderCount];
             loadExtruders();
         } catch (final Exception ex) {
-            Debug.e("Refresh Reprap preferences: " + ex.toString());
+            Debug.getInstance().errorMessage("Refresh Reprap preferences: " + ex.toString());
         }
 
         for (final GCodeExtruder extruder2 : extruders) {
             extruder2.refreshPreferences();
         }
-
-        Debug.refreshPreferences();
     }
 
     public void selectExtruder(final Attributes att) throws Exception {
@@ -984,7 +967,7 @@ public class GCodePrinter {
                 return;
             }
         }
-        Debug.e("selectExtruder() - extruder not found for: " + att.getMaterial());
+        Debug.getInstance().errorMessage("selectExtruder() - extruder not found for: " + att.getMaterial());
     }
 
     public double getX() {
@@ -1121,13 +1104,6 @@ public class GCodePrinter {
      */
     public void setLayerPause(final JCheckBoxMenuItem layerPause) {
         layerPauseCheckbox = layerPause;
-    }
-
-    public boolean isCancelled() {
-        return false;
-    }
-
-    public void setCancelled(final boolean isCancelled) {
     }
 
     public int getFoundationLayers() {

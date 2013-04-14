@@ -110,12 +110,12 @@ public class Attributes {
         if (extruder == null) {
             final GCodePrinter p = org.reprap.Main.gui.getPrinter();
             if (p == null) {
-                Debug.e("Attributes.getExtruder(): null printer!");
+                Debug.getInstance().errorMessage("Attributes.getExtruder(): null printer!");
                 return null;
             }
             extruder = p.getExtruder(material);
             if (extruder == null) {
-                Debug.e("Attributes.getExtruder(): null extruder for " + material);
+                Debug.getInstance().errorMessage("Attributes.getExtruder(): null extruder for " + material);
                 return null;
             }
         }

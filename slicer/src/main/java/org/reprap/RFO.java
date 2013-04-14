@@ -60,7 +60,7 @@ public class RFO {
             try {
                 fileStream = new FileOutputStream(LegendFile);
             } catch (final Exception e) {
-                Debug.e("XMLOut(): " + e);
+                Debug.getInstance().errorMessage("XMLOut(): " + e);
             }
             XMLStream = new PrintStream(fileStream);
             stack = new String[top];
@@ -84,7 +84,7 @@ public class RFO {
             }
             sp++;
             if (sp >= top) {
-                Debug.e("RFO: XMLOut stack overflow on " + s);
+                Debug.getInstance().errorMessage("RFO: XMLOut stack overflow on " + s);
             }
         }
 
@@ -107,7 +107,7 @@ public class RFO {
                 XMLStream.print(" ");
             }
             if (sp < 0) {
-                Debug.e("RFO: XMLOut stack underflow.");
+                Debug.getInstance().errorMessage("RFO: XMLOut stack underflow.");
             }
             XMLStream.println("</" + stack[sp] + ">");
         }
@@ -186,7 +186,7 @@ public class RFO {
             try {
                 xr = XMLReaderFactory.createXMLReader();
             } catch (final Exception e) {
-                Debug.e("XMLIn() 1: " + e);
+                Debug.getInstance().errorMessage("XMLIn() 1: " + e);
             }
 
             xr.setContentHandler(this);
@@ -194,7 +194,7 @@ public class RFO {
             try {
                 xr.parse(new InputSource(legendFile));
             } catch (final Exception e) {
-                Debug.e("XMLIn() 2: " + e);
+                Debug.getInstance().errorMessage("XMLIn() 2: " + e);
             }
 
         }
@@ -237,7 +237,7 @@ public class RFO {
                 filetype = atts.getValue("filetype");
                 material = atts.getValue("material");
                 if (!filetype.equalsIgnoreCase("application/sla")) {
-                    Debug.e("XMLIn.startElement(): unreconised object file type (should be \"application/sla\"): " + filetype);
+                    Debug.getInstance().errorMessage("XMLIn.startElement(): unreconised object file type (should be \"application/sla\"): " + filetype);
                 }
             } else if (element.equalsIgnoreCase("transform3D")) {
                 setMToIdentity();
@@ -246,7 +246,7 @@ public class RFO {
                     mElements[rowNumber * 4 + column] = Double.parseDouble(atts.getValue("m" + rowNumber + column));
                 }
             } else {
-                Debug.e("XMLIn.startElement(): unreconised RFO element: " + element);
+                Debug.getInstance().errorMessage("XMLIn.startElement(): unreconised RFO element: " + element);
             }
         }
 
@@ -277,13 +277,13 @@ public class RFO {
 
             } else if (element.equalsIgnoreCase("transform3D")) {
                 if (rowNumber != 4) {
-                    Debug.e("XMLIn.endElement(): incomplete Transform3D matrix - last row number is not 4: " + rowNumber);
+                    Debug.getInstance().errorMessage("XMLIn.endElement(): incomplete Transform3D matrix - last row number is not 4: " + rowNumber);
                 }
                 transform = new Transform3D(mElements);
             } else if (element.equalsIgnoreCase("row")) {
                 rowNumber++;
             } else {
-                Debug.e("XMLIn.endElement(): unreconised RFO element: " + element);
+                Debug.getInstance().errorMessage("XMLIn.endElement(): unreconised RFO element: " + element);
             }
         }
     }
@@ -385,7 +385,7 @@ public class RFO {
             inChannel.close();
             outChannel.close();
         } catch (final Exception e) {
-            Debug.e("RFO.copyFile(): " + e);
+            Debug.getInstance().errorMessage("RFO.copyFile(): " + e);
         }
 
     }
@@ -467,7 +467,7 @@ public class RFO {
      */
     private void createLegend() {
         if (uNames == null) {
-            Debug.e("RFO.createLegend(): no list of unique names saved.");
+            Debug.getInstance().errorMessage("RFO.createLegend(): no list of unique names saved.");
             return;
         }
         xml = new XMLOut(rfoDir + legendName, "reprap-fab-at-home-build version=\"0.1\"");
@@ -606,7 +606,7 @@ public class RFO {
                 os.close();
             }
         } catch (final Exception e) {
-            Debug.e("RFO.unCompress(): " + e);
+            Debug.getInstance().errorMessage("RFO.unCompress(): " + e);
         }
     }
 
@@ -636,7 +636,7 @@ public class RFO {
         try {
             rfo.interpretLegend();
         } catch (final Exception e) {
-            Debug.e("RFO.load(): exception - " + e.toString());
+            Debug.getInstance().errorMessage("RFO.load(): exception - " + e.toString());
         }
 
         return rfo.astl;

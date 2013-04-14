@@ -1,83 +1,71 @@
 package org.reprap.utilities;
 
-import org.reprap.Preferences;
+import java.text.DateFormat;
+import java.text.NumberFormat;
+import java.util.Date;
 
 /**
  * @author Adrian
  */
 public class Debug {
-    private boolean commsDebug = false;
-    private boolean debug = false;
-    static private Debug db = null;
+    private static final NumberFormat MILLI_FORMATTER = createNumberFormater();
+    private static final DateFormat DATE_FORMATER = DateFormat.getDateTimeInstance();
 
-    private Debug() {
+    private static Debug instance = new Debug(false, false);
+
+    public static synchronized Debug getInstance() {
+        return instance;
     }
 
-    public static void refreshPreferences() {
-        if (db == null) {
-            db = new Debug();
+    public static synchronized void refreshPreferences(final boolean debug, final boolean commsDebug) {
+        Debug.instance = new Debug(debug, commsDebug);
+    }
+
+    private static NumberFormat createNumberFormater() {
+        final NumberFormat result = NumberFormat.getIntegerInstance();
+        result.setMinimumIntegerDigits(3);
+        result.setMaximumIntegerDigits(3);
+        return result;
+    }
+
+    private final boolean commsDebug;
+    private final boolean debug;
+
+    private Debug(final boolean debug, final boolean commsDebug) {
+        this.debug = debug;
+        this.commsDebug = commsDebug;
+    }
+
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public void debugMessage(final String s) {
+        if (debug) {
+            System.out.println("DEBUG: " + s + stamp());
         }
-        try {
-            // Try to load debug setting from properties file
-            db.debug = Preferences.loadGlobalBool("Debug");
-        } catch (final Exception ex) {
-            // Fall back to non-debug mode if no setting is available
-            db.debug = false;
+    }
+
+    public void errorMessage(final String message) {
+        System.err.println("ERROR: " + message + stamp());
+        if (debug) {
+            new Exception().printStackTrace();
         }
-
-        db.commsDebug = false;
     }
 
-    static public boolean d() {
-        initialiseIfNeedBe();
-        return db.debug;
+    public void printMessage(final String message) {
+        System.out.println("message: " + message + stamp());
     }
 
-    static private void initialiseIfNeedBe() {
-        if (db != null) {
-            return;
+    public void gcodeDebugMessage(final String message) {
+        if (commsDebug) {
+            System.out.println("comms: " + message + stamp());
         }
-        refreshPreferences();
     }
 
-    static public void d(final String s) {
-        initialiseIfNeedBe();
-        if (!db.debug) {
-            return;
-        }
-        System.out.println("DEBUG: " + s + Timer.stamp());
-        System.out.flush();
-    }
-
-    /**
-     * A real hard error...
-     */
-    static public void e(final String s) {
-        initialiseIfNeedBe();
-        System.err.println("ERROR: " + s + Timer.stamp());
-        System.err.flush();
-        if (!db.debug) {
-            return;
-        }
-        final Exception e = new Exception();
-        e.printStackTrace();
-    }
-
-    /**
-     * Just print a message anytime
-     */
-    static public void a(final String s) {
-        initialiseIfNeedBe();
-        System.out.println("message: " + s + Timer.stamp());
-        System.out.flush();
-    }
-
-    static public void c(final String s) {
-        initialiseIfNeedBe();
-        if (!db.commsDebug) {
-            return;
-        }
-        System.out.println("comms: " + s + Timer.stamp());
-        System.out.flush();
+    private String stamp() {
+        final Date now = new Date();
+        final long millis = now.getTime() % 1000L;
+        return "[" + DATE_FORMATER.format(now) + " + " + MILLI_FORMATTER.format(millis) + " ms]";
     }
 }

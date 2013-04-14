@@ -177,7 +177,7 @@ public class LayerProducer {
             lastPoint = n;
         }
         if (plotDist < Preferences.machineResolution() * 0.5) {
-            Debug.d("Rejected line with " + p.size() + " points, length: " + plotDist);
+            Debug.getInstance().debugMessage("Rejected line with " + p.size() + " points, length: " + plotDist);
             //startNearHere = null;
             return;
         }
@@ -213,7 +213,7 @@ public class LayerProducer {
         final double extrudeBackLength = att.getExtruder().getExtrusionOverRun();
         final double valveBackLength = att.getExtruder().getValveOverRun();
         if (extrudeBackLength > 0 && valveBackLength > 0) {
-            Debug.e("LayerProducer.plot(): extruder has both valve backoff and extrude backoff specified.");
+            Debug.getInstance().errorMessage("LayerProducer.plot(): extruder has both valve backoff and extrude backoff specified.");
         }
 
         p.backStepExtrude(extrudeBackLength);

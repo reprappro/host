@@ -93,9 +93,8 @@ public class Preferences {
             } finally {
                 preferencesStream.close();
             }
-            comparePreferences();
         } else {
-            Debug.e("Can't find your RepRap configurations: " + getPropertiesPath());
+            Debug.getInstance().errorMessage("Can't find your RepRap configurations: " + getPropertiesPath());
         }
     }
 
@@ -138,7 +137,7 @@ public class Preferences {
             }
             in.close();
         } catch (final IOException e) {
-            Debug.e("Can't read configuration file: " + mf.toString());
+            Debug.getInstance().errorMessage("Can't read configuration file: " + mf.toString());
             e.printStackTrace();
         }
         return result;
@@ -157,8 +156,9 @@ public class Preferences {
                 return machine.substring(1, machine.length());
             }
         }
-        Debug.e("No active RepRap set (add " + activeFlag + " to the start of a line in the file: " + getMachineFilePath()
-                + ").");
+        Debug.getInstance().errorMessage(
+                "No active RepRap set (add " + activeFlag + " to the start of a line in the file: " + getMachineFilePath()
+                        + ").");
         return "";
     }
 
@@ -183,7 +183,7 @@ public class Preferences {
     private static URL getSystemConfiguration() {
         final URL sysConfig = ClassLoader.getSystemResource(propsDirDist);
         if (sysConfig == null) {
-            Debug.e("Can't find system RepRap configurations: " + propsDirDist);
+            Debug.getInstance().errorMessage("Can't find system RepRap configurations: " + propsDirDist);
         }
         return sysConfig;
     }
@@ -238,7 +238,7 @@ public class Preferences {
                 result += "is";
             }
             result += " not in the distribution preferences file.";
-            Debug.d(result);
+            Debug.getInstance().debugMessage(result);
             noDifference = false;
         }
 
@@ -260,12 +260,12 @@ public class Preferences {
                 result += "is";
             }
             result += " not in your preferences file.";
-            Debug.d(result);
+            Debug.getInstance().debugMessage(result);
             noDifference = false;
         }
 
         if (noDifference) {
-            Debug.d("The distribution preferences file and yours match.  This is good.");
+            Debug.getInstance().debugMessage("The distribution preferences file and yours match.  This is good.");
         }
     }
 
@@ -281,12 +281,12 @@ public class Preferences {
                 sysPropStream.close();
             }
         } else {
-            Debug.e("Can't find system properties: " + systemPropertiesPath);
+            Debug.getInstance().errorMessage("Can't find system properties: " + systemPropertiesPath);
         }
         return systemProperties;
     }
 
-    private void save(final boolean startUp) throws FileNotFoundException, IOException {
+    private void save() throws FileNotFoundException, IOException {
         final String savePath = getPropertiesPath();
         final File f = new File(savePath);
         if (!f.exists()) {
@@ -296,16 +296,16 @@ public class Preferences {
         final OutputStream output = new FileOutputStream(f);
         mainPreferences.store(output, "RepRap machine parameters. See http://reprap.org/wiki/Java_Software_Preferences_File");
 
-        if (!startUp) {
-            org.reprap.Main.gui.getPrinter().refreshPreferences();
-        }
+        Main.gui.getPrinter().refreshPreferences();
+        Debug.refreshPreferences(loadGlobalBool("Debug"), false);
     }
 
     private String loadString(final String name) {
         if (mainPreferences.containsKey(name)) {
             return mainPreferences.getProperty(name);
         }
-        Debug.e("RepRap preference: " + name + " not found in your preference file: " + getPropertiesPath());
+        Debug.getInstance().errorMessage(
+                "RepRap preference: " + name + " not found in your preference file: " + getPropertiesPath());
         return null;
     }
 
@@ -333,7 +333,7 @@ public class Preferences {
         return false;
     }
 
-    public static boolean loadConfig(final String configName) {
+    public static synchronized boolean loadConfig(final String configName) {
         propsFile = configName;
 
         try {
@@ -347,6 +347,10 @@ public class Preferences {
     synchronized private static void initIfNeeded() throws IOException {
         if (globalPrefs == null) {
             globalPrefs = new Preferences();
+
+            // first thing (after we have set globalPrefs): apply the loaded debug preferences
+            Debug.refreshPreferences(loadGlobalBool("Debug"), false);
+            globalPrefs.comparePreferences();
         }
     }
 
@@ -370,9 +374,9 @@ public class Preferences {
         return globalPrefs.loadBool(name);
     }
 
-    public static void saveGlobal() throws IOException {
+    public static synchronized void saveGlobal() throws IOException {
         initIfNeeded();
-        globalPrefs.save(false);
+        globalPrefs.save();
     }
 
     public static String getDefaultPropsFile() {

@@ -143,7 +143,7 @@ public class Polygon {
      */
     public Polygon(final Attributes a, final boolean c) {
         if (a == null) {
-            Debug.e("RrPolygon(): null attributes!");
+            Debug.getInstance().errorMessage("RrPolygon(): null attributes!");
         }
         points = new ArrayList<Point2D>();
         speeds = null;
@@ -197,7 +197,7 @@ public class Polygon {
      */
     public double speed(final int i) {
         if (speeds == null) {
-            Debug.e("Rr2Point.speed(int i): speeds null!");
+            Debug.getInstance().errorMessage("Rr2Point.speed(int i): speeds null!");
             return 0;
         }
         return speeds.get(i).doubleValue();
@@ -309,7 +309,7 @@ public class Polygon {
      */
     public void add(final Point2D p) {
         if (speeds != null) {
-            Debug.e("Rr2Point.add(): adding a point to a polygon with its speeds set.");
+            Debug.getInstance().errorMessage("Rr2Point.add(): adding a point to a polygon with its speeds set.");
         }
         points.add(new Point2D(p));
         box.expand(p);
@@ -321,7 +321,7 @@ public class Polygon {
      */
     public void add(final int i, final Point2D p) {
         if (speeds != null) {
-            Debug.e("Rr2Point.add(): adding a point to a polygon with its speeds set.");
+            Debug.getInstance().errorMessage("Rr2Point.add(): adding a point to a polygon with its speeds set.");
         }
 
         points.add(i, new Point2D(p));
@@ -347,7 +347,7 @@ public class Polygon {
      */
     public void set(final int i, final Point2D p) {
         if (speeds != null) {
-            Debug.e("Rr2Point.set(): adding a point to a polygon with its speeds set.");
+            Debug.getInstance().errorMessage("Rr2Point.set(): adding a point to a polygon with its speeds set.");
         }
         points.set(i, new Point2D(p));
         box.expand(p); // Note if the old point was on the convex hull, and the new one is within, box will be too big after this
@@ -359,7 +359,7 @@ public class Polygon {
      */
     public void add(final int i, final Point2D p, final double s) {
         if (speeds == null) {
-            Debug.e("Rr2Point.add(): adding a point and a speed to a polygon without its speeds set.");
+            Debug.getInstance().errorMessage("Rr2Point.add(): adding a point and a speed to a polygon without its speeds set.");
             return;
         }
         points.add(i, new Point2D(p));
@@ -386,7 +386,7 @@ public class Polygon {
      */
     public void set(final int i, final Point2D p, final double s) {
         if (speeds == null) {
-            Debug.e("Rr2Point.set(): adding a point and a speed to a polygon without its speeds set.");
+            Debug.getInstance().errorMessage("Rr2Point.set(): adding a point and a speed to a polygon without its speeds set.");
         }
         points.set(i, new Point2D(p));
         speeds.set(i, s);
@@ -458,7 +458,7 @@ public class Polygon {
             return;
         }
         if (extrudeEnd >= 0 || valveEnd >= 0) {
-            Debug.e("Rr2Point.add(): adding a polygon to another polygon with its extrude or valve ending set.");
+            Debug.getInstance().errorMessage("Rr2Point.add(): adding a polygon to another polygon with its extrude or valve ending set.");
         }
         for (int i = 0; i < p.size(); i++) {
             points.add(new Point2D(p.point(i)));
@@ -467,12 +467,12 @@ public class Polygon {
         box.expand(p.box);
         if (speeds == null) {
             if (p.speeds != null) {
-                Debug.e("Rr2Point.add(): adding a polygon to another polygon but discarding it's speeds.");
+                Debug.getInstance().errorMessage("Rr2Point.add(): adding a polygon to another polygon but discarding it's speeds.");
             }
             return;
         }
         if (p.speeds == null) {
-            Debug.e("Rr2Point.add(): adding a polygon to another polygon, but it has no needed speeds.");
+            Debug.getInstance().errorMessage("Rr2Point.add(): adding a polygon to another polygon, but it has no needed speeds.");
             return;
         }
         for (int i = 0; i < p.size(); i++) {
@@ -491,7 +491,7 @@ public class Polygon {
             return;
         }
         if (speeds != p.speeds) {
-            Debug.e("Rr2Point.add(): attempt to add a polygon to another polygon when one has speeds and the other doesn't.");
+            Debug.getInstance().errorMessage("Rr2Point.add(): attempt to add a polygon to another polygon when one has speeds and the other doesn't.");
             return;
         }
         for (int i = 0; i < p.size(); i++) {
@@ -574,11 +574,11 @@ public class Polygon {
      */
     public Polygon newStart(int i) {
         if (!isClosed()) {
-            Debug.e("RrPolygon.newStart(i): reordering an open polygon!");
+            Debug.getInstance().errorMessage("RrPolygon.newStart(i): reordering an open polygon!");
         }
 
         if (i < 0 || i >= size()) {
-            Debug.e("RrPolygon.newStart(i): dud index: " + i);
+            Debug.getInstance().errorMessage("RrPolygon.newStart(i): dud index: " + i);
             return this;
         }
         final Polygon result = new Polygon(att, closed);
@@ -623,7 +623,7 @@ public class Polygon {
             }
         }
         if (result < 0) {
-            Debug.e("RrPolygon.nearestVertex(): no point found!");
+            Debug.getInstance().errorMessage("RrPolygon.nearestVertex(): no point found!");
         }
         return result;
     }
@@ -637,7 +637,7 @@ public class Polygon {
      */
     public boolean nearestVertexReorderMerge(final Polygon p, final double linkUp) {
         if (!p.isClosed()) {
-            Debug.e("RrPolygon.nearestVertexReorder(): called for non-closed polygon.");
+            Debug.getInstance().errorMessage("RrPolygon.nearestVertexReorder(): called for non-closed polygon.");
         }
 
         double d = Double.POSITIVE_INFINITY;
@@ -678,7 +678,7 @@ public class Polygon {
             }
         }
         if (result < 0) {
-            Debug.e("RrPolygon.maximalVertex(): no point found!");
+            Debug.getInstance().errorMessage("RrPolygon.maximalVertex(): no point found!");
         }
         return result;
     }
@@ -703,7 +703,7 @@ public class Polygon {
             }
         }
         if (result < 0) {
-            Debug.e("RrPolygon.longestEdgeStart(): no point found!");
+            Debug.getInstance().errorMessage("RrPolygon.longestEdgeStart(): no point found!");
         }
         return result;
     }
@@ -930,7 +930,7 @@ public class Polygon {
                 }
             }
         }
-        Debug.d("RrPolygon.findAngleStart(): polygon is all one straight line!");
+        Debug.getInstance().debugMessage("RrPolygon.findAngleStart(): polygon is all one straight line!");
         return -1;
     }
 
@@ -966,7 +966,7 @@ public class Polygon {
             // We get back -1 if the points are in a straight line. 
             v2 = findAngleStart(v2, d2);
             if (v2 < 0) {
-                Debug.e("RrPolygon.simplify(): points were not in a straight line; now they are!");
+                Debug.getInstance().errorMessage("RrPolygon.simplify(): points were not in a straight line; now they are!");
                 return (r);
             }
 
@@ -1180,13 +1180,13 @@ public class Polygon {
                     break;
 
                 default:
-                    Debug.e("RrPolygon.setSpeeds(): dud VelocityProfile flat value.");
+                    Debug.getInstance().errorMessage("RrPolygon.setSpeeds(): dud VelocityProfile flat value.");
                 }
             }
         }
 
         if (speeds.size() != points.size()) {
-            Debug.e("Speeds and points arrays different: " + speeds.size() + ", " + points.size());
+            Debug.getInstance().errorMessage("Speeds and points arrays different: " + speeds.size() + ", " + points.size());
         }
     }
 
@@ -1289,7 +1289,7 @@ public class Polygon {
                 a.set(1, k);
             }
         } else {
-            Debug.e("clockWise(): not called for a triangle!");
+            Debug.getInstance().errorMessage("clockWise(): not called for a triangle!");
         }
     }
 
@@ -1330,7 +1330,7 @@ public class Polygon {
      */
     private List<Integer> convexHull(final List<Integer> points) {
         if (points.size() < 3) {
-            Debug.e("convexHull(): attempt to compute hull for " + points.size() + " points!");
+            Debug.getInstance().errorMessage("convexHull(): attempt to compute hull for " + points.size() + " points!");
             return new ArrayList<Integer>();
         }
 
@@ -1384,7 +1384,7 @@ public class Polygon {
                 result.add(after, inConsideration.get(corner));
                 inConsideration.remove(corner);
             } else if (inConsideration.size() > 0) {
-                Debug.e("convexHull(): points left, but none included!");
+                Debug.getInstance().errorMessage("convexHull(): points left, but none included!");
                 return result;
             }
 
@@ -1474,7 +1474,7 @@ public class Polygon {
         level++;
         final List<Integer> ch = convexHull(a);
         if (ch.size() < 3) {
-            Debug.e("toCSGRecursive() - null convex hull: " + ch.size() + " points.");
+            Debug.getInstance().errorMessage("toCSGRecursive() - null convex hull: " + ch.size() + " points.");
             return CSG2D.nothing();
         }
 

@@ -34,7 +34,7 @@ public class VelocityProfile
 		double f = s1/s;
 		if(f < 0 || f > 1)
 		{
-			Debug.d("VelocityProfile - sm/s: " + f);
+			Debug.getInstance().debugMessage("VelocityProfile - sm/s: " + f);
 			s1 = Math.max(Math.min(s, s1), 0);
 		} 
 		if(v <= maxSpeed)
@@ -45,14 +45,14 @@ public class VelocityProfile
 			f = s2/s;
 			if(f < 0 || f > 1)
 			{
-				Debug.d("VelocityProfile - s2/s: " + f);
+				Debug.getInstance().debugMessage("VelocityProfile - s2/s: " + f);
 				s2 = Math.max(Math.min(s, s2), 0);
 			}
 			s1 = 0.5*(maxSpeed*maxSpeed - vStart*vStart)/acceleration;
 			f = s1/s;
 			if(f < 0 || f > 1)
 			{
-				Debug.d("VelocityProfile - s1/s: " + f);
+				Debug.getInstance().debugMessage("VelocityProfile - s1/s: " + f);
 				s1 = Math.max(Math.min(s, s1), 0);
 			}
 			flat = 2;

@@ -149,7 +149,7 @@ public class CSG3D {
      */
     public CSG3D(final CSG3D c) {
         if (c == u || c == n) {
-            Debug.e("RrCSG deep copy: copying null or universal set.");
+            Debug.getInstance().errorMessage("RrCSG deep copy: copying null or universal set.");
         }
 
         if (c.hp != null) {
@@ -233,7 +233,7 @@ public class CSG3D {
             break;
 
         default:
-            Debug.e("toString_r(): invalid operator.");
+            Debug.getInstance().errorMessage("toString_r(): invalid operator.");
         }
         return result;
     }
@@ -354,7 +354,7 @@ public class CSG3D {
             break;
 
         default:
-            Debug.e("complement(): invalid operator.");
+            Debug.getInstance().errorMessage("complement(): invalid operator.");
             return nothing();
         }
 
@@ -390,7 +390,7 @@ public class CSG3D {
             break;
 
         default:
-            Debug.e("transform(): invalid operator.");
+            Debug.getInstance().errorMessage("transform(): invalid operator.");
             return nothing();
         }
 
@@ -456,7 +456,7 @@ public class CSG3D {
             break;
 
         default:
-            Debug.e("replace_all_same(): invalid operator.");
+            Debug.getInstance().errorMessage("replace_all_same(): invalid operator.");
         }
     }
 
@@ -483,7 +483,7 @@ public class CSG3D {
             break;
 
         default:
-            Debug.e("simplify_r(): invalid operator.");
+            Debug.getInstance().errorMessage("simplify_r(): invalid operator.");
 
         }
     }
@@ -531,7 +531,7 @@ public class CSG3D {
             break;
 
         default:
-            Debug.e("offset(): invalid operator.");
+            Debug.getInstance().errorMessage("offset(): invalid operator.");
             result = nothing();
         }
         return result;
@@ -575,7 +575,7 @@ public class CSG3D {
             }
 
         default:
-            Debug.e("leaf(Rr2Point): invalid operator.");
+            Debug.getInstance().errorMessage("leaf(Rr2Point): invalid operator.");
             result = nothing();
         }
         return result;
@@ -611,7 +611,7 @@ public class CSG3D {
             break;
 
         default:
-            Debug.e("RrCSG.value(): dud operator.");
+            Debug.getInstance().errorMessage("RrCSG.value(): dud operator.");
         }
         return result;
     }
@@ -646,7 +646,7 @@ public class CSG3D {
             break;
 
         default:
-            Debug.e("value(RrBox): invalid operator.");
+            Debug.getInstance().errorMessage("value(RrBox): invalid operator.");
             result = new Interval();
         }
 
@@ -665,7 +665,7 @@ public class CSG3D {
         case LEAF:
             final Interval i = hp.value(b);
             if (i.empty()) {
-                Debug.e("RrCSG.prune(RrBox): empty interval!");
+                Debug.getInstance().errorMessage("RrCSG.prune(RrBox): empty interval!");
             } else if (i.neg()) {
                 result = universe();
             } else if (i.pos()) {
@@ -686,7 +686,7 @@ public class CSG3D {
             break;
 
         default:
-            Debug.e("RrCSG.prune(RrBox): dud op value!");
+            Debug.getInstance().errorMessage("RrCSG.prune(RrBox): dud op value!");
         }
 
         return result;

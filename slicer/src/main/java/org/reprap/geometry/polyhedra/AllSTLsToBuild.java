@@ -126,7 +126,7 @@ public class AllSTLsToBuild {
          */
         public LineSegment(final Point2D p, final Point2D q, final Attributes at) {
             if (at == null) {
-                Debug.e("LineSegment(): null attributes!");
+                Debug.getInstance().errorMessage("LineSegment(): null attributes!");
             }
             a = p;
             b = q;
@@ -150,7 +150,7 @@ public class AllSTLsToBuild {
 
         public SliceCache(final LayerRules lr) {
             if (lr == null) {
-                Debug.e("SliceCache(): null LayerRules!");
+                Debug.getInstance().errorMessage("SliceCache(): null LayerRules!");
             }
             ringSize = lr.sliceCacheSize();
             sliceRing = new BooleanGridList[ringSize][stls.size()];
@@ -280,7 +280,7 @@ public class AllSTLsToBuild {
 
     public void add(final STLObject s) {
         if (frozen) {
-            Debug.e("AllSTLsToBuild.add(): adding an item to a frozen list.");
+            Debug.getInstance().errorMessage("AllSTLsToBuild.add(): adding an item to a frozen list.");
         }
         stls.add(s);
     }
@@ -290,7 +290,7 @@ public class AllSTLsToBuild {
      */
     public void add(final int index, final STLObject s) {
         if (frozen) {
-            Debug.e("AllSTLsToBuild.add(): adding an item to a frozen list.");
+            Debug.getInstance().errorMessage("AllSTLsToBuild.add(): adding an item to a frozen list.");
         }
         stls.add(index, s);
     }
@@ -300,7 +300,7 @@ public class AllSTLsToBuild {
      */
     public void add(final AllSTLsToBuild a) {
         if (frozen) {
-            Debug.e("AllSTLsToBuild.add(): adding a collection to a frozen list.");
+            Debug.getInstance().errorMessage("AllSTLsToBuild.add(): adding a collection to a frozen list.");
         }
         for (int i = 0; i < a.size(); i++) {
             stls.add(a.get(i));
@@ -316,7 +316,7 @@ public class AllSTLsToBuild {
 
     public void remove(final int i) {
         if (frozen) {
-            Debug.e("AllSTLsToBuild.remove(): removing an item from a frozen list.");
+            Debug.getInstance().errorMessage("AllSTLsToBuild.remove(): removing an item from a frozen list.");
         }
         stls.remove(i);
     }
@@ -326,7 +326,7 @@ public class AllSTLsToBuild {
      */
     private int findSTL(final STLObject st) {
         if (size() <= 0) {
-            Debug.e("AllSTLsToBuild.findSTL(): no objects to pick from!");
+            Debug.getInstance().errorMessage("AllSTLsToBuild.findSTL(): no objects to pick from!");
             return -1;
         }
         int index = -1;
@@ -337,7 +337,7 @@ public class AllSTLsToBuild {
             }
         }
         if (index < 0) {
-            Debug.e("AllSTLsToBuild.findSTL(): dud object submitted.");
+            Debug.getInstance().errorMessage("AllSTLsToBuild.findSTL(): dud object submitted.");
             return -1;
         }
         return index;
@@ -414,7 +414,7 @@ public class AllSTLsToBuild {
             out.println(toSCAD());
             out.close();
         } catch (final Exception e) {
-            Debug.e("AllSTLsToBuild.saveSCAD(): can't open file: " + path + name);
+            Debug.getInstance().errorMessage("AllSTLsToBuild.saveSCAD(): can't open file: " + path + name);
         }
     }
 
@@ -429,7 +429,7 @@ public class AllSTLsToBuild {
      */
     public boolean reorderAdd(final STLObject st) {
         if (frozen) {
-            Debug.d("AllSTLsToBuild.reorderAdd(): attempting to reorder a frozen list.");
+            Debug.getInstance().debugMessage("AllSTLsToBuild.reorderAdd(): attempting to reorder a frozen list.");
         }
 
         if (newstls == null) {
@@ -496,7 +496,7 @@ public class AllSTLsToBuild {
                 }
             }
             if (rectangles.get(i) == null) {
-                Debug.e("AllSTLsToBuild:ObjectPlanRectangle(): object " + i + " is empty");
+                Debug.getInstance().errorMessage("AllSTLsToBuild:ObjectPlanRectangle(): object " + i + " is empty");
             }
         }
     }
@@ -510,7 +510,7 @@ public class AllSTLsToBuild {
             return;
         }
         if (layerRules == null) {
-            Debug.e("AllSTLsToBuild.freeze(): layerRules not set!");
+            Debug.getInstance().errorMessage("AllSTLsToBuild.freeze(): layerRules not set!");
         }
         frozen = true;
 
@@ -577,7 +577,7 @@ public class AllSTLsToBuild {
      */
     public Rectangle ObjectPlanRectangle() {
         if (XYZbox == null) {
-            Debug.e("AllSTLsToBuild.ObjectPlanRectangle(): null XYZbox!");
+            Debug.getInstance().errorMessage("AllSTLsToBuild.ObjectPlanRectangle(): null XYZbox!");
         }
         return XYZbox.XYbox;
     }
@@ -587,7 +587,7 @@ public class AllSTLsToBuild {
      */
     public double maxZ() {
         if (XYZbox == null) {
-            Debug.e("AllSTLsToBuild.maxZ(): null XYZbox!");
+            Debug.getInstance().errorMessage("AllSTLsToBuild.maxZ(): null XYZbox!");
         }
         return XYZbox.Zint.high();
     }
@@ -617,14 +617,14 @@ public class AllSTLsToBuild {
             }
         }
         if (swap < 0) {
-            Debug.e("AllSTLsToBuild.startLong(): no edges found!");
+            Debug.getInstance().errorMessage("AllSTLsToBuild.startLong(): no edges found!");
             return;
         }
         temp = edges.get(0);
         edges.set(0, edges.get(swap));
         edges.set(swap, temp);
         if (Math.sqrt(d) < Preferences.gridRes()) {
-            Debug.d("AllSTLsToBuild.startLong(): edge length: " + Math.sqrt(d) + " is the longest.");
+            Debug.getInstance().debugMessage("AllSTLsToBuild.startLong(): edge length: " + Math.sqrt(d) + " is the longest.");
         }
     }
 
@@ -633,7 +633,7 @@ public class AllSTLsToBuild {
      */
     private Polygon getNextPolygon(final ArrayList<LineSegment> edges) {
         if (!frozen) {
-            Debug.e("AllSTLsToBuild:getNextPolygon() called for an unfrozen list!");
+            Debug.getInstance().errorMessage("AllSTLsToBuild:getNextPolygon() called for an unfrozen list!");
             freeze();
         }
         if (edges.size() <= 0) {
@@ -690,7 +690,7 @@ public class AllSTLsToBuild {
             }
         }
 
-        Debug.d("AllSTLsToBuild.getNextPolygon(): exhausted edge list!");
+        Debug.getInstance().debugMessage("AllSTLsToBuild.getNextPolygon(): exhausted edge list!");
 
         return result;
     }
@@ -700,7 +700,7 @@ public class AllSTLsToBuild {
      */
     private PolygonList simpleCull(final ArrayList<LineSegment> edges) {
         if (!frozen) {
-            Debug.e("AllSTLsToBuild:simpleCull() called for an unfrozen list!");
+            Debug.getInstance().errorMessage("AllSTLsToBuild:simpleCull() called for an unfrozen list!");
             freeze();
         }
         final PolygonList result = new PolygonList();
@@ -790,7 +790,7 @@ public class AllSTLsToBuild {
         for (int i = 0; i < support.size(); i++) {
             final GCodeExtruder e = support.attribute(i).getExtruder().getSupportExtruder();
             if (e == null) {
-                Debug.e("AllSTLsToBuild.computeSupport(): null support extruder specified!");
+                Debug.getInstance().errorMessage("AllSTLsToBuild.computeSupport(): null support extruder specified!");
                 continue;
             }
             support.get(i).forceAttribute(new Attributes(e.getMaterial(), null, null, e.getAppearance()));
@@ -845,14 +845,14 @@ public class AllSTLsToBuild {
                 landPattern = BooleanGrid.difference(landPattern, land1);
 
                 if (cen1 == null) {
-                    Debug.e("AllSTLsToBuild.bridges(): First land found with no centroid!");
+                    Debug.getInstance().errorMessage("AllSTLsToBuild.bridges(): First land found with no centroid!");
                     continue;
                 }
 
                 // Find the bridge that goes with the land
                 final int bridgesIndex = findBridges(result.bridges, cen1);
                 if (bridgesIndex < 0) {
-                    Debug.d("AllSTLsToBuild.bridges(): Land found with no corresponding bridge.");
+                    Debug.getInstance().debugMessage("AllSTLsToBuild.bridges(): Land found with no corresponding bridge.");
                     continue;
                 }
                 final BooleanGrid bridges = result.bridges.get(bridgesIndex);
@@ -870,7 +870,7 @@ public class AllSTLsToBuild {
                 // Find the middle of this land
                 final Point2D cen2 = land2.findCentroid();
                 if (cen2 == null) {
-                    Debug.d("AllSTLsToBuild.bridges(): Second land found with no centroid.");
+                    Debug.getInstance().debugMessage("AllSTLsToBuild.bridges(): Second land found with no centroid.");
 
                     // No second land implies a ring of support - just infill it.
                     result.hatchedPolygons.add(bridge.hatch(
@@ -1087,7 +1087,7 @@ public class AllSTLsToBuild {
 
     public void setUpShield() {
         if (frozen) {
-            Debug.e("AllSTLsToBuild.setUpShield() called when frozen!");
+            Debug.getInstance().errorMessage("AllSTLsToBuild.setUpShield() called when frozen!");
         }
 
         try {
@@ -1095,7 +1095,7 @@ public class AllSTLsToBuild {
                 return;
             }
         } catch (final IOException e) {
-            Debug.e(e.toString());
+            Debug.getInstance().errorMessage(e.toString());
         }
 
         setBoxes();
@@ -1133,7 +1133,7 @@ public class AllSTLsToBuild {
         try {
             att.setMaterial(Preferences.allMaterials()[0]);
         } catch (final IOException e) {
-            Debug.e(e.toString());
+            Debug.getInstance().errorMessage(e.toString());
         }
 
         Main.gui.getBuilder().anotherSTL(s, att, 0);
@@ -1181,7 +1181,7 @@ public class AllSTLsToBuild {
      */
     private BooleanGridList slice(final int stlIndex, final int layer) {
         if (!frozen) {
-            Debug.e("AllSTLsToBuild.slice() called when unfrozen!");
+            Debug.getInstance().errorMessage("AllSTLsToBuild.slice() called when unfrozen!");
             freeze();
         }
 
@@ -1218,7 +1218,7 @@ public class AllSTLsToBuild {
 
         for (extruderID = 0; extruderID < extruders.length; extruderID++) {
             if (extruders[extruderID].getID() != extruderID) {
-                Debug.e("AllSTLsToBuild.slice(): extruder " + extruderID + "out of sequence: " + extruders[extruderID].getID());
+                Debug.getInstance().errorMessage("AllSTLsToBuild.slice(): extruder " + extruderID + "out of sequence: " + extruders[extruderID].getID());
             }
             edges[extruderID] = new ArrayList<LineSegment>();
             csgs[extruderID] = new ArrayList<CSG3D>();
@@ -1332,7 +1332,7 @@ public class AllSTLsToBuild {
             even2 = q;
             break;
         default:
-            Debug.e("addEdge(): the | function doesn't seem to work...");
+            Debug.getInstance().errorMessage("addEdge(): the | function doesn't seem to work...");
         }
 
         // Work out the intersection line segment (e1 -> e2) between the z plane and the triangle
@@ -1364,7 +1364,7 @@ public class AllSTLsToBuild {
         final Point3d q3 = new Point3d();
 
         if (g.getVertexCount() % 3 != 0) {
-            Debug.e("addAllEdges(): shape3D with vertices not a multiple of 3!");
+            Debug.getInstance().errorMessage("addAllEdges(): shape3D with vertices not a multiple of 3!");
         }
         for (int i = 0; i < g.getVertexCount(); i += 3) {
             g.getCoordinate(i, p1);

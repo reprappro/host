@@ -114,7 +114,7 @@ class PolPoint {
         }
 
         if (i < 0 || i > pol.size() - 1 || j < 0 || j > pol.size() - 1) {
-            Debug.e("RrPolygonList.midPoint(): i and/or j wrong: i = " + i + ", j = " + j);
+            Debug.getInstance().errorMessage("RrPolygonList.midPoint(): i and/or j wrong: i = " + i + ", j = " + j);
         }
 
         Point2D p = Point2D.add(pol.point(i), pol.point(j));
@@ -245,7 +245,7 @@ class treeList {
      */
     public treeList getChild(final int i) {
         if (children == null) {
-            Debug.e("treeList: attempt to get child from null list!");
+            Debug.getInstance().errorMessage("treeList: attempt to get child from null list!");
             return null;
         }
         return children.get(i);
@@ -766,7 +766,7 @@ public class PolygonList {
             }
 
             if (near < 0) {
-                Debug.e("RrPolygonList.nearEnds(): no nearest end found to start point!");
+                Debug.getInstance().errorMessage("RrPolygonList.nearEnds(): no nearest end found to start point!");
                 return r;
             }
 
@@ -860,7 +860,7 @@ public class PolygonList {
         final int physicalExtruder = polygon(0).getAttributes().getExtruder().getPhysicalExtruderNumber();
         for (int i = 1; i < size(); i++) {
             if (polygon(i).getAttributes().getExtruder().getPhysicalExtruderNumber() != physicalExtruder) {
-                Debug.e("RrPolygonList.radicalReOrder(): more than one physical extruder needed by the list!");
+                Debug.getInstance().errorMessage("RrPolygonList.radicalReOrder(): more than one physical extruder needed by the list!");
                 return;
             }
         }
@@ -984,7 +984,7 @@ public class PolygonList {
 
                 } else {
                     // ... Horrible impossibility
-                    Debug.e("RrPolygonList.radicalReOrder(): Polygons are neither closed nor open!");
+                    Debug.getInstance().errorMessage("RrPolygonList.radicalReOrder(): Polygons are neither closed nor open!");
                 }
             }
         }
@@ -1068,7 +1068,7 @@ public class PolygonList {
         }
 
         if (result == null) {
-            Debug.d("RrPolygonList.ppSearch(): no point found!");
+            Debug.getInstance().debugMessage("RrPolygonList.ppSearch(): no point found!");
         }
 
         return result;
@@ -1166,7 +1166,7 @@ public class PolygonList {
         int i;
         for (i = 0; i < size(); i++) {
             if (!polygon(i).isClosed()) {
-                Debug.e("RrPolygonList.joinAndWipe(): some polygons are not closed!");
+                Debug.getInstance().errorMessage("RrPolygonList.joinAndWipe(): some polygons are not closed!");
                 return;
             }
         }
@@ -1279,7 +1279,7 @@ public class PolygonList {
         p = polygon(i).point(polygon(i).size() / 2);
         final boolean b = (exp.value(p) <= 0);
         if (a != b) {
-            Debug.e("RrPolygonList:inside() - i is both inside and outside j!");
+            Debug.getInstance().errorMessage("RrPolygonList:inside() - i is both inside and outside j!");
             // casting vote...
             p = polygon(i).point(polygon(i).size() / 3);
             return exp.value(p) <= 0;
@@ -1329,7 +1329,7 @@ public class PolygonList {
         for (i = 0; i < size(); i++) {
             final treeList isList = universe.walkFind(i);
             if (isList == null) {
-                Debug.e("RrPolygonList.resolveInsides() - can't find list for polygon " + i);
+                Debug.getInstance().errorMessage("RrPolygonList.resolveInsides() - can't find list for polygon " + i);
             }
             treeList parent = isList.getParent();
             if (parent != null) {

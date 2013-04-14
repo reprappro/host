@@ -173,7 +173,7 @@ public class LayerRules {
         try {
             purge = new Point2D(Preferences.loadGlobalDouble("DumpX(mm)"), Preferences.loadGlobalDouble("DumpY(mm)"));
         } catch (final IOException e) {
-            Debug.e(e.toString());
+            Debug.getInstance().errorMessage(e.toString());
         }
 
         Rectangle gp = astls.ObjectPlanRectangle();
@@ -214,8 +214,8 @@ public class LayerRules {
         for (int i = 0; i < es.length; i++) {
             final long thin = Math.round(es[i].getExtrusionHeight() * 1000.0);
             if (thick % thin != 0) {
-                Debug.e("LayerRules(): the layer height for extruder " + i + "(" + es[i].getLowerFineLayers()
-                        + ") is not an integer divisor of the layer height for layer height " + thickestZStep);
+                Debug.getInstance().errorMessage("LayerRules(): the layer height for extruder " + i + "(" + es[i].getLowerFineLayers()
+                + ") is not an integer divisor of the layer height for layer height " + thickestZStep);
             }
         }
 
@@ -360,9 +360,9 @@ public class LayerRules {
         while (firstPoint[rtl] == null && rtl > 0) {
             final String s = "LayerRules.realTopLayer(): layer " + rtl + " from " + machineLayerMax + " is empty!";
             if (machineLayerMax - rtl > 1) {
-                Debug.e(s);
+                Debug.getInstance().errorMessage(s);
             } else {
-                Debug.d(s);
+                Debug.getInstance().debugMessage(s);
             }
             rtl--;
         }
@@ -520,7 +520,7 @@ public class LayerRules {
             ps.flush();
             fr.close();
         } catch (final Exception e) {
-            Debug.e("Error copying file: " + e.toString());
+            Debug.getInstance().errorMessage("Error copying file: " + e.toString());
             e.printStackTrace();
         }
     }
@@ -528,7 +528,7 @@ public class LayerRules {
     public void reverseLayers() {
         // Stop this being called twice...
         if (alreadyReversed) {
-            Debug.d("LayerRules.reverseLayers(): called twice.");
+            Debug.getInstance().debugMessage("LayerRules.reverseLayers(): called twice.");
             return;
         }
         alreadyReversed = true;
@@ -541,7 +541,7 @@ public class LayerRules {
             final FileOutputStream fileStream = new FileOutputStream(fileName);
             fileOutStream = new PrintStream(fileStream);
         } catch (final Exception e) {
-            Debug.e("Can't write to file " + fileName);
+            Debug.getInstance().errorMessage("Can't write to file " + fileName);
             return;
         }
 

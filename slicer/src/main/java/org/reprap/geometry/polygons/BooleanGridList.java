@@ -75,7 +75,7 @@ public class BooleanGridList implements Iterable<BooleanGrid> {
      */
     public void add(final BooleanGrid b) {
         if (b == null) {
-            Debug.e("BooleanGridList.add(): attempt to add null BooleanGrid.");
+            Debug.getInstance().errorMessage("BooleanGridList.add(): attempt to add null BooleanGrid.");
             return;
         }
         if (b != BooleanGrid.nullBooleanGrid()) {
@@ -110,14 +110,14 @@ public class BooleanGridList implements Iterable<BooleanGrid> {
     {
         final boolean foundation = lc.getLayingSupport();
         if (outline && foundation) {
-            Debug.e("Offsetting a foundation outline!");
+            Debug.getInstance().errorMessage("Offsetting a foundation outline!");
         }
 
         BooleanGridList result = new BooleanGridList();
         for (int i = 0; i < size(); i++) {
             final Attributes att = attribute(i);
             if (att == null) {
-                Debug.e("BooleanGridList.offset(): null attribute!");
+                Debug.getInstance().errorMessage("BooleanGridList.offset(): null attribute!");
             } else {
                 final GCodeExtruder[] es = lc.getPrinter().getExtruders();
                 GCodeExtruder e;

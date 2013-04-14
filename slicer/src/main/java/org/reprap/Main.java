@@ -252,7 +252,7 @@ public class Main {
                 try {
 
                     if (printer == null) {
-                        Debug.e("Production attempted with null printer.");
+                        Debug.getInstance().errorMessage("Production attempted with null printer.");
                     }
                     producer = new Producer(printer, builder);
                     producer.setLayerPause(layerPause);

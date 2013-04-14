@@ -328,7 +328,7 @@ public class Rectangle {
             return Point2D.dSquared(p, sw());
 
         default:
-            Debug.e("RrRectangle.dSquared(): dud value from point_relative()!");
+            Debug.getInstance().errorMessage("RrRectangle.dSquared(): dud value from point_relative()!");
         }
 
         return Math.min(d1, d2);

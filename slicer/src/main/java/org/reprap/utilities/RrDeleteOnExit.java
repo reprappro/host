@@ -20,7 +20,7 @@ public class RrDeleteOnExit {
         Collections.reverse(toDelete);
         for (final File file : toDelete) {
             if (!file.delete()) {
-                Debug.e("RrDeleteOnExit.killThem(): Unable to delete: " + file.getAbsolutePath());
+                Debug.getInstance().errorMessage("RrDeleteOnExit.killThem(): Unable to delete: " + file.getAbsolutePath());
             }
         }
         toDelete.clear();

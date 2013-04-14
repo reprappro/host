@@ -156,7 +156,7 @@ public class Interval {
      */
     public static Interval add(final Interval a, final Interval b) {
         if (a.empty || b.empty) {
-            Debug.e("RrInterval.add(...): adding empty interval(s).");
+            Debug.getInstance().errorMessage("RrInterval.add(...): adding empty interval(s).");
         }
         return new Interval(a.low + b.low, a.high + b.high);
     }
@@ -166,7 +166,7 @@ public class Interval {
      */
     public static Interval add(final Interval a, final double b) {
         if (a.empty) {
-            Debug.e("RrInterval.add(...): adding an empty interval.");
+            Debug.getInstance().errorMessage("RrInterval.add(...): adding an empty interval.");
         }
         return new Interval(a.low + b, a.high + b);
     }
@@ -185,7 +185,7 @@ public class Interval {
      */
     public static Interval sub(final Interval a, final Interval b) {
         if (a.empty || b.empty) {
-            Debug.e("RrInterval.sub(...): subtracting empty interval(s).");
+            Debug.getInstance().errorMessage("RrInterval.sub(...): subtracting empty interval(s).");
         }
         return new Interval(a.low - b.high, a.high - b.low);
     }
@@ -195,7 +195,7 @@ public class Interval {
      */
     public static Interval sub(final Interval a, final double b) {
         if (a.empty) {
-            Debug.e("RrInterval.sub(...): subtracting an empty interval.");
+            Debug.getInstance().errorMessage("RrInterval.sub(...): subtracting an empty interval.");
         }
         return new Interval(a.low - b, a.high - b);
     }
@@ -205,7 +205,7 @@ public class Interval {
      */
     public static Interval sub(final double b, final Interval a) {
         if (a.empty) {
-            Debug.e("RrInterval.sub(...): subtracting an empty interval.");
+            Debug.getInstance().errorMessage("RrInterval.sub(...): subtracting an empty interval.");
         }
         return new Interval(b - a.high, b - a.low);
     }
@@ -218,7 +218,7 @@ public class Interval {
      */
     public static Interval mul(final Interval a, final Interval b) {
         if (a.empty || b.empty) {
-            Debug.e("RrInterval.mul(...): multiplying empty intervals.");
+            Debug.getInstance().errorMessage("RrInterval.mul(...): multiplying empty intervals.");
         }
         final double d = a.low * b.low;
         final Interval r = new Interval(d, d);
@@ -234,7 +234,7 @@ public class Interval {
      */
     public static Interval mul(final Interval a, final double f) {
         if (a.empty) {
-            Debug.e("RrInterval.mul(...): multiplying an empty interval.");
+            Debug.getInstance().errorMessage("RrInterval.mul(...): multiplying an empty interval.");
         }
         if (f > 0) {
             return new Interval(a.low * f, a.high * f);

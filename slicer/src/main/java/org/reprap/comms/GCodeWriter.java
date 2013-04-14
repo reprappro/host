@@ -66,7 +66,7 @@ public class GCodeWriter {
 
         if (fileOutStream != null) {
             fileOutStream.println(cmd);
-            Debug.c("G-code: " + cmd + " written to file");
+            Debug.getInstance().gcodeDebugMessage("G-code: " + cmd + " written to file");
         }
     }
 
@@ -77,7 +77,7 @@ public class GCodeWriter {
     public void copyFile(final String fileName) {
         final File f = new File(fileName);
         if (!f.exists()) {
-            Debug.e("GCodeReaderAndWriter().copyFile: can't find file " + fileName);
+            Debug.getInstance().errorMessage("GCodeReaderAndWriter().copyFile: can't find file " + fileName);
             return;
         }
         try {
@@ -89,7 +89,7 @@ public class GCodeWriter {
             }
             fr.close();
         } catch (final Exception e) {
-            Debug.e("GCodeReaderAndWriter().copyFile: exception reading file " + fileName);
+            Debug.getInstance().errorMessage("GCodeReaderAndWriter().copyFile: exception reading file " + fileName);
             return;
         }
     }
@@ -121,7 +121,7 @@ public class GCodeWriter {
                 }
                 fn += GCODE_EXTENSION;
 
-                Debug.d("opening: " + fn);
+                Debug.getInstance().debugMessage("opening: " + fn);
                 final File fl = new File(fn);
                 if (doe) {
                     fl.deleteOnExit();
@@ -141,7 +141,7 @@ public class GCodeWriter {
                 layerFileNames += File.separator;
                 return shortName;
             } catch (final FileNotFoundException e) {
-                Debug.e("Can't write to file '" + opFileName);
+                Debug.getInstance().errorMessage("Can't write to file '" + opFileName);
                 opFileName = null;
                 fileOutStream = null;
             }
@@ -160,7 +160,7 @@ public class GCodeWriter {
                 final FileOutputStream fileStream = new FileOutputStream(fl);
                 fileOutStream = new PrintStream(fileStream);
             } catch (final Exception e) {
-                Debug.e("Can't write to file " + lc.getLayerFileName());
+                Debug.getInstance().errorMessage("Can't write to file " + lc.getLayerFileName());
             }
         }
     }

@@ -210,7 +210,7 @@ public class GCodeExtruder {
         es.zero();
         if (really) {
             String s = "G92 E0";
-            if (Debug.d()) {
+            if (Debug.getInstance().isDebug()) {
                 s += " ; zero the extruded length";
             }
             gcode.queue(s);
@@ -225,7 +225,7 @@ public class GCodeExtruder {
         if (speed < Preferences.tiny()) {
             if (!fiveD) {
                 s = "M103";
-                if (Debug.d()) {
+                if (Debug.getInstance().isDebug()) {
                     s += " ; extruder off";
                 }
                 gcode.queue(s);
@@ -234,7 +234,7 @@ public class GCodeExtruder {
             if (!fiveD) {
                 if (speed != es.speed()) {
                     s = "M108 S" + speed;
-                    if (Debug.d()) {
+                    if (Debug.getInstance().isDebug()) {
                         s += " ; extruder speed in RPM";
                     }
                     gcode.queue(s);
@@ -242,13 +242,13 @@ public class GCodeExtruder {
 
                 if (es.reverse()) {
                     s = "M102";
-                    if (Debug.d()) {
+                    if (Debug.getInstance().isDebug()) {
                         s += " ; extruder on, reverse";
                     }
                     gcode.queue(s);
                 } else {
                     s = "M101";
-                    if (Debug.d()) {
+                    if (Debug.getInstance().isDebug()) {
                         s += " ; extruder on, forward";
                     }
                     gcode.queue(s);
@@ -271,13 +271,13 @@ public class GCodeExtruder {
             String s;
             if (coolerOn) {
                 s = "M106";
-                if (Debug.d()) {
+                if (Debug.getInstance().isDebug()) {
                     s += " ; cooler on";
                 }
                 gcode.queue(s);
             } else {
                 s = "M107";
-                if (Debug.d()) {
+                if (Debug.getInstance().isDebug()) {
                     s += " ; cooler off";
                 }
                 gcode.queue(s);
@@ -292,13 +292,13 @@ public class GCodeExtruder {
         String s;
         if (valveOpen) {
             s = "M126 P" + valvePulseTime;
-            if (Debug.d()) {
+            if (Debug.getInstance().isDebug()) {
                 s += " ; valve open";
             }
             gcode.queue(s);
         } else {
             s = "M127 P" + valvePulseTime;
-            if (Debug.d()) {
+            if (Debug.getInstance().isDebug()) {
                 s += " ; valve closed";
             }
             gcode.queue(s);
@@ -367,11 +367,11 @@ public class GCodeExtruder {
             feedDiameter = Preferences.loadGlobalDouble(prefName + "FeedDiameter(mm)");
             insideOut = Preferences.loadGlobalBool(prefName + "InsideOut");
         } catch (final Exception ex) {
-            Debug.e("Refresh extruder preferences: " + ex.toString());
+            Debug.getInstance().errorMessage("Refresh extruder preferences: " + ex.toString());
         }
 
         if (printer == null) {
-            Debug.e("GenericExtruder(): printer is null!");
+            Debug.getInstance().errorMessage("GenericExtruder(): printer is null!");
         } else {
             fastXYFeedrate = Math.min(printer.getFastXYFeedrate(), fastXYFeedrate);
             slowXYFeedrate = Math.min(printer.getSlowXYFeedrate(), slowXYFeedrate);
@@ -797,7 +797,7 @@ public class GCodeExtruder {
                     (float) Preferences.loadGlobalDouble(prefName + "ColourG(0..1)"),
                     (float) Preferences.loadGlobalDouble(prefName + "ColourB(0..1)"));
         } catch (final Exception ex) {
-            Debug.e(ex.toString());
+            Debug.getInstance().errorMessage(ex.toString());
         }
         final Appearance a = new Appearance();
         a.setMaterial(new Material(col, black, col, black, 101f));
@@ -823,7 +823,7 @@ public class GCodeExtruder {
             }
             throw new Exception("getNumberFromMaterial - can't find " + material);
         } catch (final Exception ex) {
-            Debug.d(ex.toString());
+            Debug.getInstance().debugMessage(ex.toString());
         }
         return -1;
     }

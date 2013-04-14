@@ -111,7 +111,7 @@ class MaterialRadioButtons extends JPanel {
             setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         } catch (final Exception ex) {
-            Debug.e(ex.toString());
+            Debug.getInstance().errorMessage(ex.toString());
             ex.printStackTrace();
         }
     }

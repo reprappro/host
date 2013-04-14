@@ -217,7 +217,7 @@ public class RrGraphics {
             gCode = gCode.trim();
             if (gCode.length() > 0) {
                 if (!isInitialised()) {
-                    Debug.d("RrGraphics.add(G Codes) - plot area not initialized.");
+                    Debug.getInstance().debugMessage("RrGraphics.add(G Codes) - plot area not initialized.");
                     init(box, "0");
                 }
             }
@@ -327,7 +327,7 @@ public class RrGraphics {
             return;
         }
         if (p.getAttributes().getAppearance() == null) {
-            Debug.e("RrGraphics: polygon with size > 0 has null appearance.");
+            Debug.getInstance().errorMessage("RrGraphics: polygon with size > 0 has null appearance.");
             return;
         }
 
@@ -347,7 +347,7 @@ public class RrGraphics {
      */
     private void fillBG(final BooleanGrid b) {
         if (b.attribute().getAppearance() == null) {
-            Debug.e("RrGraphics: booleanGrid has null appearance.");
+            Debug.getInstance().errorMessage("RrGraphics: booleanGrid has null appearance.");
             return;
         }
 

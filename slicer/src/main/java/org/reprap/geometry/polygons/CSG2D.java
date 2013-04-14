@@ -156,7 +156,7 @@ public class CSG2D {
      */
     public CSG2D(final CSG2D c) {
         if (c == u || c == n) {
-            Debug.e("RrCSG deep copy: copying null or universal set.");
+            Debug.getInstance().errorMessage("RrCSG deep copy: copying null or universal set.");
         }
 
         if (c.hp != null) {
@@ -205,11 +205,11 @@ public class CSG2D {
             break;
 
         case NULL:
-            Debug.e("CSG2D constructor from CSG3D: null set in tree!");
+            Debug.getInstance().errorMessage("CSG2D constructor from CSG3D: null set in tree!");
             break;
 
         case UNIVERSE:
-            Debug.e("CSG2D constructor from CSG3D: universal set in tree!");
+            Debug.getInstance().errorMessage("CSG2D constructor from CSG3D: universal set in tree!");
             break;
 
         case UNION:
@@ -219,7 +219,7 @@ public class CSG2D {
             return CSG2D.intersection(slice(t.c_1(), z), slice(t.c_2(), z));
 
         default:
-            Debug.e("CSG2D constructor from CSG3D: invalid operator " + t.operator());
+            Debug.getInstance().errorMessage("CSG2D constructor from CSG3D: invalid operator " + t.operator());
         }
         return r;
     }
@@ -279,7 +279,7 @@ public class CSG2D {
             break;
 
         default:
-            Debug.e("toString_r(): invalid operator.");
+            Debug.getInstance().errorMessage("toString_r(): invalid operator.");
         }
         return result;
     }
@@ -400,7 +400,7 @@ public class CSG2D {
             break;
 
         default:
-            Debug.e("complement(): invalid operator.");
+            Debug.getInstance().errorMessage("complement(): invalid operator.");
             return nothing();
         }
 
@@ -496,7 +496,7 @@ public class CSG2D {
             case 4:
                 return intersection(leafA.complement(), leafB.complement());
             case 5:
-                Debug.e("RrCSG crossCategorise: non-manifold shape (case 0101)!");
+                Debug.getInstance().errorMessage("RrCSG crossCategorise: non-manifold shape (case 0101)!");
                 return union(intersection(leafA, leafB), intersection(leafA.complement(), leafB.complement()));
             case 6:
                 return leafB.complement();
@@ -507,7 +507,7 @@ public class CSG2D {
             case 9:
                 return leafB;
             case 10:
-                Debug.e("RrCSG crossCategorise: non-manifold shape (case 1010)!");
+                Debug.getInstance().errorMessage("RrCSG crossCategorise: non-manifold shape (case 1010)!");
                 return union(CSG2D.intersection(leafA.complement(), leafB), intersection(leafA, leafB.complement()));
             case 11:
                 return union(leafA, leafB);
@@ -520,7 +520,7 @@ public class CSG2D {
             case 15:
                 return universe();
             default:
-                Debug.e("RrCSG crossCategorise: bitwise | doesn't seem to work...");
+                Debug.getInstance().errorMessage("RrCSG crossCategorise: bitwise | doesn't seem to work...");
                 return this;
             }
         } catch (final Exception e) {
@@ -566,7 +566,7 @@ public class CSG2D {
             case 7:
                 return universe();
             default:
-                Debug.e("RrCSG crossCategorise: bitwise | doesn't seem to work...");
+                Debug.getInstance().errorMessage("RrCSG crossCategorise: bitwise | doesn't seem to work...");
                 return this;
             }
         }
@@ -593,7 +593,7 @@ public class CSG2D {
 
         case NULL:
         case UNIVERSE:
-            Debug.e("uniqueList_r: null or universe at a leaf.");
+            Debug.getInstance().errorMessage("uniqueList_r: null or universe at a leaf.");
             break;
 
         case UNION:
@@ -603,7 +603,7 @@ public class CSG2D {
             break;
 
         default:
-            Debug.e("uniqueList_r: invalid operator.");
+            Debug.getInstance().errorMessage("uniqueList_r: invalid operator.");
         }
 
         return;
@@ -700,7 +700,7 @@ public class CSG2D {
             break;
 
         default:
-            Debug.e("replace_all_same(): invalid operator.");
+            Debug.getInstance().errorMessage("replace_all_same(): invalid operator.");
         }
     }
 
@@ -727,7 +727,7 @@ public class CSG2D {
             break;
 
         default:
-            Debug.e("simplify_r(): invalid operator.");
+            Debug.getInstance().errorMessage("simplify_r(): invalid operator.");
 
         }
     }
@@ -775,7 +775,7 @@ public class CSG2D {
             break;
 
         default:
-            Debug.e("offset(): invalid operator.");
+            Debug.getInstance().errorMessage("offset(): invalid operator.");
             result = nothing();
         }
         return result;
@@ -819,7 +819,7 @@ public class CSG2D {
             }
 
         default:
-            Debug.e("leaf(Rr2Point): invalid operator.");
+            Debug.getInstance().errorMessage("leaf(Rr2Point): invalid operator.");
             result = nothing();
         }
         return result;
@@ -855,7 +855,7 @@ public class CSG2D {
             break;
 
         default:
-            Debug.e("RrCSG.value(): dud operator.");
+            Debug.getInstance().errorMessage("RrCSG.value(): dud operator.");
         }
         return result;
     }
@@ -890,7 +890,7 @@ public class CSG2D {
             break;
 
         default:
-            Debug.e("value(RrBox): invalid operator.");
+            Debug.getInstance().errorMessage("value(RrBox): invalid operator.");
             result = new Interval();
         }
 
@@ -909,7 +909,7 @@ public class CSG2D {
         case LEAF:
             final Interval i = hp.value(b);
             if (i.empty()) {
-                Debug.e("RrCSG.prune(RrBox): empty interval!");
+                Debug.getInstance().errorMessage("RrCSG.prune(RrBox): empty interval!");
             } else if (i.neg()) {
                 result = universe();
             } else if (i.pos()) {
@@ -930,7 +930,7 @@ public class CSG2D {
             break;
 
         default:
-            Debug.e("RrCSG.prune(RrBox): dud op value!");
+            Debug.getInstance().errorMessage("RrCSG.prune(RrBox): dud op value!");
         }
 
         return result;

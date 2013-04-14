@@ -303,7 +303,7 @@ public class STLObject {
             }
 
         } catch (final Exception e) {
-            Debug.e("loadSingelSTL(): Exception loading STL file from: " + location);
+            Debug.getInstance().errorMessage("loadSingelSTL(): Exception loading STL file from: " + location);
             e.printStackTrace();
         }
 
@@ -492,7 +492,7 @@ public class STLObject {
             //restoreAppearance();
 
         } else {
-            Debug.e("applyOffset(): no bounding box or child.");
+            Debug.getInstance().errorMessage("applyOffset(): no bounding box or child.");
         }
 
         return result;
@@ -780,7 +780,7 @@ public class STLObject {
                 if (att != null) {
                     setAppearance_r(b, att.getAppearance());
                 } else {
-                    Debug.e("restoreAppearance(): no Attributes!");
+                    Debug.getInstance().errorMessage("restoreAppearance(): no Attributes!");
                 }
             }
         }

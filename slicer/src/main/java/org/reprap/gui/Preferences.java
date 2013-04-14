@@ -109,7 +109,7 @@ public class Preferences extends JFrame {
             for (int i = 0; i < globals.length; i++) {
                 final String s = globalValues[i].getText();
                 if (category(s) != globalCats[i]) {
-                    Debug.e("Preferences window: Dud format for " + globals[i].getText() + ": " + s);
+                    Debug.getInstance().errorMessage("Preferences window: Dud format for " + globals[i].getText() + ": " + s);
                 } else {
                     saveString(globals[i].getText(), s);
                 }
@@ -122,7 +122,7 @@ public class Preferences extends JFrame {
                 for (int i = 0; i < enames.length; i++) {
                     final String s = evals[i].getText();
                     if (category(s) != cats[i]) {
-                        Debug.e("Preferences window: Dud format for " + enames[i].getText() + ": " + s);
+                        Debug.getInstance().errorMessage("Preferences window: Dud format for " + enames[i].getText() + ": " + s);
                     } else {
                         saveString(enames[i].getText(), s);
                     }
@@ -150,7 +150,7 @@ public class Preferences extends JFrame {
             globalValues = makeValues(globals);
             globalCats = categorise(globalValues);
         } catch (final Exception ex) {
-            Debug.e("Preferences window: Can't load the globals!");
+            Debug.getInstance().errorMessage("Preferences window: Can't load the globals!");
             ex.printStackTrace();
         }
 
@@ -158,7 +158,7 @@ public class Preferences extends JFrame {
         try {
             extruderCount = Integer.parseInt(loadString("NumberOfExtruders"));
         } catch (final Exception ex) {
-            Debug.e("Preferences window: Can't load the extruder count!");
+            Debug.getInstance().errorMessage("Preferences window: Can't load the extruder count!");
             ex.printStackTrace();
         }
 
@@ -175,7 +175,7 @@ public class Preferences extends JFrame {
                 extruderCats[i] = categorise(extruderValues[i]);
             }
         } catch (final Exception ex) {
-            Debug.e("Preferences window: Can't load extruder(s)!");
+            Debug.getInstance().errorMessage("Preferences window: Can't load extruder(s)!");
             ex.printStackTrace();
         }
 
@@ -250,7 +250,7 @@ public class Preferences extends JFrame {
                         final String configToLoad = (String) configfileList.getSelectedItem() + ".properties";
                         final String configPath = org.reprap.Preferences.getUsersRootDir() + configToLoad;
                         if ((new File(configPath)).exists()) {
-                            Debug.d("loading config " + configToLoad);
+                            Debug.getInstance().debugMessage("loading config " + configToLoad);
                             org.reprap.Preferences.loadConfig(configToLoad);
                             updatePreferencesValues();
                         }
@@ -268,7 +268,7 @@ public class Preferences extends JFrame {
                     final File configFileObj = new File(configPath);
                     if (!configFileObj.exists()) {
                         configfileList.addItem((String) configfileList.getSelectedItem());
-                        Debug.a("loading config " + configToLoad);
+                        Debug.getInstance().printMessage("loading config " + configToLoad);
                         org.reprap.Preferences.loadConfig(configToLoad);
                         updatePreferencesValues();
                     }
