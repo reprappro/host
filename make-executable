@@ -3,24 +3,17 @@
 # directory whence it can be executed
 
 DESTINATION="executable"
-FILELIST="lib/*.jar lib/reprap-icon.png lib/reprap.ico\
-	lib/reprappro_logo-0.5.png lib/rr-logo-green-url.png\
-	lib/reprap-configurations lib/system-dependent lib/reprap lib/reprap32.bat lib/reprap64.bat"
-
-CLASSPATH=$CLASSPATH:./lib/j3d-org-java3d-all.jar  
-CLASSPATH=$CLASSPATH:./lib/j3dutils.jar            
-CLASSPATH=$CLASSPATH:./lib/vecmath.jar
-CLASSPATH=$CLASSPATH:./lib/j3dcore.jar             
-CLASSPATH=$CLASSPATH:./lib/swing-layout-1.0.4.jar
-CLASSPATH=$CLASSPATH:.
-export CLASSPATH
+FILELIST="lib/*.jar lib/reprap-icon.png lib/reprap.ico \
+	lib/reprappro_logo-0.5.png lib/rr-logo-green-url.png \
+	lib/reprap-configurations lib/system-dependent \
+	lib/reprap lib/reprap32.bat lib/reprap64.bat"
 
 # Clean out old executable directory
 [ -d "$DESTINATION" ] && rm -rf "$DESTINATION"
 mkdir "$DESTINATION"
 
 # Recompile java files and create reprap.jar
-ant clean jar || exit 1
+CLASSPATH=$CLASSPATH:lib/swing-layout-1.0.4.jar ant clean jar || exit 1
 
 # Copy files into $DESTINATION directory
 for F in $FILELIST

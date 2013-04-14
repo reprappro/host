@@ -1,31 +1,15 @@
 #!/bin/bash
-# reprap -- runs RepRapPro Java slicer with an appropriate classpath
+# reprap -- runs RepRapPro Java slicer
 
-REPRAP_RAM_SIZE=1024M         # Amount of RAM to allow Java VM to use
-REPRAP_DIR=`dirname $0`       # reprap.jar, jni libs and stl file
+INST="$(dirname $0)"
 
-cd $REPRAP_DIR
+# construct classpath
+CP="$INST/reprap.jar:$INST/swing-layout-1.0.4.jar:$INST"
 
-MACHINE=`uname -m`
+# jvm options, set maximum heap size
+JVMOPTS="-Xmx1024M"
 
-#echo $MACHINE
+# main class
+MAIN=org.reprap.Main
 
-# put the directory with the native RXTX and j3d libs in the library path
-LD_LIBRARY_PATH=`pwd`/system-dependent/linux/lib-${MACHINE}:${LD_LIBRARY_PATH}
-export LD_LIBRARY_PATH
-#echo $LD_LIBRARY_PATH
-
-# build up classpath
-# when we move to OpenJDK/Java-6 these next few can be replaced with wildcard
-# *.jar and we will not need swing-layout any more.
-CLASSPATH=./reprap.jar
-CLASSPATH=$CLASSPATH:./j3d-org-java3d-all.jar  
-CLASSPATH=$CLASSPATH:./j3dutils.jar            
-CLASSPATH=$CLASSPATH:./vecmath.jar
-CLASSPATH=$CLASSPATH:./j3dcore.jar             
-CLASSPATH=$CLASSPATH:./swing-layout-1.0.4.jar
-CLASSPATH=$CLASSPATH:.
-
-
-# invoke the code
-java -cp $CLASSPATH -Xmx$REPRAP_RAM_SIZE org.reprap.Main
+exec java -cp "$CP" $JVMOPTS $MAIN "$@"
