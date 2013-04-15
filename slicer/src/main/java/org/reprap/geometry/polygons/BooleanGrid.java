@@ -979,6 +979,9 @@ public class BooleanGrid {
                 pix = here.add(neighbour[2]);
                 set(pix, false);
                 vSet(pix, false);
+                if (result.size() == 0) {
+                    break;
+                }
                 here = result.point(result.size() - 1);
                 if (!get(here)) {
                     if (result.size() > 1) {
@@ -995,9 +998,7 @@ public class BooleanGrid {
                         here = start;
                     }
                 }
-
                 break;
-
             case 10:
                 pix = here.add(neighbour[3]);
                 if (!vGet(pix)) {
@@ -1081,18 +1082,15 @@ public class BooleanGrid {
         if (isEmpty()) {
             return result;
         }
-        Integer2DPoint start;
-        Integer2DPolygon p;
-        int m;
 
         for (int x = 0; x < rec.size.x - 1; x++) {
             for (int y = 0; y < rec.size.y - 1; y++) {
-                start = new Integer2DPoint(x, y);
-                m = marchPattern(start);
+                final Integer2DPoint start = new Integer2DPoint(x, y);
+                final int m = marchPattern(start);
                 if (m != 0 && m != 15) {
                     if (!(vGet(start) || vGet(start.add(neighbour[1])) || vGet(start.add(neighbour[2])) || vGet(start
                             .add(neighbour[3])))) {
-                        p = marchRound(start);
+                        final Integer2DPolygon p = marchRound(start);
                         if (p.size() > 2) {
                             result.add(p);
                         }
