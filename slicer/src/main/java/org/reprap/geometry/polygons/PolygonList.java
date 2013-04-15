@@ -64,335 +64,27 @@ import org.reprap.geometry.LayerRules;
 import org.reprap.utilities.Debug;
 
 /**
- * Holds a polygon index and the index of a point within it
- * 
- * @author ensab
- */
-class PolPoint {
-    private int pNear;
-    private int pEnd;
-    private int pg;
-    private double d2;
-    private Polygon pol;
-
-    public PolPoint(final int pnr, final int pgn, final Polygon poly, final double s) {
-        set(pnr, pgn, poly, s);
-    }
-
-    public int near() {
-        return pNear;
-    }
-
-    public int end() {
-        return pEnd;
-    }
-
-    public int pIndex() {
-        return pg;
-    }
-
-    public Polygon polygon() {
-        return pol;
-    }
-
-    public double dist2() {
-        return d2;
-    }
-
-    public void set(final int pnr, final int pgn, final Polygon poly, final double s) {
-        pNear = pnr;
-        pg = pgn;
-        pol = poly;
-        d2 = s;
-    }
-
-    private void midPoint(int i, int j) {
-        if (i > j) {
-            final int temp = i;
-            i = j;
-            j = temp;
-        }
-
-        if (i < 0 || i > pol.size() - 1 || j < 0 || j > pol.size() - 1) {
-            Debug.getInstance().errorMessage("RrPolygonList.midPoint(): i and/or j wrong: i = " + i + ", j = " + j);
-        }
-
-        Point2D p = Point2D.add(pol.point(i), pol.point(j));
-        p = Point2D.mul(p, 0.5);
-        pol.add(j, p);
-        pEnd = j;
-    }
-
-    /**
-     * Find the a long-enough polygon edge away from point pNear and put its
-     * index in pNext.
-     */
-    public void findLongEnough(final double longEnough, final double searchFor) {
-        double d;
-        double sum = 0;
-        double longest = -1;
-        Point2D p = pol.point(pNear);
-        Point2D q;
-        int inc = 1;
-        if (pNear > pol.size() / 2 - 1) {
-            inc = -1;
-        }
-        int i = pNear;
-        int iLongest = i;
-        int jLongest = i;
-        int j = i;
-        while (i > 0 && i < pol.size() - 1 && sum < searchFor) {
-            i += inc;
-            q = pol.point(i);
-            d = Point2D.d(p, q);
-            if (d >= longEnough) {
-                midPoint(i, j);
-                return;
-            }
-            if (d > longest) {
-                longest = d;
-                iLongest = i;
-                jLongest = j;
-            }
-            sum += d;
-            p = q;
-            j = i;
-        }
-        midPoint(iLongest, jLongest);
-    }
-}
-
-/**
- * chPair - holds double pointers for convex hull calculations.
- */
-class chPair {
-    public int polygon;
-    public int vertex;
-
-    chPair(final int p, final int v) {
-        polygon = p;
-        vertex = v;
-    }
-}
-
-/**
- * tree - class to hold lists to build a containment tree (that is a
- * representation of which polygon is inside which, like a Venn diagram).
- */
-class treeList {
-    /**
-     * Index of this polygon in the list
-     */
-    private final int index;
-
-    /**
-     * The polygons inside this one
-     */
-    private List<treeList> children = null;
-
-    /**
-     * The polygon that contains this one
-     */
-    private treeList parent = null;
-
-    /**
-     * Flag to prevent cyclic graphs going round forever
-     */
-    private boolean beingDestroyed = false;
-
-    /**
-     * Destroy me and all that I point to
-     */
-    public void destroy() {
-        if (beingDestroyed) {
-            return;
-        }
-        beingDestroyed = true;
-        if (children != null) {
-            for (int i = 0; i < children.size(); i++) {
-                children.get(i).destroy();
-                children.set(i, null);
-            }
-        }
-        children = null;
-        if (parent != null) {
-            parent.destroy();
-        }
-        parent = null;
-    }
-
-    /**
-     * Constructor builds from a polygon index
-     */
-    public treeList(final int i) {
-        index = i;
-        children = null;
-        parent = null;
-    }
-
-    /**
-     * Add a polygon as a child of this one
-     */
-    public void addChild(final treeList t) {
-        if (children == null) {
-            children = new ArrayList<treeList>();
-        }
-        children.add(t);
-    }
-
-    /**
-     * Get the ith polygon child of this one
-     */
-    public treeList getChild(final int i) {
-        if (children == null) {
-            Debug.getInstance().errorMessage("treeList: attempt to get child from null list!");
-            return null;
-        }
-        return children.get(i);
-    }
-
-    /**
-     * Get the parent
-     */
-    public treeList getParent() {
-        return parent;
-    }
-
-    /**
-     * How long is the list (if any)
-     */
-    public int size() {
-        if (children != null) {
-            return children.size();
-        } else {
-            return 0;
-        }
-    }
-
-    /**
-     * Printable form
-     */
-    @Override
-    public String toString() {
-        String result;
-
-        if (parent != null) {
-            result = Integer.toString(index) + "(^" + parent.index + "): ";
-        } else {
-            result = Integer.toString(index) + "(^null): ";
-        }
-
-        for (int i = 0; i < size(); i++) {
-            result += getChild(i).polygonIndex() + " ";
-        }
-        result += "\n";
-        for (int i = 0; i < size(); i++) {
-            result += getChild(i).toString();
-        }
-        return result;
-    }
-
-    /**
-     * Remove every instance of polygon t from the list
-     */
-    public void remove(final treeList t) {
-        for (int i = size() - 1; i >= 0; i--) {
-            if (getChild(i) == t) {
-                children.remove(i);
-            }
-        }
-    }
-
-    /**
-     * Recursively walk the tree from here to find polygon target.
-     * 
-     * @param node
-     * @param target
-     * @return
-     */
-    public treeList walkFind(final int target) {
-        if (polygonIndex() == target) {
-            return this;
-        }
-
-        for (int i = 0; i < size(); i++) {
-            final treeList result = getChild(i).walkFind(target);
-            if (result != null) {
-                return result;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Walk the tree building a CSG expression to represent all the polygons as
-     * one thing.
-     * 
-     * @param csgPols
-     * @return
-     */
-    public CSG2D buildCSG(final List<CSG2D> csgPols) {
-        if (size() == 0) {
-            return csgPols.get(index);
-        }
-
-        CSG2D offspring = CSG2D.nothing();
-
-        for (int i = 0; i < size(); i++) {
-            final treeList iEntry = getChild(i);
-            final CSG2D iCSG = iEntry.buildCSG(csgPols);
-            offspring = CSG2D.union(offspring, iCSG);
-        }
-
-        if (index < 0) {
-            return offspring;
-        } else {
-            return CSG2D.difference(csgPols.get(index), offspring);
-        }
-    }
-
-    /**
-     * Do a depth-first walk setting parents. Any node that appears in more than
-     * one list should have the deepest possible parent set as its parent, which
-     * is what we want.
-     * 
-     * @param node
-     */
-    public void setParents() {
-        treeList child;
-        int i;
-        for (i = 0; i < size(); i++) {
-            child = getChild(i);
-            child.parent = this;
-        }
-        for (i = 0; i < size(); i++) {
-            child = getChild(i);
-            child.setParents();
-        }
-    }
-
-    /**
-     * get the index of the polygon
-     * 
-     * @return
-     */
-    public int polygonIndex() {
-        return index;
-    }
-}
-
-/**
  * RrPolygonList: A collection of 2D polygons List of polygons class. This too
  * maintains a maximum enclosing rectangle.
  */
 public class PolygonList {
-    private List<Polygon> polygons = null;
-    private Rectangle box = null;
+    private final List<Polygon> polygons = new ArrayList<Polygon>();
+    private final Rectangle box = new Rectangle();
 
     public PolygonList() {
-        polygons = new ArrayList<Polygon>();
-        box = new Rectangle();
+    }
+
+    /**
+     * Deep copy
+     * 
+     * @param lst
+     *            list of polygons to copy
+     */
+    public PolygonList(final PolygonList lst) {
+        box.expand(lst.box);
+        for (int i = 0; i < lst.size(); i++) {
+            polygons.add(new Polygon(lst.polygon(i)));
+        }
     }
 
     /**
@@ -414,13 +106,6 @@ public class PolygonList {
     }
 
     /**
-     * @return the current enclosing box
-     */
-    public Rectangle getBox() {
-        return box;
-    }
-
-    /**
      * Overwrite one of the polygons
      * 
      * @param i
@@ -428,7 +113,7 @@ public class PolygonList {
      * @param p
      *            polygon to set at index i
      */
-    public void set(final int i, final Polygon p) {
+    private void set(final int i, final Polygon p) {
         polygons.set(i, p);
     }
 
@@ -438,22 +123,8 @@ public class PolygonList {
      * @param i
      *            index of polygon to remove
      */
-    public void remove(final int i) {
+    private void remove(final int i) {
         polygons.remove(i);
-    }
-
-    /**
-     * Deep copy
-     * 
-     * @param lst
-     *            list of polygons to copy
-     */
-    public PolygonList(final PolygonList lst) {
-        polygons = new ArrayList<Polygon>();
-        box = new Rectangle(lst.box);
-        for (int i = 0; i < lst.size(); i++) {
-            polygons.add(new Polygon(lst.polygon(i)));
-        }
     }
 
     /**
@@ -463,9 +134,6 @@ public class PolygonList {
      *            list to append to existing polygon list
      */
     public void add(final PolygonList lst) {
-        if (lst.size() == 0) {
-            return;
-        }
         for (int i = 0; i < lst.size(); i++) {
             polygons.add(new Polygon(lst.polygon(i)));
         }
@@ -484,17 +152,6 @@ public class PolygonList {
     }
 
     /**
-     * Add one new polygon to the list at location i
-     * 
-     * @param p
-     *            polygon to add to the list
-     */
-    public void add(final int i, final Polygon p) {
-        polygons.add(i, p);
-        box.expand(p.getBox());
-    }
-
-    /**
      * Swap two in the list
      * 
      * @param i
@@ -507,61 +164,6 @@ public class PolygonList {
     }
 
     /**
-     * Negate all the polygons
-     * 
-     * @return negated polygons
-     */
-    public PolygonList negate() {
-        final PolygonList result = new PolygonList();
-        for (int i = 0; i < size(); i++) {
-            result.polygons.add(polygon(i).negate());
-        }
-        result.box = new Rectangle(box);
-        return result;
-    }
-
-    /**
-     * Remove empty entries (if any)
-     * 
-     * @return
-     */
-    public PolygonList clean() {
-        final PolygonList result = new PolygonList();
-        for (int i = 0; i < size(); i++) {
-            if (polygon(i) != null) {
-                if (polygon(i).size() > 0) {
-                    result.add(polygon(i));
-                }
-            }
-        }
-        return result;
-    }
-
-    //	/**
-    //	 * Set whether we loop back on ourself.
-    //	 * @param c
-    //	 */
-    //	public void setClosed(boolean c)
-    //	{
-    //		for(int i = 0; i < size(); i++)
-    //			polygon(i).setClosed(c);		
-    //	}
-
-    /**
-     * Create a new polygon list with a random start vertex for each polygon in
-     * the list
-     * 
-     * @return new polygonlist
-     */
-    public PolygonList randomStart() {
-        final PolygonList result = new PolygonList();
-        for (int i = 0; i < size(); i++) {
-            result.add(polygon(i).randomStart());
-        }
-        return result;
-    }
-
-    /**
      * Negate one of the polygons
      * 
      * @param i
@@ -571,11 +173,6 @@ public class PolygonList {
         polygons.set(i, p);
     }
 
-    /**
-     * As a string
-     * 
-     * @return string representation of polygon list
-     */
     @Override
     public String toString() {
         String result = "Polygon List - polygons: ";
@@ -588,33 +185,9 @@ public class PolygonList {
     }
 
     /**
-     * Turn into SVG xml
-     * 
-     * @param opf
-     */
-    public String svg() {
-        String result = "<?xml version=\"1.0\" standalone=\"no\"?>" + "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\""
-                + "\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">" + "<svg" + " width=\""
-                + Double.toString(box.x().length()) + "mm\"" + " height=\"" + Double.toString(box.y().length()) + "mm\""
-                + " viewBox=\"" + Double.toString(box.x().low()) + " " + Double.toString(box.y().low()) + " "
-                + Double.toString(box.x().high()) + " " + Double.toString(box.y().high()) + "\""
-                + " xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">"
-                + " <desc>RepRap polygon list - http://reprap.org</desc>";
-
-        final int leng = size();
-        for (int i = 0; i < leng; i++) {
-            result += polygon(i).svg();
-        }
-
-        result += "</svg>";
-        return result;
-    }
-
-    /**
      * Simplify all polygons by length d N.B. this may throw away small ones
      * completely
      * 
-     * @param d
      * @return simplified polygon list
      */
     public PolygonList simplify(final double d) {
@@ -631,70 +204,6 @@ public class PolygonList {
         return r;
     }
 
-    //	private void addDXFPolyLines(List plines, Attributes a)
-    //	{
-    //		for(int pg = 0; pg < plines.size(); pg++)
-    //		{
-    //			DXFPolyline dxfp = (DXFPolyline) plines.get(pg);
-    //			Polygon p = new Polygon(a, true);
-    //			for (int i = 0; i < dxfp.getVertexCount(); i++) 
-    //			{
-    //				DXFVertex vertex = dxfp.getVertex(i);
-    //				Point2D pt = new Point2D(vertex.getX(), vertex.getY());
-    //				p.add(pt);
-    //			}
-    //			add(p);
-    //		}
-    //	}
-    //	
-    //	public static Polygon ArcToPolygon(double xCen, double yCen, double r, double a0, double a1, Attributes a)
-    //	{
-    //		return null;
-    //	}
-    //	
-    //	private void addDXFCircles(List pcircs, Attributes a)
-    //	{
-    //		for(int pg = 0; pg < pcircs.size(); pg++)
-    //		{
-    //			DXFCircle dxfc = (DXFCircle) pcircs.get(pg);
-    //			Polygon p = ArcToPolygon(dxfc.getCenterPoint().getX(), dxfc.getCenterPoint().getY(), dxfc.getRadius(), 0, 2*Math.PI, a);
-    //			add(p);
-    //		}
-    //	}
-    //	
-    //	/**
-    //	 * Read a DXF file layer and return it as a polygon list.
-    //	 * @return
-    //	 */
-    //	public PolygonList readDXF(InputStream in, String layerid, Attributes a)
-    //	{
-    //		Parser parser = ParserBuilder.createDefaultParser();
-    //		PolygonList result = new PolygonList();
-    //
-    //		try 
-    //		{
-    //			//parse
-    //			parser.parse(in, DXFParser.DEFAULT_ENCODING);
-    //			//get the documnet and the layer
-    //			DXFDocument doc = parser.getDocument();
-    //			DXFLayer layer = doc.getDXFLayer(layerid);
-    //			//get all polylines from the layer
-    //			List plist = layer.getDXFEntities(DXFConstants.ENTITY_TYPE_POLYLINE);
-    //			//work with the first polyline
-    //			result.addDXFPolyLines(plist, a);
-    //			plist = layer.getDXFEntities(DXFConstants.ENTITY_TYPE_CIRCLE);
-    //			result.addDXFCircles(plist, a);
-    //		} catch (ParseException e) 
-    //		{
-    //			Debug.e("PolygonList.readDXF() error: " + e);
-    //			result = new PolygonList();
-    //		}
-    //		
-    //		
-    //		
-    //		return result;
-    //	}
-
     /**
      * Re-order and (if need be) reverse the order of the polygons in a list so
      * the end of the first is near the start of the second and so on. This is a
@@ -703,42 +212,31 @@ public class PolygonList {
      * re-ordered if reOrder is true. If any point on a closed polygon is closer
      * to any point on any other than sqrt(linkUp), the two polygons are merged
      * at their closest points. This is suppressed by setting linkUp negative.
-     * 
-     * @param startNearHere
-     * @param reOrder
-     * @param linkUp
-     * @return new ordered polygon list
      */
     public PolygonList nearEnds(final Point2D startNearHere, final boolean reOrder, final double linkUp) {
-        final PolygonList r = new PolygonList();
+        final PolygonList result = new PolygonList();
         if (size() <= 0) {
-            return r;
+            return result;
         }
 
-        int i, j;
-
-        for (i = 0; i < size(); i++) {
-            r.add(polygon(i));
+        for (int i = 0; i < size(); i++) {
+            result.add(polygon(i));
         }
 
         // Make the nearest end point on any polygon to startNearHere
         // go to polygon 0 and get it the right way round if it's open.
 
-        boolean neg = false;
-        double d = Double.POSITIVE_INFINITY;
-
-        double d2;
-        int near = -1;
-        int nearV = -1;
-
         // Begin by moving the polygon nearest the specified start point to the head
         // of the list.
-
         if (startNearHere != null) {
-            for (i = 0; i < size(); i++) {
-                if (r.polygon(i).isClosed() && reOrder) {
+            double d = Double.POSITIVE_INFINITY;
+            boolean neg = false;
+            int near = -1;
+            int nearV = -1;
+            for (int i = 0; i < size(); i++) {
+                if (result.polygon(i).isClosed() && reOrder) {
                     final int nv = polygon(i).nearestVertex(startNearHere);
-                    d2 = Point2D.dSquared(startNearHere, polygon(i).point(nv));
+                    final double d2 = Point2D.dSquared(startNearHere, polygon(i).point(nv));
                     if (d2 < d) {
                         near = i;
                         nearV = nv;
@@ -746,15 +244,15 @@ public class PolygonList {
                         neg = false;
                     }
                 } else {
-                    d2 = Point2D.dSquared(startNearHere, r.polygon(i).point(0));
+                    double d2 = Point2D.dSquared(startNearHere, result.polygon(i).point(0));
                     if (d2 < d) {
                         near = i;
                         nearV = -1;
                         d = d2;
                         neg = false;
                     }
-                    if (!r.polygon(i).isClosed()) {
-                        d2 = Point2D.dSquared(startNearHere, r.polygon(i).point(r.polygon(i).size() - 1));
+                    if (!result.polygon(i).isClosed()) {
+                        d2 = Point2D.dSquared(startNearHere, result.polygon(i).point(result.polygon(i).size() - 1));
                         if (d2 < d) {
                             near = i;
                             nearV = -1;
@@ -767,24 +265,24 @@ public class PolygonList {
 
             if (near < 0) {
                 Debug.getInstance().errorMessage("RrPolygonList.nearEnds(): no nearest end found to start point!");
-                return r;
+                return result;
             }
 
-            r.swap(0, near);
+            result.swap(0, near);
             if (reOrder && nearV >= 0) {
                 set(0, polygon(0).newStart(nearV));
             }
             if (neg) {
-                r.negate(0);
+                result.negate(0);
             }
         }
 
         if (reOrder && linkUp >= 0) {
-            for (i = 0; i < r.size() - 1; i++) {
-                for (j = i + 1; j < r.size(); j++) {
-                    if (r.polygon(j).isClosed()) {
-                        if (r.polygon(i).nearestVertexReorderMerge(r.polygon(j), linkUp)) {
-                            r.remove(j);
+            for (int i = 0; i < result.size() - 1; i++) {
+                for (int j = i + 1; j < result.size(); j++) {
+                    if (result.polygon(j).isClosed()) {
+                        if (result.polygon(i).nearestVertexReorderMerge(result.polygon(j), linkUp)) {
+                            result.remove(j);
                         }
                     }
                 }
@@ -793,27 +291,26 @@ public class PolygonList {
 
         // Go through the rest of the polygons getting them as close as
         // reasonable.
-
-        for (i = 0; i < r.size() - 1; i++) {
-            Point2D end;
-            if (r.polygon(i).isClosed()) {
-                end = r.polygon(i).point(0);
+        for (int i = 0; i < result.size() - 1; i++) {
+            final Point2D end;
+            if (result.polygon(i).isClosed()) {
+                end = result.polygon(i).point(0);
             } else {
-                end = r.polygon(i).point(r.polygon(i).size() - 1);
+                end = result.polygon(i).point(result.polygon(i).size() - 1);
             }
-            neg = false;
-            near = -1;
-            d = Double.POSITIVE_INFINITY;
-            for (j = i + 1; j < r.size(); j++) {
-                d2 = Point2D.dSquared(end, r.polygon(j).point(0));
+            boolean neg = false;
+            int near = -1;
+            double d = Double.POSITIVE_INFINITY;
+            for (int j = i + 1; j < result.size(); j++) {
+                double d2 = Point2D.dSquared(end, result.polygon(j).point(0));
                 if (d2 < d) {
                     near = j;
                     d = d2;
                     neg = false;
                 }
 
-                if (!r.polygon(j).isClosed()) {
-                    d2 = Point2D.dSquared(end, r.polygon(j).point(r.polygon(j).size() - 1));
+                if (!result.polygon(j).isClosed()) {
+                    d2 = Point2D.dSquared(end, result.polygon(j).point(result.polygon(j).size() - 1));
                     if (d2 < d) {
                         near = j;
                         d = d2;
@@ -824,13 +321,13 @@ public class PolygonList {
 
             if (near > 0) {
                 if (neg) {
-                    r.negate(near);
+                    result.negate(near);
                 }
-                r.swap(i + 1, near);
+                result.swap(i + 1, near);
             }
         }
 
-        return r;
+        return result;
     }
 
     /**
@@ -847,8 +344,6 @@ public class PolygonList {
      * All the polygons in the list must be plotted with the same physical
      * extruder (otherwise it would be nonsense to join them). It is the calling
      * function's responsibility to make sure this is the case.
-     * 
-     * @param linkUp
      */
     public void radicalReOrder(final double linkUp) {
         if (size() < 2) {
@@ -856,17 +351,16 @@ public class PolygonList {
         }
 
         // First check that we all have the same physical extruder
-
         final int physicalExtruder = polygon(0).getAttributes().getExtruder().getPhysicalExtruderNumber();
         for (int i = 1; i < size(); i++) {
             if (polygon(i).getAttributes().getExtruder().getPhysicalExtruderNumber() != physicalExtruder) {
-                Debug.getInstance().errorMessage("RrPolygonList.radicalReOrder(): more than one physical extruder needed by the list!");
+                Debug.getInstance().errorMessage(
+                        "RrPolygonList.radicalReOrder(): more than one physical extruder needed by the list!");
                 return;
             }
         }
 
         // Now go through the polygons pairwise
-
         for (int i = 0; i < size() - 1; i++) {
             Polygon myPolygon = polygon(i);
             for (int j = i + 1; j < size(); j++) {
@@ -879,7 +373,6 @@ public class PolygonList {
                 Polygon itsPolygon = polygon(j);
 
                 // Swap the odd half of the asymmetric cases so they're all the same
-
                 if (myPolygon.isClosed() && !itsPolygon.isClosed()) {
                     polygons.set(i, itsPolygon);
                     polygons.set(j, myPolygon);
@@ -888,11 +381,9 @@ public class PolygonList {
                 }
 
                 // Three possibilities ...
-
                 if (!myPolygon.isClosed() && !itsPolygon.isClosed()) {
                     // ... both open
                     // Just compare the four ends
-
                     reverseMe = true;
                     reverseIt = false;
                     d = Point2D.dSquared(myPolygon.point(0), itsPolygon.point(0));
@@ -933,7 +424,6 @@ public class PolygonList {
                 } else if (!myPolygon.isClosed() && itsPolygon.isClosed()) {
                     // ... I'm open, it's closed;
                     // Compare my end points with all its points
-
                     reverseMe = true;
                     itsPoint = itsPolygon.nearestVertex(myPolygon.point(0));
                     d = Point2D.dSquared(itsPolygon.point(itsPoint), myPolygon.point(0));
@@ -960,7 +450,6 @@ public class PolygonList {
                 } else if (myPolygon.isClosed() && itsPolygon.isClosed()) {
                     // ... both closed
                     // Compare all my points with all its points
-
                     for (int k = 0; k < itsPolygon.size(); k++) {
                         myTempPoint = myPolygon.nearestVertex(itsPolygon.point(k));
                         d2 = Point2D.dSquared(myPolygon.point(myTempPoint), itsPolygon.point(k));
@@ -997,10 +486,6 @@ public class PolygonList {
      * en, but if st > en, then they are swapped.
      * 
      * The two new polygons are put on the end of the list.
-     * 
-     * @param pol
-     * @param st
-     * @param en
      */
     private void cutPolygon(final int pol, int st, int en) {
         final Polygon old = polygon(pol);
@@ -1036,14 +521,10 @@ public class PolygonList {
      * the search.
      * 
      * Only polygons with the same physical extruder are compared.
-     * 
-     * @param p
-     * @param omit
-     * @return
      */
-    private PolPoint ppSearch(final Point2D p, final int omit, final int physicalExtruder) {
+    private PolygonIndexedPoint ppSearch(final Point2D p, final int omit, final int physicalExtruder) {
         double d = Double.POSITIVE_INFINITY;
-        PolPoint result = null;
+        PolygonIndexedPoint result = null;
 
         if (size() <= 0) {
             return result;
@@ -1056,11 +537,7 @@ public class PolygonList {
                     final int n = pgon.nearestVertex(p);
                     final double d2 = Point2D.dSquared(p, pgon.point(n));
                     if (d2 < d) {
-                        if (result == null) {
-                            result = new PolPoint(n, i, pgon, d2);
-                        } else {
-                            result.set(n, i, pgon, d2);
-                        }
+                        result = new PolygonIndexedPoint(n, i, pgon);
                         d = d2;
                     }
                 }
@@ -1099,7 +576,7 @@ public class PolygonList {
                 outline = outline.newStart(outline.maximalVertex(l));
 
                 final Point2D start = outline.point(0);
-                final PolPoint pp = hatching.ppSearch(start, -1, outline.getAttributes().getExtruder()
+                final PolygonIndexedPoint pp = hatching.ppSearch(start, -1, outline.getAttributes().getExtruder()
                         .getPhysicalExtruderNumber());
                 boolean failed = true;
                 if (pp != null) {
@@ -1136,95 +613,6 @@ public class PolygonList {
                             }
                         }
                         set(i, outline);
-                        hatching.cutPolygon(pp.pIndex(), st, en);
-                        failed = false;
-                    }
-                }
-                if (failed) {
-                    set(i, outline.randomStart()); // Best we can do.
-                }
-            }
-        }
-    }
-
-    /**
-     * This assumes that the RrPolygonList for which it is called is all the
-     * closed outline polygons, and that hatching is their infill hatch. It goes
-     * through the outlines and the hatch modifying both so that that outlines
-     * actually start and end half-way along a hatch line (that half of the
-     * hatch line being deleted). When the outlines are then printed, they start
-     * and end in the middle of a solid area, thus minimising dribble.
-     * 
-     * The outline polygons are re-ordered before the start so that their first
-     * point is the most extreme one in the current hatch direction.
-     * 
-     * Only hatches and outlines whose physical extruders match are altered.
-     * 
-     */
-    public void joinAndWipe(final PolygonList hatching, final LayerRules lc, final BooleanGridList slice) {
-        // We should all be closed for this to work
-        int i;
-        for (i = 0; i < size(); i++) {
-            if (!polygon(i).isClosed()) {
-                Debug.getInstance().errorMessage("RrPolygonList.joinAndWipe(): some polygons are not closed!");
-                return;
-            }
-        }
-
-        for (i = 0; i < size(); i++) {
-            Polygon outline = polygon(i);
-            final GCodeExtruder ex = outline.getAttributes().getExtruder();
-            if (ex.getMiddleStart()) {
-                Line l = lc.getHatchDirection(ex, false).pLine();
-                if (i % 2 != 0 ^ lc.getMachineLayer() % 4 > 1) {
-                    l = l.neg();
-                }
-                outline = outline.newStart(outline.maximalVertex(l));
-
-                final Point2D start = outline.point(0);
-                final PolPoint pp = hatching.ppSearch(start, -1, outline.getAttributes().getExtruder()
-                        .getPhysicalExtruderNumber());
-                boolean failed = true;
-                if (pp != null) {
-                    pp.findLongEnough(10, 30);
-
-                    final int st = pp.near();
-                    final int en = pp.end();
-
-                    final Polygon pg = pp.polygon();
-
-                    // Check that the line from the start of the outline polygon to the first point
-                    // of the tail-in is in solid.  If not, we have jumped between polygons and don't
-                    // want to use that as a lead in.
-
-                    final Point2D pDif = Point2D.sub(pg.point(st), start);
-
-                    final Point2D pq1 = Point2D.add(start, Point2D.mul(0.25, pDif));
-                    final Point2D pq2 = Point2D.add(start, Point2D.mul(0.5, pDif));
-                    final Point2D pq3 = Point2D.add(start, Point2D.mul(0.5, pDif));
-
-                    if (slice.membership(pq1) & slice.membership(pq2) & slice.membership(pq3)) {
-                        outline.add(start);
-                        outline.setExtrudeEnd(-1, 0);
-
-                        if (en >= st) {
-                            for (int j = st; j <= en; j++) {
-                                outline.add(0, pg.point(j)); // Put it on the beginning...
-                                if (j < en) {
-                                    outline.add(pg.point(j)); // ...and the end.
-                                }
-                            }
-                        } else {
-                            for (int j = st; j >= en; j--) {
-                                outline.add(0, pg.point(j));
-                                if (j > en) {
-                                    outline.add(pg.point(j));
-                                }
-                            }
-                        }
-
-                        set(i, outline);
-
                         hatching.cutPolygon(pp.pIndex(), st, en);
                         failed = false;
                     }
@@ -1297,21 +685,21 @@ public class PolygonList {
     private CSG2D resolveInsides(final List<CSG2D> csgPols) {
         int i, j;
 
-        final treeList universe = new treeList(-1);
-        universe.addChild(new treeList(0));
+        final TreeList universe = new TreeList(-1);
+        universe.addChild(new TreeList(0));
 
         // For each polygon construct a list of all the others that
         // are inside it (if any).
         for (i = 0; i < size() - 1; i++) {
-            treeList isList = universe.walkFind(i);
+            TreeList isList = universe.walkFind(i);
             if (isList == null) {
-                isList = new treeList(i);
+                isList = new TreeList(i);
                 universe.addChild(isList);
             }
             for (j = i + 1; j < size(); j++) {
-                treeList jsList = universe.walkFind(j);
+                TreeList jsList = universe.walkFind(j);
                 if (jsList == null) {
-                    jsList = new treeList(j);
+                    jsList = new TreeList(j);
                     universe.addChild(jsList);
                 }
                 if (inside(j, i, csgPols)) {
@@ -1327,11 +715,11 @@ public class PolygonList {
         universe.setParents();
         // Eliminate each leaf from every part of the tree except the node immediately above itself
         for (i = 0; i < size(); i++) {
-            final treeList isList = universe.walkFind(i);
+            final TreeList isList = universe.walkFind(i);
             if (isList == null) {
                 Debug.getInstance().errorMessage("RrPolygonList.resolveInsides() - can't find list for polygon " + i);
             }
-            treeList parent = isList.getParent();
+            TreeList parent = isList.getParent();
             if (parent != null) {
                 parent = parent.getParent();
                 while (parent != null) {

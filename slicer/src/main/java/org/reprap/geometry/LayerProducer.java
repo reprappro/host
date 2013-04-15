@@ -6,7 +6,6 @@ import org.reprap.Attributes;
 import org.reprap.Preferences;
 import org.reprap.geometry.polygons.Point2D;
 import org.reprap.geometry.polygons.Polygon;
-import org.reprap.geometry.polygons.PolygonAttributes;
 import org.reprap.geometry.polygons.PolygonList;
 import org.reprap.geometry.polygons.Rectangle;
 import org.reprap.machines.GCodePrinter;
@@ -156,7 +155,6 @@ public class LayerProducer {
      */
     private void plot(final Polygon p, final boolean firstOneInLayer) throws Exception {
         final Attributes att = p.getAttributes();
-        final PolygonAttributes pAtt = p.getPolygonAttribute();
         final GCodePrinter printer = layerConditions.getPrinter();
         final double outlineFeedrate = att.getExtruder().getOutlineFeedrate();
         final double infillFeedrate = att.getExtruder().getInfillFeedrate();
@@ -213,7 +211,8 @@ public class LayerProducer {
         final double extrudeBackLength = att.getExtruder().getExtrusionOverRun();
         final double valveBackLength = att.getExtruder().getValveOverRun();
         if (extrudeBackLength > 0 && valveBackLength > 0) {
-            Debug.getInstance().errorMessage("LayerProducer.plot(): extruder has both valve backoff and extrude backoff specified.");
+            Debug.getInstance().errorMessage(
+                    "LayerProducer.plot(): extruder has both valve backoff and extrude backoff specified.");
         }
 
         p.backStepExtrude(extrudeBackLength);
@@ -250,10 +249,6 @@ public class LayerProducer {
         boolean oldexoff;
 
         final double oldFeedFactor = att.getExtruder().getExtrudeRatio();
-
-        if (pAtt != null) {
-            att.getExtruder().setExtrudeRatio(oldFeedFactor * pAtt.getBridgeThin());
-        }
 
         for (int i = 1; i < p.size(); i++) {
             final Point2D next = p.point((i + 1) % p.size());

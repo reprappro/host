@@ -61,7 +61,6 @@ import org.reprap.geometry.polyhedra.HalfSpace;
  * Class to hold and manipulate linear half-planes
  */
 public class HalfPlane {
-
     /**
      * The half-plane is normal*(x, y) + offset <= 0
      */
@@ -76,7 +75,7 @@ public class HalfPlane {
     /**
      * Convert a parametric line
      */
-    public HalfPlane(final Line l) {
+    private HalfPlane(final Line l) {
         p = new Line(l);
         p.norm();
         normal = new Point2D(-p.direction().y(), p.direction().x());
@@ -93,7 +92,7 @@ public class HalfPlane {
     /**
      * Deep copy
      */
-    public HalfPlane(final HalfPlane a) {
+    HalfPlane(final HalfPlane a) {
         normal = new Point2D(a.normal);
         offset = a.offset;
         p = new Line(a.p);
@@ -105,7 +104,7 @@ public class HalfPlane {
      * @param hs
      * @param z
      */
-    public HalfPlane(final HalfSpace hs, final double z) throws ParallelException {
+    HalfPlane(final HalfSpace hs, final double z) throws ParallelException {
         normal = new Point2D(hs.normal().x(), hs.normal().y());
         final double m = normal.mod();
         if (m < 1.0e-10) {
@@ -129,13 +128,10 @@ public class HalfPlane {
      * 
      * @return parametric equivalent of a line
      */
-    public Line pLine() {
+    Line pLine() {
         return p;
     }
 
-    /**
-     * Return the plane as a string
-     */
     @Override
     public String toString() {
         return "|" + normal.toString() + ", " + Double.toString(offset) + "|";
@@ -144,12 +140,8 @@ public class HalfPlane {
     /**
      * Get the components
      */
-    public Point2D normal() {
+    Point2D normal() {
         return normal;
-    }
-
-    public double offset() {
-        return offset;
     }
 
     /**
@@ -159,7 +151,7 @@ public class HalfPlane {
      *         tolerance, -1 if one is the complement of the other within the
      *         tolerance, otherwise 1
      */
-    public static int same(final HalfPlane a, final HalfPlane b, final double tolerance) {
+    static int same(final HalfPlane a, final HalfPlane b, final double tolerance) {
         if (a == b) {
             return 0;
         }
@@ -191,7 +183,7 @@ public class HalfPlane {
      * 
      * @return complement of half plane
      */
-    public HalfPlane complement() {
+    HalfPlane complement() {
         final HalfPlane r = new HalfPlane(this);
         r.normal = r.normal.neg();
         r.offset = -r.offset;
@@ -199,11 +191,6 @@ public class HalfPlane {
         return r;
     }
 
-    /**
-     * Move
-     * 
-     * @return offset halfplane
-     */
     public HalfPlane offset(final double d) {
         final HalfPlane r = new HalfPlane(this);
         r.offset = r.offset - d;
@@ -216,8 +203,8 @@ public class HalfPlane {
      * 
      * @return potential value of point p
      */
-    public double value(final Point2D p) {
-        return offset + Point2D.mul(normal, p);
+    double value(final Point2D point) {
+        return offset + Point2D.mul(normal, point);
     }
 
     /**
@@ -225,7 +212,7 @@ public class HalfPlane {
      * 
      * @return potential interval of box b
      */
-    public Interval value(final Rectangle b) {
+    Interval value(final Rectangle b) {
         return Interval.add(Interval.add((Interval.mul(b.x(), normal.x())), (Interval.mul(b.y(), normal.y()))), offset);
     }
 
@@ -235,7 +222,7 @@ public class HalfPlane {
      * @return cross point
      * @throws ParallelException
      */
-    public Point2D cross_point(final HalfPlane a) throws ParallelException {
+    Point2D crossPoint(final HalfPlane a) throws ParallelException {
         double det = Point2D.op(normal, a.normal);
         if (det == 0) {
             throw new ParallelException("cross_point: parallel lines.");
@@ -252,22 +239,12 @@ public class HalfPlane {
      * @return parameter value
      * @throws ParallelException
      */
-    public double cross_t(final Line a) throws ParallelException {
+    private double cross_t(final Line a) throws ParallelException {
         final double det = Point2D.mul(a.direction(), normal);
         if (det == 0) {
             throw new ParallelException("cross_t: parallel lines.");
         }
         return -value(a.origin()) / det;
-    }
-
-    /**
-     * Point where a parametric line crosses
-     * 
-     * @return cross point
-     * @throws ParallelException
-     */
-    public Point2D cross_point(final Line a) throws ParallelException {
-        return a.point(cross_t(a));
     }
 
     /**
@@ -277,7 +254,7 @@ public class HalfPlane {
      * 
      * @return intersection interval
      */
-    public Interval wipe(final Line a, final Interval range) {
+    Interval wipe(final Line a, final Interval range) {
         if (range.empty()) {
             return range;
         }

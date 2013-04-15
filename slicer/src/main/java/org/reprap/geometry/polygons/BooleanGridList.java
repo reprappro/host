@@ -22,15 +22,6 @@ public class BooleanGridList implements Iterable<BooleanGrid> {
     }
 
     /**
-     * Deep copy
-     */
-    public BooleanGridList(final BooleanGridList a) {
-        for (final BooleanGrid booleanGrid : a) {
-            shapes.add(new BooleanGrid(booleanGrid));
-        }
-    }
-
-    /**
      * Return the ith shape
      */
     public BooleanGrid get(final int i) {
@@ -40,7 +31,7 @@ public class BooleanGridList implements Iterable<BooleanGrid> {
     /**
      * Is a point in any of the shapes?
      */
-    public boolean membership(final Point2D p) {
+    boolean membership(final Point2D p) {
         for (int i = 0; i < size(); i++) {
             if (get(i).get(p)) {
                 return true;
@@ -64,13 +55,6 @@ public class BooleanGridList implements Iterable<BooleanGrid> {
     }
 
     /**
-     * Remove an entry and close the gap
-     */
-    public void remove(final int i) {
-        shapes.remove(i);
-    }
-
-    /**
      * Add a shape on the end
      */
     public void add(final BooleanGrid b) {
@@ -84,18 +68,9 @@ public class BooleanGridList implements Iterable<BooleanGrid> {
     }
 
     /**
-     * Add another list of shapes on the end
-     */
-    public void add(final BooleanGridList aa) {
-        for (int i = 0; i < aa.size(); i++) {
-            add(aa.get(i));
-        }
-    }
-
-    /**
      * Reverse the order of the list
      */
-    public BooleanGridList reverse() {
+    private BooleanGridList reverse() {
         final BooleanGridList result = new BooleanGridList();
         for (int i = size() - 1; i >= 0; i--) {
             result.add(get(i));
@@ -106,8 +81,7 @@ public class BooleanGridList implements Iterable<BooleanGrid> {
     /**
      * Offset all the shapes in the list for this layer
      */
-    public BooleanGridList offset(final LayerRules lc, final boolean outline, final double multiplier) //, int shellOverride)
-    {
+    public BooleanGridList offset(final LayerRules lc, final boolean outline, final double multiplier) {
         final boolean foundation = lc.getLayingSupport();
         if (outline && foundation) {
             Debug.getInstance().errorMessage("Offsetting a foundation outline!");
@@ -366,22 +340,6 @@ public class BooleanGridList implements Iterable<BooleanGrid> {
 
         for (int i = 0; i < size(); i++) {
             if (get(i).attribute().getExtruder().getSupportExtruderNumber() < 0) {
-                result.add(get(i));
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Return only those elements in the list that have support material
-     * specified
-     */
-    public BooleanGridList cullSupport() {
-        final BooleanGridList result = new BooleanGridList();
-
-        for (int i = 0; i < size(); i++) {
-            if (get(i).attribute().getExtruder().getSupportExtruderNumber() >= 0) {
                 result.add(get(i));
             }
         }

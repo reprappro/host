@@ -233,7 +233,7 @@ public class RrGraphics extends JComponent {
      * Plot a box
      */
     private void plot(final Graphics2D g2d, final Rectangle b) {
-        if (Rectangle.intersection(b, scaledBox).empty()) {
+        if (Rectangle.intersection(b, scaledBox).isEmpty()) {
             return;
         }
 
@@ -263,7 +263,7 @@ public class RrGraphics extends JComponent {
         if (p.size() <= 0) {
             return;
         }
-        if (Rectangle.intersection(p.getBox(), scaledBox).empty()) {
+        if (Rectangle.intersection(p.getBox(), scaledBox).isEmpty()) {
             return;
         }
         if (p.getAttributes().getAppearance() == null) {

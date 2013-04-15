@@ -63,9 +63,9 @@ import org.reprap.utilities.Debug;
 public class Interval {
     private double low;
     private double high;
-    private final boolean empty;
+    private boolean empty;
 
-    public Interval() {
+    Interval() {
         empty = true;
     }
 
@@ -95,7 +95,7 @@ public class Interval {
         return high;
     }
 
-    public boolean empty() {
+    boolean empty() {
         return empty;
     }
 
@@ -104,7 +104,7 @@ public class Interval {
      * 
      * @return biggest possible interval
      */
-    public static Interval bigInterval() {
+    static Interval bigInterval() {
         return new Interval(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
     }
 
@@ -123,6 +123,7 @@ public class Interval {
         if (empty) {
             low = v;
             high = v;
+            empty = false;
         } else {
             if (v < low) {
                 low = v;
@@ -137,6 +138,9 @@ public class Interval {
      * Accommodate another interval
      */
     public void expand(final Interval i) {
+        if (i.empty) {
+            return;
+        }
         expand(i.low);
         expand(i.high);
     }
@@ -145,7 +149,7 @@ public class Interval {
         return high - low;
     }
 
-    public double cen() {
+    double center() {
         return (high + low) * 0.5;
     }
 
@@ -172,63 +176,6 @@ public class Interval {
     }
 
     /**
-     * @return new interval based on addition of interval a and value b
-     */
-    public static Interval add(final double b, final Interval a) {
-        return add(a, b);
-    }
-
-    /**
-     * Interval subtraction
-     * 
-     * @return new interval based on subtraction of interval a and value b
-     */
-    public static Interval sub(final Interval a, final Interval b) {
-        if (a.empty || b.empty) {
-            Debug.getInstance().errorMessage("RrInterval.sub(...): subtracting empty interval(s).");
-        }
-        return new Interval(a.low - b.high, a.high - b.low);
-    }
-
-    /**
-     * @return new interval based on subtraction of interval a and value b
-     */
-    public static Interval sub(final Interval a, final double b) {
-        if (a.empty) {
-            Debug.getInstance().errorMessage("RrInterval.sub(...): subtracting an empty interval.");
-        }
-        return new Interval(a.low - b, a.high - b);
-    }
-
-    /**
-     * @return new interval based on subtraction of interval a and value b
-     */
-    public static Interval sub(final double b, final Interval a) {
-        if (a.empty) {
-            Debug.getInstance().errorMessage("RrInterval.sub(...): subtracting an empty interval.");
-        }
-        return new Interval(b - a.high, b - a.low);
-    }
-
-    /**
-     * Interval multiplication
-     * 
-     * @return new interval based on interval multiplication of intervals a and
-     *         b
-     */
-    public static Interval mul(final Interval a, final Interval b) {
-        if (a.empty || b.empty) {
-            Debug.getInstance().errorMessage("RrInterval.mul(...): multiplying empty intervals.");
-        }
-        final double d = a.low * b.low;
-        final Interval r = new Interval(d, d);
-        r.expand(a.low * b.high);
-        r.expand(a.high * b.low);
-        r.expand(a.high * b.high);
-        return r;
-    }
-
-    /**
      * @return new interval based on interval multiplication of interval a by
      *         factor f
      */
@@ -244,26 +191,18 @@ public class Interval {
     }
 
     /**
-     * @return new interval based on interval multiplication of interval a by
-     *         factor f
-     */
-    public static Interval mul(final double f, final Interval a) {
-        return mul(a, f);
-    }
-
-    /**
      * Negative, zero, or positive?
      * 
      * @return true if interval is negative (?)
      */
-    public boolean neg() {
+    boolean neg() {
         return high < 0;
     }
 
     /**
      * @return true if interval is positive (?)
      */
-    public boolean pos() {
+    boolean pos() {
         return low >= 0;
     }
 
@@ -272,68 +211,8 @@ public class Interval {
      * 
      * @return true if zero is within the interval
      */
-    public boolean zero() {
+    boolean zero() {
         return (!neg() && !pos());
-    }
-
-    /**
-     * In or out
-     * 
-     * @return true if v is within the interval
-     */
-    public boolean in(final double v) {
-        return v >= low && v <= high;
-    }
-
-    /**
-     * Identical within tolerance
-     * 
-     * @return true if intervals a and b are identical within the tolerance
-     */
-    public static boolean same(final Interval a, final Interval b, final double tolerance) {
-        if (a.empty() && b.empty()) {
-            return true;
-        }
-
-        if (Math.abs(a.low - b.low) > tolerance) {
-            return false;
-        }
-        if (Math.abs(a.high - b.high) > tolerance) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Absolute value of an interval
-     * 
-     * @return absolute value of the interval
-     */
-    public Interval abs() {
-        Interval result = new Interval(this);
-        double p;
-
-        if (low < 0) {
-            if (high <= 0) {
-                result = new Interval(-high, -low);
-            } else {
-                result = new Interval(0, result.high);
-                p = -low;
-                if (p > high) {
-                    result = new Interval(result.low, p);
-                }
-            }
-        }
-        return (result);
-    }
-
-    /**
-     * Sign of an interval
-     * 
-     * @return sign of the interval
-     */
-    public Interval sign() {
-        return (new Interval(Math.signum(low), Math.signum(high)));
     }
 
     /**
@@ -341,7 +220,7 @@ public class Interval {
      * 
      * @return max value of the interval
      */
-    public static Interval max(final Interval a, final Interval b) {
+    static Interval max(final Interval a, final Interval b) {
         Interval result = new Interval(b);
         if (a.low > b.low) {
             result = new Interval(a.low, result.high);
@@ -349,7 +228,7 @@ public class Interval {
         if (a.high > b.high) {
             result = new Interval(result.low, a.high);
         }
-        return (result);
+        return result;
     }
 
     /**
@@ -357,7 +236,7 @@ public class Interval {
      * 
      * @return minimal value of the interval
      */
-    public static Interval min(final Interval a, final Interval b) {
+    static Interval min(final Interval a, final Interval b) {
         Interval result = new Interval(b);
         if (a.low < b.low) {
             result = new Interval(a.low, result.high);
@@ -368,10 +247,7 @@ public class Interval {
         return (result);
     }
 
-    /**
-     * Intersection
-     */
-    public static Interval intersection(final Interval a, final Interval b) {
+    static Interval intersection(final Interval a, final Interval b) {
         if (a.empty()) {
             return a;
         }
@@ -381,10 +257,7 @@ public class Interval {
         return new Interval(Math.max(a.low, b.low), Math.min(a.high, b.high));
     }
 
-    /**
-     * Union
-     */
-    public static Interval union(final Interval a, final Interval b) {
+    static Interval union(final Interval a, final Interval b) {
         if (a.empty()) {
             return b;
         }

@@ -61,33 +61,16 @@ package org.reprap.geometry.polygons;
  * Class for (x, y) points and vectors
  */
 public class Point2D {
-    private double x, y;
+    private double x;
+    private double y;
 
-    /**
-     * Default to the origin
-     */
-    public Point2D() {
-        x = 0;
-        y = 0;
-    }
-
-    /**
-     * Usual constructor
-     */
     public Point2D(final double a, final double b) {
         x = a;
         y = b;
     }
 
-    /**
-     * Copy
-     * 
-     * @param r
-     *            Rr2Point to copy from
-     */
-    public Point2D(final Point2D r) {
-        x = r.x;
-        y = r.y;
+    Point2D(final Point2D r) {
+        this(r.x, r.y);
     }
 
     @Override
@@ -95,9 +78,6 @@ public class Point2D {
         return Double.toString(x) + " " + Double.toString(y);
     }
 
-    /**
-     * Coordinates
-     */
     public double x() {
         return x;
     }
@@ -106,19 +86,11 @@ public class Point2D {
         return y;
     }
 
-    /**
-     * Arithmetic
-     * 
-     * @return neg of point
-     */
-    public Point2D neg() {
+    Point2D neg() {
         return new Point2D(-x, -y);
     }
 
-    /**
-     * @return orthogonal of (this) point
-     */
-    public Point2D orthogonal() {
+    Point2D orthogonal() {
         return new Point2D(y, -x);
     }
 
@@ -168,7 +140,7 @@ public class Point2D {
      *            A scale factor
      * @return The point Rr2Point divided by a factor of a
      */
-    public static Point2D div(final Point2D b, final double factor) {
+    static Point2D div(final Point2D b, final double factor) {
         return mul(b, 1 / factor);
     }
 
@@ -204,22 +176,8 @@ public class Point2D {
      * 
      * @return outer product
      */
-    public static double op(final Point2D a, final Point2D b) {
+    static double op(final Point2D a, final Point2D b) {
         return a.x * b.y - a.y * b.x;
-    }
-
-    public double gradient() {
-        double g;
-        if (x == 0) {
-            if (y > 0) {
-                g = Double.POSITIVE_INFINITY;
-            } else {
-                g = Double.NEGATIVE_INFINITY;
-            }
-        } else {
-            g = y / x;
-        }
-        return g;
     }
 
     /**
@@ -239,15 +197,5 @@ public class Point2D {
      */
     public static double d(final Point2D a, final Point2D b) {
         return Math.sqrt(dSquared(a, b));
-    }
-
-    /**
-     * The same, within tolerance?
-     * 
-     * @return true if the squared distance between points a and b is within
-     *         tolerance tol_2, otherwise false
-     */
-    public static boolean same(final Point2D a, final Point2D b, final double tol_2) {
-        return dSquared(a, b) < tol_2;
     }
 }
