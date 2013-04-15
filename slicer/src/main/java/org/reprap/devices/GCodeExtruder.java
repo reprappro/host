@@ -493,11 +493,9 @@ public class GCodeExtruder {
         return materialColour;
     }
 
-    /**
-     * @return the name of the material TODO: should this give more information?
-     */
     @Override
     public String toString() {
+        // TODO: should this give more information?
         return material;
     }
 

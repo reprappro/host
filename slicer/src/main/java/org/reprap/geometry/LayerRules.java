@@ -161,7 +161,7 @@ public class LayerRules {
      */
     private int maxAddress = -1;
 
-    public LayerRules(final GCodePrinter p, final AllSTLsToBuild astls, final boolean found) {
+    LayerRules(final GCodePrinter p, final AllSTLsToBuild astls, final boolean found) {
         printer = p;
         reversing = false;
         alreadyReversed = false;
@@ -214,8 +214,9 @@ public class LayerRules {
         for (int i = 0; i < es.length; i++) {
             final long thin = Math.round(es[i].getExtrusionHeight() * 1000.0);
             if (thick % thin != 0) {
-                Debug.getInstance().errorMessage("LayerRules(): the layer height for extruder " + i + "(" + es[i].getLowerFineLayers()
-                + ") is not an integer divisor of the layer height for layer height " + thickestZStep);
+                Debug.getInstance().errorMessage(
+                        "LayerRules(): the layer height for extruder " + i + "(" + es[i].getLowerFineLayers()
+                                + ") is not an integer divisor of the layer height for layer height " + thickestZStep);
             }
         }
 
@@ -281,7 +282,7 @@ public class LayerRules {
         return printer;
     }
 
-    public double getModelZ() {
+    double getModelZ() {
         return modelZ;
     }
 
@@ -322,7 +323,7 @@ public class LayerRules {
         return (int) Math.ceil(2 * (maxSurfaceLayers * 2 + 1) * thickestZStep / zStep);
     }
 
-    public void setFirstAndLast(final PolygonList[] pl) {
+    void setFirstAndLast(final PolygonList[] pl) {
         firstPoint[machineLayer] = null;
         lastPoint[machineLayer] = null;
         firstExtruder[machineLayer] = -1;
@@ -401,7 +402,7 @@ public class LayerRules {
         return machineLayer;
     }
 
-    public int getFoundationLayers() {
+    int getFoundationLayers() {
         return machineLayerMax - modelLayerMax;
     }
 
@@ -421,7 +422,7 @@ public class LayerRules {
         return false;
     }
 
-    public void setLayingSupport(final boolean lf) {
+    void setLayingSupport(final boolean lf) {
         layingSupport = lf;
     }
 
@@ -483,7 +484,7 @@ public class LayerRules {
     /**
      * Move the machine up/down, but leave the model's layer where it is.
      */
-    public void stepMachine() {
+    void stepMachine() {
         machineLayer--;
         machineZ = zStep * machineLayer + addToStep;
     }
@@ -497,7 +498,7 @@ public class LayerRules {
     /**
      * Move both the model and the machine up/down a layer
      */
-    public void step() {
+    void step() {
         modelLayer--;
         modelZ = modelLayer * zStep + addToStep;
         addToStep = 0;
@@ -525,7 +526,7 @@ public class LayerRules {
         }
     }
 
-    public void reverseLayers() {
+    void reverseLayers() {
         // Stop this being called twice...
         if (alreadyReversed) {
             Debug.getInstance().debugMessage("LayerRules.reverseLayers(): called twice.");

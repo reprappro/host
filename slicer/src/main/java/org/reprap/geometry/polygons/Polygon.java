@@ -1138,13 +1138,13 @@ public class Polygon {
      * 
      * @return list of point index pairs of the points on the hull
      */
-    private List<Integer> convexHull(final List<Integer> points) {
-        if (points.size() < 3) {
-            Debug.getInstance().errorMessage("convexHull(): attempt to compute hull for " + points.size() + " points!");
+    private List<Integer> convexHull(final List<Integer> subList) {
+        if (subList.size() < 3) {
+            Debug.getInstance().errorMessage("convexHull(): attempt to compute hull for " + subList.size() + " points!");
             return new ArrayList<Integer>();
         }
 
-        final List<Integer> inConsideration = new ArrayList<Integer>(points);
+        final List<Integer> inConsideration = new ArrayList<Integer>(subList);
 
         int i;
 
@@ -1279,7 +1279,7 @@ public class Polygon {
     /**
      * Compute the CSG representation of a (sub)list recursively
      */
-    private CSG2D toCSGRecursive(final List<Integer> a, int level, final boolean closed, final int[] flags) {
+    private CSG2D toCSGRecursive(final List<Integer> a, int level, final boolean wrapAround, final int[] flags) {
         flagSet(level, a, flags);
         level++;
         final List<Integer> ch = convexHull(a);
@@ -1300,7 +1300,7 @@ public class Polygon {
         // Set-theoretically combine all the real edges on the convex hull
         int i, oldi, flag, oldFlag, start;
 
-        if (closed) {
+        if (wrapAround) {
             oldi = a.size() - 1;
             start = 0;
         } else {
@@ -1345,7 +1345,6 @@ public class Polygon {
      * @return CSG polygon object based on polygon and tolerance
      */
     CSG2D toCSG() {
-
         Polygon copy = new Polygon(this);
         if (copy.area() < 0) {
             copy = copy.negate();

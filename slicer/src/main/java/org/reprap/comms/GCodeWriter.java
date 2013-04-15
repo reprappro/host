@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.math.BigInteger;
 
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
@@ -38,23 +37,11 @@ public class GCodeWriter {
 
     private PrintStream fileOutStream = null;
 
-    public boolean savingToFile() {
-        return fileOutStream != null;
-    }
-
-    public void setFractionDone(final double fractionDone, final int layer, final int outOf) {
-        org.reprap.gui.botConsole.SlicerFrame.getBotConsoleFrame().setFractionDone(fractionDone, layer, outOf);
-    }
-
     /**
      * Force the output stream - use with caution
      */
     public void forceOutputFile(final PrintStream fos) {
         fileOutStream = fos;
-    }
-
-    public String toHex(final String arg) {
-        return String.format("%x", new BigInteger(1, arg.getBytes(/*YOUR_CHARSET?*/)));
     }
 
     /**

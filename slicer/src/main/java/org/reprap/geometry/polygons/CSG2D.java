@@ -50,8 +50,8 @@
 
 package org.reprap.geometry.polygons;
 
-import org.reprap.CSGOp;
 import org.reprap.geometry.polyhedra.CSG3D;
+import org.reprap.geometry.polyhedra.CSGOp;
 import org.reprap.geometry.polyhedra.Point3D;
 import org.reprap.utilities.Debug;
 

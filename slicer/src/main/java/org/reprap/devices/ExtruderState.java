@@ -26,7 +26,7 @@ public class ExtruderState {
         physicalExtruderNumber = physEx;
     }
 
-    public int physicalExtruder() {
+    int physicalExtruder() {
         return physicalExtruderNumber;
     }
 
@@ -34,15 +34,15 @@ public class ExtruderState {
         return extrudedLength;
     }
 
-    public double speed() {
+    double speed() {
         return motorSpeed;
     }
 
-    public boolean reverse() {
+    boolean reverse() {
         return isReversed;
     }
 
-    public boolean isExtruding() {
+    boolean isExtruding() {
         return isExtruding;
     }
 
@@ -50,19 +50,19 @@ public class ExtruderState {
         extrudedLength += e;
     }
 
-    public void zero() {
+    void zero() {
         extrudedLength = 0;
     }
 
-    public void setSpeed(final double sp) {
+    void setSpeed(final double sp) {
         motorSpeed = sp;
     }
 
-    public void setReverse(final boolean rev) {
+    void setReverse(final boolean rev) {
         isReversed = rev;
     }
 
-    public void setExtruding(final boolean ex) {
+    void setExtruding(final boolean ex) {
         isExtruding = ex;
     }
 

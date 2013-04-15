@@ -12,7 +12,7 @@ import org.reprap.machines.GCodePrinter;
 import org.reprap.utilities.Debug;
 import org.reprap.utilities.RrGraphics;
 
-public class LayerProducer {
+class LayerProducer {
     private RrGraphics simulationPlot = null;
     private LayerRules layerConditions = null;
     private final PolygonList allPolygons[];
@@ -21,7 +21,7 @@ public class LayerProducer {
     /**
      * Set up a normal layer
      */
-    public LayerProducer(final PolygonList ap[], final LayerRules lc, final RrGraphics simPlot) throws IOException {
+    LayerProducer(final PolygonList ap[], final LayerRules lc, final RrGraphics simPlot) throws IOException {
         layerConditions = lc;
         simulationPlot = simPlot;
 
@@ -282,7 +282,7 @@ public class LayerProducer {
      * Master plot function - draw everything. Supress border and/or hatch by
      * setting borderPolygons and/or hatchedPolygons null
      */
-    public void plot() throws Exception {
+    void plot() throws Exception {
         boolean firstOneInLayer = true;
 
         for (final PolygonList pl : allPolygons) {

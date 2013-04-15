@@ -27,536 +27,6 @@ import org.reprap.utilities.Debug;
  */
 public class BooleanGrid {
     /**
-     * Integer 2D point
-     * 
-     * @author ensab
-     */
-    private final class Integer2DPoint {
-        private int x;
-        private int y;
-
-        private Integer2DPoint(final int xa, final int ya) {
-            x = xa;
-            y = ya;
-        }
-
-        /**
-         * Copy constructor
-         */
-        private Integer2DPoint(final Integer2DPoint a) {
-            x = a.x;
-            y = a.y;
-        }
-
-        /**
-         * Convert real-world point to integer
-         */
-        private Integer2DPoint(final Point2D a) {
-            x = iScale(a.x()) - rec.swCorner.x;
-            y = iScale(a.y()) - rec.swCorner.y;
-        }
-
-        /**
-         * Are two points the same?
-         */
-        private boolean coincidesWith(final Integer2DPoint b) {
-            return x == b.x && y == b.y;
-        }
-
-        /**
-         * Vector addition
-         */
-        private Integer2DPoint add(final Integer2DPoint b) {
-            return new Integer2DPoint(x + b.x, y + b.y);
-        }
-
-        /**
-         * Vector subtraction
-         */
-        private Integer2DPoint sub(final Integer2DPoint b) {
-            return new Integer2DPoint(x - b.x, y - b.y);
-        }
-
-        /**
-         * Opposite direction
-         */
-        private Integer2DPoint neg() {
-            return new Integer2DPoint(-x, -y);
-        }
-
-        /**
-         * Absolute value
-         */
-        private Integer2DPoint abs() {
-            return new Integer2DPoint(Math.abs(x), Math.abs(y));
-        }
-
-        /**
-         * Squared length
-         */
-        private long magnitude2() {
-            return x * x + y * y;
-        }
-
-        @Override
-        public String toString() {
-            return ": " + x + ", " + y + " :";
-        }
-    }
-
-    /**
-     * Holds rectangles represented by the sw point and the size.
-     * 
-     */
-    private final class iRectangle {
-        private Integer2DPoint swCorner;
-        private Integer2DPoint size;
-
-        /**
-         * Construct from the corner points
-         */
-        private iRectangle(final Integer2DPoint min, final Integer2DPoint max) {
-            swCorner = new Integer2DPoint(min);
-            size = max.sub(min);
-            size.x++;
-            size.y++;
-        }
-
-        /**
-         * Copy constructor
-         */
-        private iRectangle(final iRectangle r) {
-            swCorner = new Integer2DPoint(r.swCorner);
-            size = new Integer2DPoint(r.size);
-        }
-
-        /**
-         * Useful to have a single-pixel at the origin
-         */
-        private iRectangle() {
-            swCorner = new Integer2DPoint(0, 0);
-            size = new Integer2DPoint(1, 1);
-        }
-
-        /**
-         * Are two rectangles the same?
-         */
-        private boolean coincidesWith(final iRectangle b) {
-            return swCorner.coincidesWith(b.swCorner) && size.coincidesWith(b.size);
-        }
-
-        /**
-         * This rectangle in the real world
-         */
-        private Rectangle realRectangle() {
-            final Integer2DPoint r = new Integer2DPoint(swCorner.x + size.x - 1, swCorner.y + size.y - 1);
-            return new Rectangle(realPoint(swCorner), realPoint(r));
-        }
-
-        /**
-         * Big rectangle containing the union of two.
-         */
-        private iRectangle union(final iRectangle b) {
-            final iRectangle result = new iRectangle(this);
-            result.swCorner.x = Math.min(result.swCorner.x, b.swCorner.x);
-            result.swCorner.y = Math.min(result.swCorner.y, b.swCorner.y);
-            int sx = result.swCorner.x + result.size.x - 1;
-            sx = Math.max(sx, b.swCorner.x + b.size.x - 1) - result.swCorner.x + 1;
-            int sy = result.swCorner.y + result.size.y - 1;
-            sy = Math.max(sy, b.swCorner.y + b.size.y - 1) - result.swCorner.y + 1;
-            result.size = new Integer2DPoint(sx, sy);
-            return result;
-        }
-
-        /**
-         * Rectangle containing the intersection of two.
-         */
-        private iRectangle intersection(final iRectangle b) {
-            final iRectangle result = new iRectangle(this);
-            result.swCorner.x = Math.max(result.swCorner.x, b.swCorner.x);
-            result.swCorner.y = Math.max(result.swCorner.y, b.swCorner.y);
-            int sx = result.swCorner.x + result.size.x - 1;
-            sx = Math.min(sx, b.swCorner.x + b.size.x - 1) - result.swCorner.x + 1;
-            int sy = result.swCorner.y + result.size.y - 1;
-            sy = Math.min(sy, b.swCorner.y + b.size.y - 1) - result.swCorner.y + 1;
-            result.size = new Integer2DPoint(sx, sy);
-            return result;
-        }
-
-        /**
-         * Grow (dist +ve) or shrink (dist -ve).
-         */
-        private iRectangle offset(final int dist) {
-            final iRectangle result = new iRectangle(this);
-            result.swCorner.x = result.swCorner.x - dist;
-            result.swCorner.y = result.swCorner.y - dist;
-            result.size.x = result.size.x + 2 * dist;
-            result.size.y = result.size.y + 2 * dist;
-            return result;
-        }
-
-        /**
-         * Anything there?
-         */
-        private boolean isEmpty() {
-            return size.x < 0 | size.y < 0;
-        }
-
-        private Point2D realPoint(final Integer2DPoint point) {
-            return new Point2D(scale(swCorner.x + point.x), scale(swCorner.y + point.y));
-        }
-    }
-
-    /**
-     * Integer-point polygon
-     */
-    private final class iPolygon {
-        /**
-         * Auto-extending list of points
-         */
-        private List<Integer2DPoint> points = null;
-
-        /**
-         * Does the polygon loop back on itself?
-         */
-        private final boolean closed;
-
-        private iPolygon(final boolean c) {
-            points = new ArrayList<Integer2DPoint>();
-            closed = c;
-        }
-
-        /**
-         * Deep copy
-         */
-        private iPolygon(final iPolygon a) {
-            points = new ArrayList<Integer2DPoint>();
-            for (int i = 0; i < a.size(); i++) {
-                add(a.point(i));
-            }
-            closed = a.closed;
-        }
-
-        /**
-         * Return the point at a given index
-         */
-        private Integer2DPoint point(final int i) {
-            return points.get(i);
-        }
-
-        /**
-         * How many points?
-         */
-        private int size() {
-            return points.size();
-        }
-
-        /**
-         * Add a new point on the end
-         */
-        private void add(final Integer2DPoint p) {
-            points.add(p);
-        }
-
-        /**
-         * Add a whole polygon on the end
-         */
-        private void add(final iPolygon a) {
-            for (int i = 0; i < a.size(); i++) {
-                add(a.point(i));
-            }
-        }
-
-        /**
-         * Delete a point and close the resulting gap
-         */
-        private void remove(final int i) {
-            points.remove(i);
-        }
-
-        /**
-         * Find the index of the point in the polygon nearest to another point
-         * as long as it's less than tooFar2. Set that to Long.MAX_VALUE for a
-         * complete search.
-         */
-        private int nearest(final Integer2DPoint a, final long tooFar2) {
-            int i = 0;
-            int j = -1;
-            long d0 = tooFar2;
-            while (i < size()) {
-                final long d1 = point(i).sub(a).magnitude2();
-                if (d1 < d0) {
-                    j = i;
-                    d0 = d1;
-                }
-                i++;
-            }
-            return j;
-        }
-
-        /**
-         * Negate (i.e. reverse cyclic order)
-         */
-        private iPolygon negate() {
-            final iPolygon result = new iPolygon(closed);
-            for (int i = size() - 1; i >= 0; i--) {
-                result.add(point(i));
-            }
-            return result;
-        }
-
-        /**
-         * Translate by vector t
-         */
-        private iPolygon translate(final Integer2DPoint t) {
-            final iPolygon result = new iPolygon(closed);
-            for (int i = 0; i < size(); i++) {
-                result.add(point(i).add(t));
-            }
-            return result;
-        }
-
-        /**
-         * Find the farthest point from point v1 on the polygon such that the
-         * polygon between the two can be approximated by a DDA straight line
-         * from v1.
-         */
-        private int findAngleStart(final int v1) {
-            int top = size() - 1;
-            int bottom = v1;
-            final Integer2DPoint p1 = point(v1);
-            int offCount = 0;
-            while (top - bottom > 1) {
-                final int middle = (bottom + top) / 2;
-                final DDA line = new DDA(p1, point(middle));
-                Integer2DPoint n = line.next();
-                offCount = 0;
-                int j = v1;
-
-                while (j <= middle && n != null && offCount < 2) {
-                    if (point(j).coincidesWith(n)) {
-                        offCount = 0;
-                    } else {
-                        offCount++;
-                    }
-                    n = line.next();
-                    j++;
-                }
-
-                if (offCount < 2) {
-                    bottom = middle;
-                } else {
-                    top = middle;
-                }
-            }
-            if (offCount < 2) {
-                return top;
-            } else {
-                return bottom;
-            }
-        }
-
-        /**
-         * Generate an equivalent polygon with fewer vertices by removing chains
-         * of points that lie in straight lines.
-         */
-        private iPolygon simplify() {
-            if (size() <= 3) {
-                return new iPolygon(this);
-            }
-            final iPolygon r = new iPolygon(closed);
-            int v = 0;
-            do {
-                r.add(point(v));
-                v = findAngleStart(v);
-            } while (v < size() - 1);
-            r.add(point(v));
-            return r;
-        }
-
-        /**
-         * Convert the polygon into a polygon in the real world.
-         */
-        private Polygon realPolygon(final Attributes a) {
-            final Polygon result = new Polygon(a, closed);
-            for (int i = 0; i < size(); i++) {
-                final Integer2DPoint r = point(i);
-                result.add(rec.realPoint(r));
-            }
-            return result;
-        }
-    }
-
-    /**
-     * A list of polygons
-     */
-    private static final class iPolygonList {
-        private List<iPolygon> polygons = null;
-
-        private iPolygonList() {
-            polygons = new ArrayList<iPolygon>();
-        }
-
-        /**
-         * Return the ith polygon
-         */
-        private iPolygon polygon(final int i) {
-            return polygons.get(i);
-        }
-
-        /**
-         * How many polygons are there in the list?
-         */
-        private int size() {
-            return polygons.size();
-        }
-
-        /**
-         * Add a polygon on the end
-         */
-        private void add(final iPolygon p) {
-            polygons.add(p);
-        }
-
-        /**
-         * Replace a polygon in the list
-         */
-        private void set(final int i, final iPolygon p) {
-            polygons.set(i, p);
-        }
-
-        /**
-         * Get rid of a polygon from the list
-         */
-        private void remove(final int i) {
-            polygons.remove(i);
-        }
-
-        /**
-         * Translate by vector t
-         */
-        private iPolygonList translate(final Integer2DPoint t) {
-            final iPolygonList result = new iPolygonList();
-            for (int i = 0; i < size(); i++) {
-                result.add(polygon(i).translate(t));
-            }
-            return result;
-        }
-
-        /**
-         * Turn all the polygons into real-world polygons
-         */
-        private PolygonList realPolygons(final Attributes a) {
-            final PolygonList result = new PolygonList();
-            for (int i = 0; i < size(); i++) {
-                result.add(polygon(i).realPolygon(a));
-            }
-            return result;
-        }
-
-        /**
-         * Simplify all the polygons
-         */
-        private iPolygonList simplify() {
-            final iPolygonList result = new iPolygonList();
-            for (int i = 0; i < size(); i++) {
-                result.add(polygon(i).simplify());
-            }
-            return result;
-        }
-    }
-
-    /**
-     * Straight-line DDA
-     * 
-     * @author ensab
-     */
-    private final class DDA {
-        private final Integer2DPoint delta;
-        private Integer2DPoint count;
-        private final Integer2DPoint p;
-        private final int steps;
-        private int taken;
-        private final boolean xPlus, yPlus;
-        private boolean finished;
-
-        /**
-         * Set up the DDA between a start and an end point
-         */
-        private DDA(final Integer2DPoint s, final Integer2DPoint e) {
-            delta = e.sub(s).abs();
-
-            steps = Math.max(delta.x, delta.y);
-            taken = 0;
-
-            xPlus = e.x >= s.x;
-            yPlus = e.y >= s.y;
-
-            count = new Integer2DPoint(-steps / 2, -steps / 2);
-
-            p = new Integer2DPoint(s);
-
-            finished = false;
-        }
-
-        /**
-         * Return the next point along the line, or null if the last point
-         * returned was the final one.
-         */
-        private Integer2DPoint next() {
-            if (finished) {
-                return null;
-            }
-
-            final Integer2DPoint result = new Integer2DPoint(p);
-
-            finished = taken >= steps;
-
-            if (!finished) {
-                taken++;
-                count = count.add(delta);
-
-                if (count.x > 0) {
-                    count.x -= steps;
-                    if (xPlus) {
-                        p.x++;
-                    } else {
-                        p.x--;
-                    }
-                }
-
-                if (count.y > 0) {
-                    count.y -= steps;
-                    if (yPlus) {
-                        p.y++;
-                    } else {
-                        p.y--;
-                    }
-                }
-            }
-
-            return result;
-        }
-    }
-
-    /**
-     * Holds the ends of hatching patterns. Snakes are a combination of the
-     * hatching lines that infill a shape plus the bits of boundary that join
-     * their ends to make a zig-zag pattern.
-     * 
-     * @author ensab
-     */
-    private static final class SnakeEnd {
-        private final iPolygon track;
-        private final int hitPlaneIndex;
-
-        private SnakeEnd(final iPolygon t, final int h) {
-            track = t;
-            hitPlaneIndex = h;
-        }
-    }
-
-    /**
      * The resolution of the RepRap machine
      */
     private static final double pixSize = Preferences.machineResolution() * 0.6;
@@ -627,7 +97,7 @@ public class BooleanGrid {
     /**
      * The rectangle the pixelmap covers
      */
-    private iRectangle rec;
+    private Integer2DRectangle rec;
 
     /**
      * The attributes
@@ -638,11 +108,11 @@ public class BooleanGrid {
     /**
      * Back and forth from real to pixel/integer coordinates
      */
-    private static double scale(final int i) {
+    static double scale(final int i) {
         return i * pixSize;
     }
 
-    private static int iScale(final double d) {
+    static int iScale(final double d) {
         return (int) Math.round(d / pixSize);
     }
 
@@ -653,9 +123,9 @@ public class BooleanGrid {
         att = a;
         isThin = false;
         final Rectangle ri = rectangle.offset(rSwell);
-        rec = new iRectangle(new Integer2DPoint(0, 0), new Integer2DPoint(1, 1)); // Set the origin to (0, 0)...
-        rec.swCorner = new Integer2DPoint(ri.sw()); // That then gets subtracted by the iPoint constructor to give the true origin
-        rec.size = new Integer2DPoint(ri.ne()); // The true origin is now automatically subtracted.
+        rec = new Integer2DRectangle(new Integer2DPoint(0, 0), new Integer2DPoint(1, 1)); // Set the origin to (0, 0)...
+        rec.swCorner = rec.convertToInteger2DPoint(ri.sw()); // That then gets subtracted by the iPoint constructor to give the true origin
+        rec.size = rec.convertToInteger2DPoint(ri.ne()); // The true origin is now automatically subtracted.
         bits = new BitSet(rec.size.x * rec.size.y);
         visited = null;
         generateQuadTree(new Integer2DPoint(0, 0), new Integer2DPoint(rec.size.x - 1, rec.size.y - 1), csgExp);
@@ -669,20 +139,20 @@ public class BooleanGrid {
         att = bg.att;
         visited = null;
         isThin = bg.isThin;
-        rec = new iRectangle(bg.rec);
+        rec = new Integer2DRectangle(bg.rec);
         bits = (BitSet) bg.bits.clone();
     }
 
     /**
      * Copy constructor with new rectangle N.B. attributes are _not_ deep copied
      */
-    private BooleanGrid(final BooleanGrid bg, final iRectangle newRec) {
+    private BooleanGrid(final BooleanGrid bg, final Integer2DRectangle newRec) {
         att = bg.att;
         visited = null;
         isThin = bg.isThin;
-        rec = new iRectangle(newRec);
+        rec = new Integer2DRectangle(newRec);
         bits = new BitSet(rec.size.x * rec.size.y);
-        final iRectangle recScan = rec.intersection(bg.rec);
+        final Integer2DRectangle recScan = rec.intersection(bg.rec);
         final int offxOut = recScan.swCorner.x - rec.swCorner.x;
         final int offyOut = recScan.swCorner.y - rec.swCorner.y;
         final int offxIn = recScan.swCorner.x - bg.rec.swCorner.x;
@@ -699,7 +169,7 @@ public class BooleanGrid {
      */
     private BooleanGrid() {
         att = new Attributes(null, null, null, null);
-        rec = new iRectangle();
+        rec = new Integer2DRectangle();
         bits = new BitSet(1);
         isThin = false;
         visited = null;
@@ -901,7 +371,7 @@ public class BooleanGrid {
      * That is, membership test.
      */
     public boolean get(final Point2D p) {
-        return get(new Integer2DPoint(p));
+        return get(rec.convertToInteger2DPoint(p));
     }
 
     /**
@@ -1291,14 +761,14 @@ public class BooleanGrid {
      * @return
      */
     public BooleanGrid floodCopy(final Point2D pp) {
-        Integer2DPoint p = new Integer2DPoint(pp);
+        Integer2DPoint p = rec.convertToInteger2DPoint(pp);
         if (!inside(p) || !this.get(p)) {
             return nothingThere;
         }
         final BooleanGrid result = new BooleanGrid();
         result.att = att;
         result.visited = null;
-        result.rec = new iRectangle(rec);
+        result.rec = new Integer2DRectangle(rec);
         result.bits = new BitSet(result.rec.size.x * result.rec.size.y);
 
         // We implement our own floodfill stack, rather than using recursion to
@@ -1357,7 +827,7 @@ public class BooleanGrid {
      * Return all the outlines of all the solid areas as polygons consisting of
      * all the pixels that make up the outlines.
      */
-    private iPolygonList iAllPerimitersRaw() {
+    private Integer2DPolygonList iAllPerimitersRaw() {
         return marchAll();
     }
 
@@ -1365,7 +835,7 @@ public class BooleanGrid {
      * Return all the outlines of all the solid areas as polygons in their
      * simplest form.
      */
-    private iPolygonList iAllPerimiters() {
+    private Integer2DPolygonList iAllPerimiters() {
         return iAllPerimitersRaw().simplify();
     }
 
@@ -1374,7 +844,7 @@ public class BooleanGrid {
      * with attributes a
      */
     public PolygonList allPerimiters(final Attributes a) {
-        PolygonList r = iAllPerimiters().realPolygons(a);
+        PolygonList r = iAllPerimiters().realPolygons(a, rec);
         r = r.simplify(realResolution);
         return r;
     }
@@ -1398,8 +868,8 @@ public class BooleanGrid {
      * Run marching squares round the polygon starting with the 2x2 march
      * pattern at start
      */
-    private iPolygon marchRound(final Integer2DPoint start) {
-        final iPolygon result = new iPolygon(true);
+    private Integer2DPolygon marchRound(final Integer2DPoint start) {
+        final Integer2DPolygon result = new Integer2DPolygon(true);
 
         Integer2DPoint here = new Integer2DPoint(start);
         Integer2DPoint pix;
@@ -1606,13 +1076,13 @@ public class BooleanGrid {
      * Run marching squares round all polygons in the pattern, returning a list
      * of them all
      */
-    private iPolygonList marchAll() {
-        final iPolygonList result = new iPolygonList();
+    private Integer2DPolygonList marchAll() {
+        final Integer2DPolygonList result = new Integer2DPolygonList();
         if (isEmpty()) {
             return result;
         }
         Integer2DPoint start;
-        iPolygon p;
+        Integer2DPolygon p;
         int m;
 
         for (int x = 0; x < rec.size.x - 1; x++) {
@@ -1639,8 +1109,8 @@ public class BooleanGrid {
      * solid areas. The point pairs are stored in a polygon, which should
      * consequently have an even number of points in it on return.
      */
-    private iPolygon hatch(final HalfPlane h) {
-        final iPolygon result = new iPolygon(false);
+    private Integer2DPolygon hatch(final HalfPlane h) {
+        final Integer2DPolygon result = new Integer2DPolygon(false);
 
         final Interval se = box().wipe(h.pLine(), Interval.bigInterval());
 
@@ -1648,12 +1118,12 @@ public class BooleanGrid {
             return result;
         }
 
-        final Integer2DPoint s = new Integer2DPoint(h.pLine().point(se.low()));
-        final Integer2DPoint e = new Integer2DPoint(h.pLine().point(se.high()));
+        final Integer2DPoint s = rec.convertToInteger2DPoint(h.pLine().point(se.low()));
+        final Integer2DPoint e = rec.convertToInteger2DPoint(h.pLine().point(se.high()));
         if (get(s)) {
             Debug.getInstance().errorMessage("BooleanGrid.hatch(): start point is in solid!");
         }
-        final DDA dda = new DDA(s, e);
+        final DigitalDifferentialAnalyzer dda = new DigitalDifferentialAnalyzer(s, e);
 
         Integer2DPoint n = dda.next();
         Integer2DPoint nOld = n;
@@ -1691,7 +1161,7 @@ public class BooleanGrid {
      * @return polygon edge between start/originaPlane and targetPlane
      */
     private SnakeEnd goToPlane(final Integer2DPoint start, final List<HalfPlane> hatches, final int originP, final int targetP) {
-        final iPolygon track = new iPolygon(false);
+        final Integer2DPolygon track = new Integer2DPolygon(false);
 
         final HalfPlane originPlane = hatches.get(originP);
         final HalfPlane targetPlane = hatches.get(targetP);
@@ -1737,11 +1207,11 @@ public class BooleanGrid {
         }
 
         if (notCrossedOriginPlane) {
-            return (new SnakeEnd(track, targetP));
+            return new SnakeEnd(track, targetP);
         }
 
         if (notCrossedTargetPlane) {
-            return (new SnakeEnd(track, originP));
+            return new SnakeEnd(track, originP);
         }
 
         Debug.getInstance().errorMessage("BooleanGrid.goToPlane(): invalid ending!");
@@ -1752,8 +1222,9 @@ public class BooleanGrid {
     /**
      * Find the piece of edge between start and end (if there is one).
      */
-    private iPolygon goToPoint(final Integer2DPoint start, final Integer2DPoint end, final HalfPlane hatch, final double tooFar) {
-        final iPolygon track = new iPolygon(false);
+    private Integer2DPolygon goToPoint(final Integer2DPoint start, final Integer2DPoint end, final HalfPlane hatch,
+            final double tooFar) {
+        final Integer2DPolygon track = new Integer2DPolygon(false);
 
         Integer2DPoint diff = end.sub(start);
         if (diff.x == 0 && diff.y == 0) {
@@ -1803,10 +1274,10 @@ public class BooleanGrid {
      * lines that created them, and stitch them together to make a weaving
      * snake-like hatching pattern for infill.
      */
-    private iPolygon snakeGrow(final iPolygonList ipl, final List<HalfPlane> hatches, int thisHatch, int thisPt) {
-        final iPolygon result = new iPolygon(false);
+    private Integer2DPolygon snakeGrow(final Integer2DPolygonList ipl, final List<HalfPlane> hatches, int thisHatch, int thisPt) {
+        final Integer2DPolygon result = new Integer2DPolygon(false);
 
-        iPolygon thisPolygon = ipl.polygon(thisHatch);
+        Integer2DPolygon thisPolygon = ipl.polygon(thisHatch);
         Integer2DPoint pt = thisPolygon.point(thisPt);
         result.add(pt);
         SnakeEnd jump;
@@ -1863,13 +1334,13 @@ public class BooleanGrid {
     /**
      * Run through the snakes, trying to join them up to make longer snakes
      */
-    private void joinUpSnakes(final iPolygonList snakes, final List<HalfPlane> hatches, final double gap) {
+    private void joinUpSnakes(final Integer2DPolygonList snakes, final List<HalfPlane> hatches, final double gap) {
         int i = 0;
         if (hatches.size() <= 0) {
             return;
         }
         final Point2D n = hatches.get(0).normal();
-        iPolygon track;
+        Integer2DPolygon track;
         while (i < snakes.size()) {
             final Integer2DPoint iStart = snakes.polygon(i).point(0);
             final Integer2DPoint iEnd = snakes.polygon(i).point(snakes.polygon(i).size() - 1);
@@ -1886,7 +1357,7 @@ public class BooleanGrid {
                 if (Math.abs(d) < 1.5 * gap) {
                     track = goToPoint(iStart, jStart, hPlane(iStart, hatches), gap);
                     if (track != null) {
-                        final iPolygon p = snakes.polygon(i).negate();
+                        final Integer2DPolygon p = snakes.polygon(i).negate();
                         p.add(track);
                         p.add(snakes.polygon(j));
                         snakes.set(i, p);
@@ -1901,7 +1372,7 @@ public class BooleanGrid {
                 if (Math.abs(d) < 1.5 * gap) {
                     track = goToPoint(iStart, jEnd, hPlane(iStart, hatches), gap);
                     if (track != null) {
-                        final iPolygon p = snakes.polygon(j);
+                        final Integer2DPolygon p = snakes.polygon(j);
                         p.add(track.negate());
                         p.add(snakes.polygon(i));
                         snakes.set(i, p);
@@ -1916,7 +1387,7 @@ public class BooleanGrid {
                 if (Math.abs(d) < 1.5 * gap) {
                     track = goToPoint(iEnd, jStart, hPlane(iEnd, hatches), gap);
                     if (track != null) {
-                        final iPolygon p = snakes.polygon(i);
+                        final Integer2DPolygon p = snakes.polygon(i);
                         p.add(track);
                         p.add(snakes.polygon(j));
                         snakes.set(i, p);
@@ -1931,7 +1402,7 @@ public class BooleanGrid {
                 if (Math.abs(d) < 1.5 * gap) {
                     track = goToPoint(iEnd, jEnd, hPlane(iEnd, hatches), gap);
                     if (track != null) {
-                        final iPolygon p = snakes.polygon(i);
+                        final Integer2DPolygon p = snakes.polygon(i);
                         p.add(track);
                         p.add(snakes.polygon(j).negate());
                         snakes.set(i, p);
@@ -1991,11 +1462,11 @@ public class BooleanGrid {
         hatcher = hatcher.offset(dist);
 
         final List<HalfPlane> hatches = new ArrayList<HalfPlane>();
-        final iPolygonList iHatches = new iPolygonList();
+        final Integer2DPolygonList iHatches = new Integer2DPolygonList();
 
         double g = 0;
         while (g < d) {
-            final iPolygon ip = hatch(hatcher);
+            final Integer2DPolygon ip = hatch(hatcher);
 
             if (ip.size() > 0) {
                 hatches.add(hatcher);
@@ -2006,7 +1477,7 @@ public class BooleanGrid {
         }
 
         // Now we have the individual hatch lines, join them up
-        final iPolygonList snakes = new iPolygonList();
+        final Integer2DPolygonList snakes = new Integer2DPolygonList();
         int segment;
         do {
             segment = -1;
@@ -2030,7 +1501,7 @@ public class BooleanGrid {
 
         resetVisited();
 
-        return snakes.realPolygons(a).simplify(realResolution);
+        return snakes.realPolygons(a, rec).simplify(realResolution);
     }
 
     /**
@@ -2060,16 +1531,16 @@ public class BooleanGrid {
             return result;
         }
 
-        final iPolygonList polygons = iAllPerimiters().translate(rec.swCorner.sub(result.rec.swCorner));
+        final Integer2DPolygonList polygons = iAllPerimiters().translate(rec.swCorner.sub(result.rec.swCorner));
         if (polygons.size() <= 0) {
-            final iRectangle newRec = new iRectangle(result.rec);
+            final Integer2DRectangle newRec = new Integer2DRectangle(result.rec);
             newRec.size.x = 1;
             newRec.size.y = 1;
             return new BooleanGrid(CSG2D.nothing(), newRec.realRectangle(), att);
         }
 
         for (int p = 0; p < polygons.size(); p++) {
-            final iPolygon ip = polygons.polygon(p);
+            final Integer2DPolygon ip = polygons.polygon(p);
             for (int e = 0; e < ip.size(); e++) {
                 final Integer2DPoint p0 = ip.point(e);
                 final Integer2DPoint p1 = ip.point((e + 1) % ip.size());
@@ -2116,7 +1587,7 @@ public class BooleanGrid {
             result = new BooleanGrid(d);
             result.bits.or(e.bits);
         } else {
-            final iRectangle u = d.rec.union(e.rec);
+            final Integer2DRectangle u = d.rec.union(e.rec);
             result = new BooleanGrid(d, u);
             final BooleanGrid temp = new BooleanGrid(e, u);
             result.bits.or(temp.bits);
@@ -2153,7 +1624,7 @@ public class BooleanGrid {
             result.bits.and(e.bits);
         } else {
 
-            final iRectangle u = d.rec.intersection(e.rec);
+            final Integer2DRectangle u = d.rec.intersection(e.rec);
             if (u.isEmpty()) {
                 return nothingThere;
             }

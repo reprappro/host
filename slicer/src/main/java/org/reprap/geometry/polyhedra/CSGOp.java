@@ -51,7 +51,7 @@ http://www.gnu.org/
  * CSG operators; Null and Universal sets, and leaf nodes
  * First version 6 March 2006
  */
-package org.reprap;
+package org.reprap.geometry.polyhedra;
 
 /**
  * Set operators, operands, and the universal and null sets

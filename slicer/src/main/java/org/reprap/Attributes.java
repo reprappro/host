@@ -15,7 +15,6 @@ import org.reprap.utilities.Debug;
  * @author adrian
  */
 public class Attributes {
-
     /**
      * The name of the material
      */
@@ -63,9 +62,6 @@ public class Attributes {
         extruder = null;
     }
 
-    /**
-     * Just say the name of the material
-     */
     @Override
     public String toString() {
         return "Attributes: material is " + material;
@@ -124,8 +120,6 @@ public class Attributes {
 
     /**
      * Change the material name
-     * 
-     * @param s
      */
     public void setMaterial(final String s) {
         material = s;
@@ -138,8 +132,6 @@ public class Attributes {
 
     /**
      * To be used in conjunction with changing the parent
-     * 
-     * @param b
      */
     public void setPart(final BranchGroup b) {
         part = b;

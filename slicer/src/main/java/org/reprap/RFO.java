@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -23,10 +22,6 @@ import org.reprap.geometry.polyhedra.AllSTLsToBuild;
 import org.reprap.geometry.polyhedra.CSGReader;
 import org.reprap.geometry.polyhedra.STLObject;
 import org.reprap.utilities.Debug;
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * A .rfo file is a compressed archive containing multiple objects that are all
@@ -39,255 +34,6 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * This is the class that handles .rfo files.
  */
 public class RFO {
-    /**
-     * XML stack top. If it gets 100 deep we're in trouble...
-     */
-    private static final int top = 100;
-
-    private static final class XMLOut {
-        private final PrintStream XMLStream;
-        private final String[] stack;
-        private int sp;
-
-        /**
-         * Create an XML file called LegendFile starting with XML entry start.
-         * 
-         * @param LegendFile
-         * @param start
-         */
-        XMLOut(final String LegendFile, final String start) {
-            FileOutputStream fileStream = null;
-            try {
-                fileStream = new FileOutputStream(LegendFile);
-            } catch (final Exception e) {
-                Debug.getInstance().errorMessage("XMLOut(): " + e);
-            }
-            XMLStream = new PrintStream(fileStream);
-            stack = new String[top];
-            sp = 0;
-            push(start);
-        }
-
-        /**
-         * Start item s
-         */
-        private void push(final String s) {
-            for (int i = 0; i < sp; i++) {
-                XMLStream.print(" ");
-            }
-            XMLStream.println("<" + s + ">");
-            final int end = s.indexOf(" ");
-            if (end < 0) {
-                stack[sp] = s;
-            } else {
-                stack[sp] = s.substring(0, end);
-            }
-            sp++;
-            if (sp >= top) {
-                Debug.getInstance().errorMessage("RFO: XMLOut stack overflow on " + s);
-            }
-        }
-
-        /**
-         * Output a complete item s all in one go.
-         */
-        private void write(final String s) {
-            for (int i = 0; i < sp; i++) {
-                XMLStream.print(" ");
-            }
-            XMLStream.println("<" + s + "/>");
-        }
-
-        /**
-         * End the current item.
-         */
-        private void pop() {
-            sp--;
-            for (int i = 0; i < sp; i++) {
-                XMLStream.print(" ");
-            }
-            if (sp < 0) {
-                Debug.getInstance().errorMessage("RFO: XMLOut stack underflow.");
-            }
-            XMLStream.println("</" + stack[sp] + ">");
-        }
-
-        /**
-         * Wind it up.
-         */
-        private void close() {
-            while (sp > 0) {
-                pop();
-            }
-            XMLStream.close();
-        }
-    }
-
-    private static final class XMLIn extends DefaultHandler {
-        /**
-         * The rfo that we are reading in
-         */
-        private final RFO rfo;
-
-        /**
-         * The STL being read
-         */
-        private STLObject stl;
-
-        /**
-         * The first of a list of STLs being read.
-         */
-        private STLObject firstSTL;
-        /**
-         * The current XML item
-         */
-        private String element;
-
-        /**
-         * File location for reading (eg for an input STL file).
-         */
-        private String location;
-
-        /**
-         * What type of file (Only STLs supported at the moment).
-         */
-        private String filetype;
-
-        /**
-         * The name of the material (i.e. extruder) that this item is made from.
-         */
-        private String material;
-
-        /**
-         * Transfom matrix to get an item in the right place.
-         */
-        private final double[] mElements;
-        private Transform3D transform;
-
-        private int rowNumber = 0;
-
-        /**
-         * Open up legendFile and use it to build RFO rfo.
-         * 
-         * @param legendFile
-         * @param r
-         */
-        XMLIn(final String legendFile, final RFO r) {
-            super();
-            rfo = r;
-            element = "";
-            location = "";
-            filetype = "";
-            material = "";
-            mElements = new double[16];
-            setMToIdentity();
-
-            XMLReader xr = null;
-            try {
-                xr = XMLReaderFactory.createXMLReader();
-            } catch (final Exception e) {
-                Debug.getInstance().errorMessage("XMLIn() 1: " + e);
-            }
-
-            xr.setContentHandler(this);
-            xr.setErrorHandler(this);
-            try {
-                xr.parse(new InputSource(legendFile));
-            } catch (final Exception e) {
-                Debug.getInstance().errorMessage("XMLIn() 2: " + e);
-            }
-
-        }
-
-        /**
-         * Initialise the matrix to the identity matrix.
-         */
-        private void setMToIdentity() {
-            for (rowNumber = 0; rowNumber < 4; rowNumber++) {
-                for (int column = 0; column < 4; column++) {
-                    if (rowNumber == column) {
-                        mElements[rowNumber * 4 + column] = 1;
-                    } else {
-                        mElements[rowNumber * 4 + column] = 0;
-                    }
-                }
-            }
-            transform = new Transform3D(mElements);
-            rowNumber = 0;
-        }
-
-        /**
-         * Start an element
-         */
-        @Override
-        public void startElement(final String uri, final String name, final String qName, final org.xml.sax.Attributes atts) {
-            if (uri.equals("")) {
-                element = qName;
-            } else {
-                element = name;
-            }
-
-            if (element.equalsIgnoreCase("reprap-fab-at-home-build")) {
-            } else if (element.equalsIgnoreCase("object")) {
-                stl = new STLObject();
-                firstSTL = null;
-            } else if (element.equalsIgnoreCase("files")) {
-            } else if (element.equalsIgnoreCase("file")) {
-                location = atts.getValue("location");
-                filetype = atts.getValue("filetype");
-                material = atts.getValue("material");
-                if (!filetype.equalsIgnoreCase("application/sla")) {
-                    Debug.getInstance().errorMessage("XMLIn.startElement(): unreconised object file type (should be \"application/sla\"): " + filetype);
-                }
-            } else if (element.equalsIgnoreCase("transform3D")) {
-                setMToIdentity();
-            } else if (element.equalsIgnoreCase("row")) {
-                for (int column = 0; column < 4; column++) {
-                    mElements[rowNumber * 4 + column] = Double.parseDouble(atts.getValue("m" + rowNumber + column));
-                }
-            } else {
-                Debug.getInstance().errorMessage("XMLIn.startElement(): unreconised RFO element: " + element);
-            }
-        }
-
-        @Override
-        public void endElement(final String uri, final String name, final String qName) {
-            if (uri.equals("")) {
-                element = qName;
-            } else {
-                element = name;
-            }
-            if (element.equalsIgnoreCase("reprap-fab-at-home-build")) {
-
-            } else if (element.equalsIgnoreCase("object")) {
-                stl.setTransform(transform);
-                rfo.astl.add(stl);
-            } else if (element.equalsIgnoreCase("files")) {
-
-            } else if (element.equalsIgnoreCase("file")) {
-                final org.reprap.Attributes att = stl
-                        .addSTL(rfo.rfoDir + location, null, Preferences.unselectedApp(), firstSTL);
-                if (firstSTL == null) {
-                    firstSTL = stl;
-                }
-                att.setMaterial(material);
-                location = "";
-                filetype = "";
-                material = "";
-
-            } else if (element.equalsIgnoreCase("transform3D")) {
-                if (rowNumber != 4) {
-                    Debug.getInstance().errorMessage("XMLIn.endElement(): incomplete Transform3D matrix - last row number is not 4: " + rowNumber);
-                }
-                transform = new Transform3D(mElements);
-            } else if (element.equalsIgnoreCase("row")) {
-                rowNumber++;
-            } else {
-                Debug.getInstance().errorMessage("XMLIn.endElement(): unreconised RFO element: " + element);
-            }
-        }
-    }
-
     private static final String legendName = "legend.xml";
 
     /**
@@ -321,7 +67,7 @@ public class RFO {
     /**
      * The XML output for the legend file.
      */
-    private XMLOut xml;
+    private RfoXmlRenderer xml;
 
     /**
      * The constructor is the same whether we're reading or writing. fn is where
@@ -470,7 +216,7 @@ public class RFO {
             Debug.getInstance().errorMessage("RFO.createLegend(): no list of unique names saved.");
             return;
         }
-        xml = new XMLOut(rfoDir + legendName, "reprap-fab-at-home-build version=\"0.1\"");
+        xml = new RfoXmlRenderer(rfoDir + legendName, "reprap-fab-at-home-build version=\"0.1\"");
         for (int i = 0; i < astl.size(); i++) {
             xml.push("object name=\"object-" + i + "\"");
             xml.push("files");
@@ -615,7 +361,7 @@ public class RFO {
      */
     private void interpretLegend() {
         @SuppressWarnings("unused")
-        final XMLIn xi = new XMLIn(rfoDir + legendName, this);
+        final RfoXmlHandler xi = new RfoXmlHandler(rfoDir + legendName, this);
     }
 
     /**
@@ -640,5 +386,13 @@ public class RFO {
         }
 
         return rfo.astl;
+    }
+
+    AllSTLsToBuild getAstl() {
+        return astl;
+    }
+
+    String getRfoDir() {
+        return rfoDir;
     }
 }
