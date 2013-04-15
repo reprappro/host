@@ -93,7 +93,7 @@ public class Point3D {
         return z;
     }
 
-    Point3D neg() {
+    public Point3D neg() {
         return new Point3D(-x, -y, -z);
     }
 

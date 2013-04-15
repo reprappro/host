@@ -1,4 +1,4 @@
-package org.reprap.devices;
+package org.reprap.gcode;
 
 import java.io.IOException;
 
@@ -7,8 +7,6 @@ import javax.media.j3d.Material;
 import javax.vecmath.Color3f;
 
 import org.reprap.Preferences;
-import org.reprap.comms.GCodeWriter;
-import org.reprap.machines.GCodePrinter;
 import org.reprap.utilities.Debug;
 
 public class GCodeExtruder {

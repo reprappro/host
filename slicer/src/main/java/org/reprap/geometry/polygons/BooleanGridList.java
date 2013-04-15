@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.reprap.Attributes;
-import org.reprap.devices.GCodeExtruder;
+import org.reprap.gcode.GCodeExtruder;
 import org.reprap.geometry.LayerRules;
 import org.reprap.utilities.Debug;
 

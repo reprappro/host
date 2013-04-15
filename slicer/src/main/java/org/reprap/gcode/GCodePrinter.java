@@ -1,4 +1,4 @@
-package org.reprap.machines;
+package org.reprap.gcode;
 
 /*
  * TODO: fixup warmup segments GCode (forgets to turn on extruder) 
@@ -18,11 +18,10 @@ import javax.swing.JOptionPane;
 
 import org.reprap.Attributes;
 import org.reprap.Preferences;
-import org.reprap.comms.GCodeWriter;
-import org.reprap.devices.GCodeExtruder;
 import org.reprap.geometry.LayerRules;
 import org.reprap.geometry.polygons.Point2D;
 import org.reprap.geometry.polygons.Rectangle;
+import org.reprap.geometry.polygons.VelocityProfile;
 import org.reprap.utilities.Debug;
 
 public class GCodePrinter {

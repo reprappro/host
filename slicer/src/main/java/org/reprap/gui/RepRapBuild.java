@@ -121,10 +121,10 @@ import javax.vecmath.Vector3d;
 
 import org.reprap.Attributes;
 import org.reprap.Preferences;
-import org.reprap.RFO;
 import org.reprap.geometry.polygons.Point2D;
 import org.reprap.geometry.polyhedra.AllSTLsToBuild;
 import org.reprap.geometry.polyhedra.STLObject;
+import org.reprap.graphicio.RFO;
 
 import com.sun.j3d.utils.picking.PickCanvas;
 import com.sun.j3d.utils.picking.PickResult;

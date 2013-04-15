@@ -1,4 +1,4 @@
-package org.reprap.machines;
+package org.reprap.geometry.polygons;
 
 import org.reprap.utilities.Debug;
 

@@ -1,4 +1,4 @@
-package org.reprap;
+package org.reprap.graphicio;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,7 +19,6 @@ import javax.swing.JOptionPane;
 import javax.vecmath.Matrix4d;
 
 import org.reprap.geometry.polyhedra.AllSTLsToBuild;
-import org.reprap.geometry.polyhedra.CSGReader;
 import org.reprap.geometry.polyhedra.STLObject;
 import org.reprap.utilities.Debug;
 

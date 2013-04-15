@@ -100,7 +100,7 @@ public class CSG3D {
     /**
      * Make a leaf from a single half-plane
      */
-    CSG3D(final HalfSpace h) {
+    public CSG3D(final HalfSpace h) {
         hp = new HalfSpace(h);
         op = CSGOp.LEAF;
         c1 = null;
@@ -130,7 +130,7 @@ public class CSG3D {
      * 
      * @return universal or null set
      */
-    static CSG3D universe() {
+    public static CSG3D universe() {
         return u;
     }
 
@@ -228,7 +228,7 @@ public class CSG3D {
      * 
      * @return union of passed CSG objects
      */
-    static CSG3D union(final CSG3D a, final CSG3D b) {
+    public static CSG3D union(final CSG3D a, final CSG3D b) {
         if (a == b) {
             return a;
         }
@@ -258,7 +258,7 @@ public class CSG3D {
      * 
      * @return intersection of passed CSG objects
      */
-    static CSG3D intersection(final CSG3D a, final CSG3D b) {
+    public static CSG3D intersection(final CSG3D a, final CSG3D b) {
         if (a == b) {
             return a;
         }
@@ -361,7 +361,7 @@ public class CSG3D {
     /**
      * Go somewhere else
      */
-    CSG3D transform(final Matrix4d m) {
+    public CSG3D transform(final Matrix4d m) {
         final Matrix4d iM = new Matrix4d(m);
         iM.invert();
         return xform(iM);
@@ -372,7 +372,7 @@ public class CSG3D {
      * 
      * @return set difference as CSG object based on input CSG objects
      */
-    static CSG3D difference(final CSG3D a, final CSG3D b) {
+    public static CSG3D difference(final CSG3D a, final CSG3D b) {
         return intersection(a, b.complement());
     }
 }

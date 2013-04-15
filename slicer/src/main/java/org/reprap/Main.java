@@ -26,10 +26,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileFilter;
 
+import org.reprap.gcode.GCodePrinter;
 import org.reprap.geometry.Producer;
 import org.reprap.gui.RepRapBuild;
-import org.reprap.gui.botConsole.SlicerFrame;
-import org.reprap.machines.GCodePrinter;
+import org.reprap.gui.SlicerFrame;
 import org.reprap.utilities.Debug;
 import org.reprap.utilities.ExtensionFileFilter;
 import org.reprap.utilities.RrDeleteOnExit;

@@ -1,4 +1,4 @@
-package org.reprap.gui.botConsole;
+package org.reprap.gui;
 
 import java.awt.Color;
 import java.awt.Desktop;

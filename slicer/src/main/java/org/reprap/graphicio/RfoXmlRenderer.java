@@ -1,4 +1,4 @@
-package org.reprap;
+package org.reprap.graphicio;
 
 import java.io.FileOutputStream;
 import java.io.PrintStream;

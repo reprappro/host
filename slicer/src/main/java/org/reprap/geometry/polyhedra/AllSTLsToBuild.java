@@ -20,8 +20,7 @@ import javax.vecmath.Vector3d;
 import org.reprap.Attributes;
 import org.reprap.Main;
 import org.reprap.Preferences;
-import org.reprap.RFO;
-import org.reprap.devices.GCodeExtruder;
+import org.reprap.gcode.GCodeExtruder;
 import org.reprap.geometry.LayerRules;
 import org.reprap.geometry.polygons.BooleanGrid;
 import org.reprap.geometry.polygons.BooleanGridList;
@@ -30,6 +29,7 @@ import org.reprap.geometry.polygons.Point2D;
 import org.reprap.geometry.polygons.Polygon;
 import org.reprap.geometry.polygons.PolygonList;
 import org.reprap.geometry.polygons.Rectangle;
+import org.reprap.graphicio.RFO;
 import org.reprap.utilities.Debug;
 
 /**

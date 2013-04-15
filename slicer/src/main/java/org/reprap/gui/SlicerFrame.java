@@ -1,4 +1,4 @@
-package org.reprap.gui.botConsole;
+package org.reprap.gui;
 
 import java.io.IOException;
 
@@ -18,7 +18,7 @@ public class SlicerFrame extends javax.swing.JFrame {
     private int layer = -1;
     private int outOf = -1;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private org.reprap.gui.botConsole.PrintTabFrame printTabFrame1;
+    private org.reprap.gui.PrintTabFrame printTabFrame1;
     private int extruderCount;
 
     private SlicerFrame() {

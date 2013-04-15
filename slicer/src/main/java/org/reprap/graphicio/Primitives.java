@@ -1,8 +1,12 @@
-package org.reprap.geometry.polyhedra;
+package org.reprap.graphicio;
 
 import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Vector3d;
+
+import org.reprap.geometry.polyhedra.CSG3D;
+import org.reprap.geometry.polyhedra.HalfSpace;
+import org.reprap.geometry.polyhedra.Point3D;
 
 class Primitives {
     /**

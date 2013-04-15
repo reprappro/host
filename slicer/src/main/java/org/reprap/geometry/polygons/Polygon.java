@@ -75,8 +75,7 @@ import java.util.Random;
 
 import org.reprap.Attributes;
 import org.reprap.Preferences;
-import org.reprap.devices.GCodeExtruder;
-import org.reprap.machines.VelocityProfile;
+import org.reprap.gcode.GCodeExtruder;
 import org.reprap.utilities.Debug;
 
 /**

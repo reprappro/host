@@ -3,9 +3,9 @@ package org.reprap;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.BranchGroup;
 
-import org.reprap.devices.GCodeExtruder;
+import org.reprap.gcode.GCodeExtruder;
+import org.reprap.gcode.GCodePrinter;
 import org.reprap.geometry.polyhedra.STLObject;
-import org.reprap.machines.GCodePrinter;
 import org.reprap.utilities.Debug;
 
 /**

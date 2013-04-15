@@ -4,7 +4,8 @@ import javax.swing.JCheckBoxMenuItem;
 
 import org.reprap.Attributes;
 import org.reprap.Preferences;
-import org.reprap.devices.GCodeExtruder;
+import org.reprap.gcode.GCodeExtruder;
+import org.reprap.gcode.GCodePrinter;
 import org.reprap.geometry.polygons.BooleanGrid;
 import org.reprap.geometry.polygons.CSG2D;
 import org.reprap.geometry.polygons.Point2D;
@@ -13,7 +14,6 @@ import org.reprap.geometry.polygons.PolygonList;
 import org.reprap.geometry.polygons.Rectangle;
 import org.reprap.geometry.polyhedra.AllSTLsToBuild;
 import org.reprap.gui.RepRapBuild;
-import org.reprap.machines.GCodePrinter;
 import org.reprap.utilities.Debug;
 import org.reprap.utilities.RrGraphics;
 

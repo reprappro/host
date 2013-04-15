@@ -59,7 +59,7 @@ package org.reprap.geometry.polygons;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.reprap.devices.GCodeExtruder;
+import org.reprap.gcode.GCodeExtruder;
 import org.reprap.geometry.LayerRules;
 import org.reprap.utilities.Debug;
 

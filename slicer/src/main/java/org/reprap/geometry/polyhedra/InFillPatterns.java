@@ -1,6 +1,6 @@
 package org.reprap.geometry.polyhedra;
 
-import org.reprap.devices.GCodeExtruder;
+import org.reprap.gcode.GCodeExtruder;
 import org.reprap.geometry.LayerRules;
 import org.reprap.geometry.polygons.BooleanGrid;
 import org.reprap.geometry.polygons.BooleanGridList;

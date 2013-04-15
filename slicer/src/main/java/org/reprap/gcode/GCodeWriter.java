@@ -1,4 +1,4 @@
-package org.reprap.comms;
+package org.reprap.gcode;
 
 import java.io.BufferedReader;
 import java.io.File;

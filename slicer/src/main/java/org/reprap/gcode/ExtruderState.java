@@ -1,4 +1,4 @@
-package org.reprap.devices;
+package org.reprap.gcode;
 
 /**
  * Holds the length of filament that an extruder has extruded so far, and other

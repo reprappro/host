@@ -72,7 +72,7 @@ public class HalfSpace {
     /**
      * Make one from three points in it
      */
-    HalfSpace(final Point3D a, final Point3D b, final Point3D c) {
+    public HalfSpace(final Point3D a, final Point3D b, final Point3D c) {
         normal = Point3D.op(Point3D.sub(b, a), Point3D.sub(c, a)).norm();
         offset = -Point3D.mul(normal, a);
     }
@@ -80,7 +80,7 @@ public class HalfSpace {
     /**
      * Make one from a normal and one point in it
      */
-    HalfSpace(final Point3D n, final Point3D a) {
+    public HalfSpace(final Point3D n, final Point3D a) {
         normal = n.norm();
         offset = -Point3D.mul(normal, a);
     }

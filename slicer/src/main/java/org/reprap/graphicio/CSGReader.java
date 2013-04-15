@@ -1,4 +1,4 @@
-package org.reprap.geometry.polyhedra;
+package org.reprap.graphicio;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,6 +9,8 @@ import java.util.ArrayList;
 
 import javax.vecmath.Matrix4d;
 
+import org.reprap.geometry.polyhedra.CSG3D;
+import org.reprap.geometry.polyhedra.CSGOp;
 import org.reprap.utilities.Debug;
 
 /**
@@ -46,14 +48,14 @@ public class CSGReader {
      * The constructor just checks the file and loads the CSG expression into a
      * String.
      */
-    CSGReader(final String fileName) {
+    public CSGReader(final String fileName) {
         csgAvailable = readModel(fileName);
     }
 
     /**
      * Check if the constructor found a model.
      */
-    boolean csgAvailable() {
+    public boolean csgAvailable() {
         return csgAvailable;
     }
 
@@ -61,7 +63,7 @@ public class CSGReader {
      * Return the model found by the constructor. Do lazy evaluation as far as
      * parsing is concerned.
      */
-    CSG3D csg() {
+    public CSG3D csg() {
         ArrayList<CSG3D> c;
 
         if (CSGModel == null) {

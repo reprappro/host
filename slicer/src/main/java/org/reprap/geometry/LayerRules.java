@@ -7,13 +7,13 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 import org.reprap.Preferences;
-import org.reprap.devices.GCodeExtruder;
+import org.reprap.gcode.GCodeExtruder;
+import org.reprap.gcode.GCodePrinter;
 import org.reprap.geometry.polygons.HalfPlane;
 import org.reprap.geometry.polygons.Point2D;
 import org.reprap.geometry.polygons.PolygonList;
 import org.reprap.geometry.polygons.Rectangle;
 import org.reprap.geometry.polyhedra.AllSTLsToBuild;
-import org.reprap.machines.GCodePrinter;
 import org.reprap.utilities.Debug;
 
 /**
@@ -506,7 +506,7 @@ public class LayerRules {
     }
 
     public void setFractionDone() {
-        org.reprap.gui.botConsole.SlicerFrame.getBotConsoleFrame().setFractionDone(-1, -1, -1);
+        org.reprap.gui.SlicerFrame.getBotConsoleFrame().setFractionDone(-1, -1, -1);
     }
 
     private void copyFile(final PrintStream ps, final String ip) {
