@@ -88,640 +88,638 @@ package org.reprap.gui;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.GraphicsConfigTemplate;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
 
 import javax.media.j3d.AmbientLight;
+import javax.media.j3d.Appearance;
+import javax.media.j3d.AudioDevice;
 import javax.media.j3d.Background;
+import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.Bounds;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
 import javax.media.j3d.DirectionalLight;
+import javax.media.j3d.GraphicsConfigTemplate3D;
 import javax.media.j3d.Group;
+import javax.media.j3d.Material;
 import javax.media.j3d.Node;
-import javax.media.j3d.TransformGroup;
-import javax.media.j3d.ViewPlatform;
+import javax.media.j3d.PhysicalBody;
+import javax.media.j3d.PhysicalEnvironment;
 import javax.media.j3d.Transform3D;
-
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
+import javax.media.j3d.TransformGroup;
+import javax.media.j3d.View;
+import javax.media.j3d.ViewPlatform;
+import javax.media.j3d.VirtualUniverse;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.SwingConstants;
-
 import javax.vecmath.Color3f;
+import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
+import org.reprap.Attributes;
+import org.reprap.Preferences;
+import org.reprap.RFO;
+import org.reprap.geometry.polygons.Point2D;
+import org.reprap.geometry.polyhedra.AllSTLsToBuild;
+import org.reprap.geometry.polyhedra.STLObject;
+import org.reprap.utilities.RrGraphics;
+
+import com.sun.j3d.audioengines.javasound.JavaSoundMixer;
 import com.sun.j3d.utils.picking.PickCanvas;
 import com.sun.j3d.utils.picking.PickResult;
 import com.sun.j3d.utils.picking.PickTool;
 
-import org.reprap.Attributes;
-import org.reprap.Printer;
-import org.reprap.RFO;
-import org.reprap.Preferences;
-import org.reprap.geometry.LayerRules;
-import org.reprap.geometry.polygons.Point2D;
-import org.reprap.geometry.polyhedra.AllSTLsToBuild;
-import org.reprap.geometry.polyhedra.STLObject;
-import org.reprap.utilities.Debug;
-import org.reprap.utilities.RrGraphics;
-
-/**
- * Little class to put up a radiobutton menu so you can set
- * what material something is to be made from.
- * 
- * @author adrian
- *
- */
-class MaterialRadioButtons extends JPanel {
-	private static final long serialVersionUID = 1L;
-	private static Attributes att;
-	private static JDialog dialog;
-	private static JTextField copies;
-	private static RepRapBuild rrb;
-	private static int stlIndex; 
-	
-	private MaterialRadioButtons(double volume)
-	{
-		super(new BorderLayout());
-		JPanel radioPanel;
-		ButtonGroup bGroup = new ButtonGroup();
-		String[] names;
-		radioPanel = new JPanel(new GridLayout(0, 1));
-		radioPanel.setSize(300,200);
-		
-		JLabel jLabel0 = new JLabel();
-	    radioPanel.add(jLabel0);
-	    jLabel0.setText("Volume of object: " + Math.round(volume) + " mm^3");
-		jLabel0.setHorizontalAlignment(SwingConstants.CENTER);
-		
-	    JLabel jLabel2 = new JLabel();
-	    radioPanel.add(jLabel2);
-	    jLabel2.setText(" Number of copies of the object just loaded to print: ");
-		jLabel2.setHorizontalAlignment(SwingConstants.CENTER);
-		copies = new JTextField("1");
-	    copies.setSize(20, 10);
-		copies.setHorizontalAlignment(SwingConstants.CENTER);
-		radioPanel.add(copies);
-		
-		JLabel jLabel1 = new JLabel();
-		radioPanel.add(jLabel1);
-		jLabel1.setText(" Select the material for the object(s): ");
-		jLabel1.setHorizontalAlignment(SwingConstants.CENTER);
-		
-		try
-		{
-			names = Preferences.allMaterials();
-			String matname = att.getMaterial();
-			if(matname == null)
-				matname = "";
-			int matnumber = -1;
-			for(int i = 0; i < names.length; i++)
-			{
-				if(matname.contentEquals(names[i]))
-					matnumber = i;
-				JRadioButton b = new JRadioButton(names[i]);
-		        b.setActionCommand(names[i]);
-		        b.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						att.setMaterial(e.getActionCommand());
-					}});
-		        if(i == matnumber)
-		        	b.setSelected(true);
-		        bGroup.add(b);
-		        radioPanel.add(b);
-			}
-			if(matnumber < 0)
-			{
-				att.setMaterial(names[0]);
-				JRadioButton b = (JRadioButton)bGroup.getElements().nextElement();
-				b.setSelected(true);
-			} else
-				copies.setEnabled(false);  // If it's already loaded, don't make multiple copies (FUTURE: why not...?)
-			
-			JButton okButton = new JButton();
-			radioPanel.add(okButton);
-			okButton.setText("OK");
-			okButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-					OKHandler();
-				}
-			});
-			
-			add(radioPanel, BorderLayout.LINE_START);
-			setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
-			
-		} catch (Exception ex)
-		{
-			Debug.e(ex.toString());
-			ex.printStackTrace();
-		}	
-	}
-	
-	public static void OKHandler()
-	{
-		//System.out.println("Copies: " + copies.getText());
-		int number = Integer.parseInt(copies.getText().trim()) - 1;
-		STLObject stl = rrb.getSTLs().get(stlIndex);
-		rrb.moreCopies(stl, att, number);
-		dialog.dispose();
-	}
-    
-    public static void createAndShowGUI(Attributes a, RepRapBuild r, int index, double volume) 
-    {
-    	att = a;
-    	rrb = r;
-    	stlIndex = index;
-        //Create and set up the window.
-    	JFrame f = new JFrame();
-    	dialog = new JDialog(f, "Material selector");
-        dialog.setLocation(500, 400);
-        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-
-        //Create and set up the content pane.
-        JComponent newContentPane = new MaterialRadioButtons(volume);
-        newContentPane.setOpaque(true); //content panes must be opaque
-        dialog.setContentPane(newContentPane);
-
-        //Display the window.
-        dialog.pack();
-        dialog.setModalityType(JDialog.DEFAULT_MODALITY_TYPE);
-        dialog.setVisible(true);
-    }	 
-    
-    public static void createAndShowGUI(Attributes a, RepRapBuild r, STLObject lastPicked) 
-    {
-    	if(lastPicked == null)
-    		return;
-    	int index = -1;
-		for(int i = 0; i < r.getSTLs().size(); i++)
-		{
-			if(r.getSTLs().get(i) == lastPicked)
-			{
-				index = i;
-				break;
-			}
-		}
-		if (index >= 0) 
-			createAndShowGUI(a, r, index, r.getSTLs().get(index).volume());
-    }
-	
-}
-
-//************************************************************************
-
 /**
  * This is the main public class that creates a virtual world of the RepRap
- * working volume, allows you to put STL-file objects in it, move them about
- * to arrange them, and build them in the machine.
+ * working volume, allows you to put STL-file objects in it, move them about to
+ * arrange them, and build them in the machine.
  */
+public class RepRapBuild extends JPanel implements MouseListener {
+    private static final long serialVersionUID = 1L;
+    private MouseObject mouse = null;
+    private PickCanvas pickCanvas = null; // The thing picked by a mouse click
+    private STLObject lastPicked = null; // The last thing picked
+    private final AllSTLsToBuild stls;
+    private boolean reordering;
+    private RrGraphics graphics;
+    private String wv_location = null;
+    private double mouse_tf = 50;
+    private double mouse_zf = 50;
+    private double xwv = 300;
+    private double ywv = 300;
+    private double zwv = 300;
+    private double RadiusFactor = 0.7;
+    private double BackFactor = 2.0;
+    private double FrontFactor = 0.001;
+    private double BoundFactor = 3.0;
+    private Vector3d wv_offset = new Vector3d(-17.3, -24.85, -2);
+    private Color3f bgColour = new Color3f(0.9f, 0.9f, 0.9f);
+    private Color3f selectedColour = new Color3f(0.6f, 0.2f, 0.2f);
+    private Color3f machineColour = new Color3f(0.7f, 0.7f, 0.7f);
+    private Color3f unselectedColour = new Color3f(0.3f, 0.3f, 0.3f);
+    private Appearance picked_app = null;
+    private Appearance wv_app = null;
+    private final BranchGroup wv_and_stls = new BranchGroup();
+    private STLObject world = null;
+    private STLObject workingVolume = null;
+    private VirtualUniverse universe = null;
+    private BranchGroup sceneBranchGroup = null;
+    private Bounds applicationBounds = null;
+    private static final Color3f black = new Color3f(0, 0, 0);
 
-public class RepRapBuild extends Panel3D implements MouseListener {
-	
+    public RepRapBuild() throws IOException {
+        initialise();
+        stls = new AllSTLsToBuild();
+        reordering = false;
+        graphics = null;
+        setPreferredSize(new Dimension(600, 400));
+    }
 
-	
-	
-	private static final long serialVersionUID = 1L;
-	private MouseObject mouse = null;
-	private PickCanvas pickCanvas = null; // The thing picked by a mouse click
-	private STLObject lastPicked = null; // The last thing picked
-	//private java.util.List<STLObject> stls = new ArrayList<STLObject>(); // All the STLObjects to be built
-	private AllSTLsToBuild stls;
-	//private int objectIndex = 0; // Counter for STLs as they are loaded
-	private boolean reordering;
-	private RrGraphics graphics;
+    public AllSTLsToBuild getSTLs() {
+        return stls;
+    }
 
-	// Constructors
-	public RepRapBuild() throws Exception {
-		initialise();
-		stls = new AllSTLsToBuild();
-		reordering = false;
-		graphics = null;
-		setPreferredSize(new Dimension(600, 400));
-	}
-	
-	public AllSTLsToBuild getSTLs()
-	{
-		return stls;
-	}
-	
-	/**
-	 * Set the material to make an STL object from.
-	 * @param stl 
-	 */
-//	private void getMaterialName(STLObject stl)
-//	{
-//		try {
-//			MaterialRadioButtons.createAndShowGUI(stl);
-//		}
-//      	catch (Exception ex) {
-//     		JOptionPane.showMessageDialog(null, "RepRapBuild material select exception: " + ex);
-// 			ex.printStackTrace();
-//     	}
-//	}
-	
-	// Set bg light grey
-	protected Background createBackground() {
-		Background back = new Background(bgColour);
-		back.setApplicationBounds(createApplicationBounds());
-		return back;
-	}
+    private Background createBackground() {
+        final Background back = new Background(bgColour);
+        back.setApplicationBounds(createApplicationBounds());
+        return back;
+    }
 
-	protected BranchGroup createViewBranchGroup(TransformGroup[] tgArray,
-			ViewPlatform vp) {
-		BranchGroup vpBranchGroup = new BranchGroup();
+    private BranchGroup createViewBranchGroup(final TransformGroup[] tgArray, final ViewPlatform vp) {
+        final BranchGroup vpBranchGroup = new BranchGroup();
 
-		if (tgArray != null && tgArray.length > 0) {
-			Group parentGroup = vpBranchGroup;
-			TransformGroup curTg = null;
+        if (tgArray != null && tgArray.length > 0) {
+            Group parentGroup = vpBranchGroup;
+            TransformGroup curTg = null;
 
-			for (int n = 0; n < tgArray.length; n++) {
-				curTg = tgArray[n];
-				parentGroup.addChild(curTg);
-				parentGroup = curTg;
-			}
+            for (final TransformGroup element : tgArray) {
+                curTg = element;
+                parentGroup.addChild(curTg);
+                parentGroup = curTg;
+            }
 
-			tgArray[tgArray.length - 1].addChild(vp);
-		} else
-			vpBranchGroup.addChild(vp);
+            tgArray[tgArray.length - 1].addChild(vp);
+        } else {
+            vpBranchGroup.addChild(vp);
+        }
 
-		return vpBranchGroup;
-	}
+        return vpBranchGroup;
+    }
 
-	// Set up the RepRap working volume
+    private BranchGroup createSceneBranchGroup() {
+        sceneBranchGroup = new BranchGroup();
 
-	protected BranchGroup createSceneBranchGroup() throws Exception {
-		sceneBranchGroup = new BranchGroup();
+        final BranchGroup objRoot = sceneBranchGroup;
+        final Bounds lightBounds = getApplicationBounds();
+        final AmbientLight ambLight = new AmbientLight(true, new Color3f(1.0f, 1.0f, 1.0f));
+        ambLight.setInfluencingBounds(lightBounds);
+        objRoot.addChild(ambLight);
 
-		BranchGroup objRoot = sceneBranchGroup;
+        final DirectionalLight headLight = new DirectionalLight();
+        headLight.setInfluencingBounds(lightBounds);
+        objRoot.addChild(headLight);
 
-		Bounds lightBounds = getApplicationBounds();
+        mouse = new MouseObject(getApplicationBounds(), mouse_tf, mouse_zf);
 
-		AmbientLight ambLight = new AmbientLight(true, new Color3f(1.0f, 1.0f,
-				1.0f));
-		ambLight.setInfluencingBounds(lightBounds);
-		objRoot.addChild(ambLight);
+        wv_and_stls.setCapability(Group.ALLOW_CHILDREN_EXTEND);
+        wv_and_stls.setCapability(Group.ALLOW_CHILDREN_WRITE);
+        wv_and_stls.setCapability(Group.ALLOW_CHILDREN_READ);
 
-		DirectionalLight headLight = new DirectionalLight();
-		headLight.setInfluencingBounds(lightBounds);
-		objRoot.addChild(headLight);
+        // Load the STL file for the working volume
 
-		mouse = new MouseObject(getApplicationBounds(), mouse_tf, mouse_zf);
+        world = new STLObject(wv_and_stls);
 
-		wv_and_stls.setCapability(Group.ALLOW_CHILDREN_EXTEND);
-		wv_and_stls.setCapability(Group.ALLOW_CHILDREN_WRITE);
-		wv_and_stls.setCapability(Group.ALLOW_CHILDREN_READ);
+        final String stlFile = getStlBackground();
 
-		// Load the STL file for the working volume
+        workingVolume = new STLObject();
+        workingVolume.addSTL(stlFile, wv_offset, wv_app, null);
+        wv_and_stls.addChild(workingVolume.top());
 
-		world = new STLObject(wv_and_stls, worldName);
+        // Set the mouse to move everything
 
-		String stlFile = getStlBackground();
+        mouse.move(world, false);
+        objRoot.addChild(world.top());
 
-		workingVolume = new STLObject();
-		workingVolume.addSTL(stlFile, wv_offset, wv_app, null);
-		wv_and_stls.addChild(workingVolume.top());
+        return objRoot;
+    }
 
-		// Set the mouse to move everything
+    // Action on mouse click
 
-		mouse.move(world, false);
-		objRoot.addChild(world.top());
+    @Override
+    public void mouseClicked(final MouseEvent e) {
+        pickCanvas.setShapeLocation(e);
 
-		return objRoot;
-	}
+        final PickResult pickResult = pickCanvas.pickClosest();
+        STLObject picked = null;
 
-	// Action on mouse click
+        if (pickResult != null) {
+            final Node actualNode = pickResult.getObject();
 
-	public void mouseClicked(MouseEvent e) {
-		pickCanvas.setShapeLocation(e);
+            final Attributes att = (Attributes) actualNode.getUserData();
+            picked = att.getParent();
+            if (picked != null) {
+                if (picked != workingVolume) {
+                    picked.setAppearance(picked_app); // Highlight it
+                    if (lastPicked != null && !reordering) {
+                        lastPicked.restoreAppearance(); // lowlight
+                    }
+                    if (!reordering) {
+                        mouse.move(picked, true); // Set the mouse to move it
+                    }
+                    lastPicked = picked;
+                    reorder();
+                } else {
+                    if (!reordering) {
+                        mouseToWorld();
+                    }
+                }
+            }
+        }
+    }
 
-		PickResult pickResult = pickCanvas.pickClosest();
-		STLObject picked = null;
+    public void mouseToWorld() {
+        if (lastPicked != null) {
+            lastPicked.restoreAppearance();
+        }
+        mouse.move(world, false);
+        lastPicked = null;
+    }
 
-		if (pickResult != null) // Got anything?
-		{
-			Node actualNode = pickResult.getObject();
+    @Override
+    public void mouseEntered(final MouseEvent e) {
+    }
 
-			Attributes att = (Attributes)actualNode.getUserData();
-			picked = att.getParent();
-			if (picked != null) // Really got something?
-			{
-				if (picked != workingVolume) // STL object picked?
-				{
-					//picked = findSTL(name);
-					if (picked != null) {
-						picked.setAppearance(picked_app); // Highlight it
-						if (lastPicked != null  && !reordering)
-							lastPicked.restoreAppearance(); // lowlight
-						// the last
-						// one
-						if(!reordering)
-							mouse.move(picked, true); // Set the mouse to move it
-						lastPicked = picked; // Remember it
-						reorder();
-					}
-				} else { // Picked the working volume - deselect all and...
-					if(!reordering)
-						mouseToWorld();
-				}
-			}
-		}
-	}
-	
-	public void mouseToWorld()
-	{
-		if (lastPicked != null)
-			lastPicked.restoreAppearance();
-		mouse.move(world, false); // ...switch the mouse to moving the world
-		lastPicked = null;
-	}
+    @Override
+    public void mouseExited(final MouseEvent e) {
+    }
 
-	// Find the stl object in the scene with the given name
+    @Override
+    public void mousePressed(final MouseEvent e) {
+    }
 
-//	protected STLObject findSTL(String name) {
-//		STLObject stl;
-//		for (int i = 0; i < stls.size(); i++) {
-//			stl = stls.get(i);
-//			if (stl.name == name)
-//				return stl;
-//		}
-//		return null;
-//	}
+    @Override
+    public void mouseReleased(final MouseEvent e) {
+    }
 
-	public void mouseEntered(MouseEvent e) {
-	}
+    public void moreCopies(final STLObject original, final Attributes originalAttributes, final int number) {
+        if (number <= 0) {
+            return;
+        }
+        final String fileName = original.fileAndDirectioryItCameFrom(0);
+        final double increment = original.extent().x + 5;
+        final Vector3d offset = new Vector3d();
+        offset.x = increment;
+        offset.y = 0;
+        offset.z = 0;
+        for (int i = 0; i < number; i++) {
+            final STLObject stl = new STLObject();
+            final Attributes newAtt = stl.addSTL(fileName, null, original.getAppearance(), null);
+            if (newAtt != null) {
+                newAtt.setMaterial(originalAttributes.getMaterial());
+                stl.translate(offset);
+                if (stl.numChildren() > 0) {
+                    wv_and_stls.addChild(stl.top());
+                    stls.add(stl);
+                }
+            }
+            offset.x += increment;
+        }
+    }
 
-	public void mouseExited(MouseEvent e) {
-	}
+    public void anotherSTLFile(final String s, final boolean centre) {
+        if (s == null) {
+            return;
+        }
+        final STLObject stl = new STLObject();
+        final Attributes att = stl.addSTL(s, null, Preferences.unselectedApp(), lastPicked);
+        if (lastPicked == null && centre) {
 
-	public void mousePressed(MouseEvent e) {
-	}
+            final Point2D middle = Point2D.mul(0.5, new Point2D(200, 200));
+            final Vector3d v = new Vector3d(middle.x(), middle.y(), 0);
+            final Vector3d e = stl.extent();
+            e.z = 0;
+            e.x = -0.5 * e.x;
+            e.y = -0.5 * e.y;
+            v.add(e);
+            stl.translate(v);
+        }
+        if (att != null) {
+            // New separate object, or just appended to lastPicked?
+            if (stl.numChildren() > 0) {
+                wv_and_stls.addChild(stl.top());
+                stls.add(stl);
+            }
 
-	public void mouseReleased(MouseEvent e) {
-	}
+            MaterialRadioButtons.createAndShowGUI(att, this, stls.size() - 1, stl.volume());
+        }
+    }
 
-	
-	public void moreCopies(STLObject original, Attributes originalAttributes, int number)
-	{
-		if (number <= 0)
-			return;
-		String fileName = original.fileAndDirectioryItCameFrom(0);
-		double increment = original.extent().x + 5;
-		Vector3d offset = new Vector3d();
-		offset.x = increment;
-		offset.y = 0;
-		offset.z = 0;
-		for(int i = 0; i < number; i++)
-		{
-			STLObject stl = new STLObject();
-			Attributes newAtt = stl.addSTL(fileName, null, original.getAppearance(), null);
-			if(newAtt != null)
-			{
-				newAtt.setMaterial(originalAttributes.getMaterial());
-				stl.translate(offset);
-				if(stl.numChildren() > 0)
-				{
-					wv_and_stls.addChild(stl.top());
-					stls.add(stl);
-				}
-			}
-			offset.x += increment;
-		}
-	}
-	
-	// Callback for when the user selects an STL file to load
+    // Callback for when the user has a pre-loaded STL and attribute
+    public void anotherSTL(final STLObject stl, final Attributes att, final int index) {
+        if (stl == null || att == null) {
+            return;
+        }
 
-	public void anotherSTLFile(String s, Printer printer, boolean centre) 
-	{
-		if (s == null)
-			return;
-		//objectIndex++;
-		STLObject stl = new STLObject();
-		Attributes att = stl.addSTL(s, null, Preferences.unselectedApp(), lastPicked);
-		if(lastPicked == null && centre)
-		{
+        // New separate object, or just appended to lastPicked?
+        if (stl.numChildren() > 0) {
+            wv_and_stls.addChild(stl.top());
+            stls.add(index, stl);
+        }
+    }
 
-			Point2D middle = Point2D.mul(0.5, printer.getBedNorthEast());
-			Vector3d v = new Vector3d(middle.x(), middle.y(), 0);
-			Vector3d e = stl.extent();
-			e.z = 0;
-			e.x = -0.5*e.x;
-			e.y = -0.5*e.y;
-			v.add(e);
-			stl.translate(v);
-		}
-		if(att != null)
-		{
-			// New separate object, or just appended to lastPicked?
-			if(stl.numChildren() > 0)
-			{
-				wv_and_stls.addChild(stl.top());
-				stls.add(stl);
-			}
+    public void changeMaterial() {
+        if (lastPicked == null) {
+            return;
+        }
+        MaterialRadioButtons.createAndShowGUI(lastPicked.attributes(0), this, lastPicked);
+    }
 
-			MaterialRadioButtons.createAndShowGUI(att, this, stls.size() - 1, stl.volume());
-		}
-	}
-	
-	// Callback for when the user has a pre-loaded STL and attribute
+    // Callback for when the user selects an RFO file to load
+    public void addRFOFile(final String s) {
+        if (s == null) {
+            return;
+        }
+        final AllSTLsToBuild newStls = RFO.load(s);
+        for (int i = 0; i < newStls.size(); i++) {
+            wv_and_stls.addChild(newStls.get(i).top());
+        }
+        stls.add(newStls);
+    }
 
-	public void anotherSTL(STLObject stl, Attributes att, int index) 
-	{
-		if (stl == null || att == null)
-			return;
+    public void saveRFOFile(final String s) throws IOException {
+        RFO.save(s, stls);
+    }
 
-		// New separate object, or just appended to lastPicked?
-		if(stl.numChildren() > 0)
-		{
-			wv_and_stls.addChild(stl.top());
-			stls.add(index, stl);
-		}
-	}
-	
-	public void changeMaterial()
-	{
-		if(lastPicked == null)
-			return;
-		MaterialRadioButtons.createAndShowGUI(lastPicked.attributes(0), this, lastPicked);
-	}
-	
-	// Callback for when the user selects an RFO file to load
+    public void saveSCADFile(final String s) {
+        stls.saveSCAD(s);
+    }
 
-	public void addRFOFile(String s) 
-	{
-		if (s == null)
-			return;
-		//deleteAllSTLs();
-		AllSTLsToBuild newStls = RFO.load(s);
-		for(int i = 0; i < newStls.size(); i++)
-			wv_and_stls.addChild(newStls.get(i).top());
-		stls.add(newStls);
-	}
-	
-	public void saveRFOFile(String s)
-	{
-		RFO.save(s, stls);
-	}
-	
-	public void saveSCADFile(String s)
-	{
-		stls.saveSCAD(s);
-	}
-	
+    public void start() throws Exception {
+        if (pickCanvas == null) {
+            initialise();
+        }
+    }
 
+    private void addCanvas3D(final Canvas3D c3d) {
+        setLayout(new BorderLayout());
+        add(c3d, BorderLayout.CENTER);
+        doLayout();
 
-	public void start() throws Exception {
-		if (pickCanvas == null)
-			initialise();
-	}
+        if (sceneBranchGroup != null) {
+            c3d.addMouseListener(this);
 
-	protected void addCanvas3D(Canvas3D c3d) {
-		setLayout(new BorderLayout());
-		add(c3d, BorderLayout.CENTER);
-		doLayout();
+            pickCanvas = new PickCanvas(c3d, sceneBranchGroup);
+            pickCanvas.setMode(PickTool.GEOMETRY_INTERSECT_INFO);
+            pickCanvas.setTolerance(4.0f);
+        }
 
-		if (sceneBranchGroup != null) {
-			c3d.addMouseListener(this);
+        c3d.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    }
 
-			pickCanvas = new PickCanvas(c3d, sceneBranchGroup);
-			pickCanvas.setMode(PickTool.GEOMETRY_INTERSECT_INFO);
-			pickCanvas.setTolerance(4.0f);
-		}
+    // Callbacks for when the user rotates the selected object
+    public void xRotate() {
+        if (lastPicked != null) {
+            lastPicked.xClick();
+        }
+    }
 
-		c3d.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-	}
+    public void yRotate() {
+        if (lastPicked != null) {
+            lastPicked.yClick();
+        }
+    }
 
-	// Callbacks for when the user rotates the selected object
+    public void zRotate(final double angle) {
+        if (lastPicked != null) {
+            lastPicked.zClick(angle);
+        }
+    }
 
-	public void xRotate() {
-		if (lastPicked != null)
-			lastPicked.xClick();
-	}
+    // Callback for a request to convert units
+    public void inToMM() {
+        if (lastPicked != null) {
+            lastPicked.inToMM();
+        }
+    }
 
-	public void yRotate() {
-		if (lastPicked != null)
-			lastPicked.yClick();
-	}
+    public void doReorder() {
+        if (lastPicked != null) {
+            lastPicked.restoreAppearance();
+            mouseToWorld();
+            lastPicked = null;
+        }
+        reordering = true;
+    }
 
-	public void zRotate(double angle) {
-		if (lastPicked != null)
-			lastPicked.zClick(angle);
-	}
-	
-	// Callback for a request to convert units
-	
-	public void inToMM() {
-		if (lastPicked != null)
-			lastPicked.inToMM();
-	}
-	
-	public void doReorder()
-	{
-		if (lastPicked != null)
-		{
-			lastPicked.restoreAppearance();
-			mouseToWorld();
-			lastPicked = null;
-		}
-		reordering = true;
-	}
-	
-	/**
-	 * User is reordering the list
-	 */
-	private void reorder()
-	{
-		if(!reordering)
-			return;
-		if(stls.reorderAdd(lastPicked))
-			return;
-		for(int i = 0; i < stls.size(); i++)
-			stls.get(i).restoreAppearance();
-		//mouseToWorld();		
-		lastPicked = null;
-		reordering = false;
-	}
-	
-	// Move to the next one in the list
-	
-	public void nextPicked()
-	{
-		if (lastPicked == null)
-			lastPicked = stls.get(0);
-		else
-		{
-			lastPicked.restoreAppearance();
-			lastPicked = stls.getNextOne(lastPicked);
-		}
-		lastPicked.setAppearance(picked_app);
-		mouse.move(lastPicked, true);
-	}
-	
-//	public void materialSTL()
-//	{
-//		if (lastPicked == null)
-//			return;
-//		getMaterialName(lastPicked);
-//		mouseToWorld();
-//	}
-	
-	// Callback to delete one of the loaded objects
-	
-	public void deleteSTL()
-	{
-		if (lastPicked == null)
-			return;
-		int index = -1;
-		for(int i = 0; i < stls.size(); i++)
-		{
-			if(stls.get(i) == lastPicked)
-			{
-				index = i;
-				break;
-			}
-		}
-		if (index >= 0) 
-		{
-			stls.remove(index);
-			index = wv_and_stls.indexOfChild(lastPicked.top());
-			mouseToWorld();
-			wv_and_stls.removeChild(index);
-			lastPicked = null;
-		}
-	}
-	
-	public void deleteAllSTLs()
-	{
-		for(int i = 0; i < stls.size(); i++)
-		{
-			STLObject s = stls.get(i);
-			stls.remove(i);
-			int index = wv_and_stls.indexOfChild(s.top());
-			wv_and_stls.removeChild(index);
-		}
-		mouseToWorld();
-		lastPicked = null;
-	}
-	
-	public void setGraphics(RrGraphics g)
-	{
-		graphics = g;
-	}
-	
-	public RrGraphics getRrGraphics()
-	{
-		return graphics;
-	}
+    private void reorder() {
+        if (!reordering) {
+            return;
+        }
+        if (stls.reorderAdd(lastPicked)) {
+            return;
+        }
+        for (int i = 0; i < stls.size(); i++) {
+            stls.get(i).restoreAppearance();
+        }
+        lastPicked = null;
+        reordering = false;
+    }
+
+    public void nextPicked() {
+        if (lastPicked == null) {
+            lastPicked = stls.get(0);
+        } else {
+            lastPicked.restoreAppearance();
+            lastPicked = stls.getNextOne(lastPicked);
+        }
+        lastPicked.setAppearance(picked_app);
+        mouse.move(lastPicked, true);
+    }
+
+    public void deleteSTL() {
+        if (lastPicked == null) {
+            return;
+        }
+        int index = -1;
+        for (int i = 0; i < stls.size(); i++) {
+            if (stls.get(i) == lastPicked) {
+                index = i;
+                break;
+            }
+        }
+        if (index >= 0) {
+            stls.remove(index);
+            index = wv_and_stls.indexOfChild(lastPicked.top());
+            mouseToWorld();
+            wv_and_stls.removeChild(index);
+            lastPicked = null;
+        }
+    }
+
+    public void deleteAllSTLs() {
+        for (int i = 0; i < stls.size(); i++) {
+            final STLObject s = stls.get(i);
+            stls.remove(i);
+            final int index = wv_and_stls.indexOfChild(s.top());
+            wv_and_stls.removeChild(index);
+        }
+        mouseToWorld();
+        lastPicked = null;
+    }
+
+    public void setGraphics(final RrGraphics g) {
+        graphics = g;
+    }
+
+    public RrGraphics getRrGraphics() {
+        return graphics;
+    }
+
+    public void refreshPreferences() throws IOException {
+        // Set everything up from the properties file
+        // All this needs to go into Preferences.java
+        wv_location = Preferences.getBasePath();
+        mouse_tf = 50;
+        mouse_zf = 50;
+        RadiusFactor = 0.7;
+        BackFactor = 2.0;
+        FrontFactor = 0.001;
+        BoundFactor = 3.0;
+
+        xwv = Preferences.loadGlobalDouble("WorkingX(mm)");
+        ywv = Preferences.loadGlobalDouble("WorkingY(mm)");
+        zwv = Preferences.loadGlobalDouble("WorkingZ(mm)");
+
+        wv_offset = new Vector3d(0, 0, 0);
+
+        bgColour = new Color3f((float) 0.9, (float) 0.9, (float) 0.9);
+        selectedColour = new Color3f((float) 0.6, (float) 0.2, (float) 0.2);
+        machineColour = new Color3f((float) 0.3, (float) 0.3, (float) 0.3);
+        unselectedColour = new Color3f((float) 0.3, (float) 0.3, (float) 0.3);
+    }
+
+    private void initialise() throws IOException {
+        refreshPreferences();
+        picked_app = new Appearance();
+        picked_app.setMaterial(new Material(selectedColour, RepRapBuild.black, selectedColour, RepRapBuild.black, 0f));
+
+        wv_app = new Appearance();
+        wv_app.setMaterial(new Material(machineColour, RepRapBuild.black, machineColour, RepRapBuild.black, 0f));
+
+        initJava3d();
+    }
+
+    private double getBackClipDistance() {
+        return BackFactor * getViewPlatformActivationRadius();
+    }
+
+    private double getFrontClipDistance() {
+        return FrontFactor * getViewPlatformActivationRadius();
+    }
+
+    private Bounds createApplicationBounds() {
+        applicationBounds = new BoundingSphere(new Point3d(xwv * 0.5, ywv * 0.5, zwv * 0.5), BoundFactor
+                * getViewPlatformActivationRadius());
+        return applicationBounds;
+    }
+
+    private float getViewPlatformActivationRadius() {
+        return (float) (RadiusFactor * Math.sqrt(xwv * xwv + ywv * ywv + zwv * zwv));
+    }
+
+    public Color3f getObjectColour() {
+        return unselectedColour;
+    }
+
+    public VirtualUniverse getVirtualUniverse() {
+        return universe;
+    }
+
+    private View createView(final ViewPlatform vp) {
+        final View view = new View();
+
+        final PhysicalBody pb = createPhysicalBody();
+        final PhysicalEnvironment pe = createPhysicalEnvironment();
+
+        final AudioDevice audioDevice = createAudioDevice(pe);
+
+        if (audioDevice != null) {
+            pe.setAudioDevice(audioDevice);
+            audioDevice.initialize();
+        }
+
+        view.setPhysicalEnvironment(pe);
+        view.setPhysicalBody(pb);
+
+        if (vp != null) {
+            view.attachViewPlatform(vp);
+        }
+
+        view.setBackClipDistance(getBackClipDistance());
+        view.setFrontClipDistance(getFrontClipDistance());
+
+        final Canvas3D c3d = createCanvas3D();
+        view.addCanvas3D(c3d);
+        addCanvas3D(c3d);
+
+        return view;
+    }
+
+    private Canvas3D createCanvas3D() {
+        final GraphicsConfigTemplate3D gc3D = new GraphicsConfigTemplate3D();
+        gc3D.setSceneAntialiasing(GraphicsConfigTemplate.PREFERRED);
+        final GraphicsDevice gd[] = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+
+        return new Canvas3D(gd[0].getBestConfiguration(gc3D));
+    }
+
+    public javax.media.j3d.Locale getFirstLocale() {
+        final java.util.Enumeration<?> en = universe.getAllLocales();
+
+        if (en.hasMoreElements() != false) {
+            return (javax.media.j3d.Locale) en.nextElement();
+        }
+
+        return null;
+    }
+
+    private Bounds getApplicationBounds() {
+        if (applicationBounds == null) {
+            applicationBounds = createApplicationBounds();
+        }
+
+        return applicationBounds;
+    }
+
+    public void initJava3d() {
+        universe = createVirtualUniverse();
+
+        final javax.media.j3d.Locale locale = createLocale(universe);
+
+        final BranchGroup sceneBranchGroup = createSceneBranchGroup();
+
+        final ViewPlatform vp = createViewPlatform();
+        final BranchGroup viewBranchGroup = createViewBranchGroup(getViewTransformGroupArray(), vp);
+
+        createView(vp);
+
+        final Background background = createBackground();
+
+        if (background != null) {
+            sceneBranchGroup.addChild(background);
+        }
+
+        locale.addBranchGraph(sceneBranchGroup);
+        addViewBranchGroup(locale, viewBranchGroup);
+    }
+
+    private PhysicalBody createPhysicalBody() {
+        return new PhysicalBody();
+    }
+
+    private AudioDevice createAudioDevice(final PhysicalEnvironment pe) {
+        return new JavaSoundMixer(pe);
+    }
+
+    private PhysicalEnvironment createPhysicalEnvironment() {
+        return new PhysicalEnvironment();
+    }
+
+    private ViewPlatform createViewPlatform() {
+        final ViewPlatform vp = new ViewPlatform();
+        vp.setViewAttachPolicy(View.RELATIVE_TO_FIELD_OF_VIEW);
+        vp.setActivationRadius(getViewPlatformActivationRadius());
+
+        return vp;
+    }
+
+    private VirtualUniverse createVirtualUniverse() {
+        return new VirtualUniverse();
+    }
+
+    private void addViewBranchGroup(final javax.media.j3d.Locale locale, final BranchGroup bg) {
+        locale.addBranchGraph(bg);
+    }
+
+    private javax.media.j3d.Locale createLocale(final VirtualUniverse u) {
+        return new javax.media.j3d.Locale(u);
+    }
+
+    public TransformGroup[] getViewTransformGroupArray() {
+        final TransformGroup[] tgArray = new TransformGroup[1];
+        tgArray[0] = new TransformGroup();
+
+        final Transform3D viewTrans = new Transform3D();
+        final Transform3D eyeTrans = new Transform3D();
+
+        final BoundingSphere sceneBounds = (BoundingSphere) sceneBranchGroup.getBounds();
+
+        // point the view at the center of the object
+        final Point3d center = new Point3d();
+        sceneBounds.getCenter(center);
+        final double radius = sceneBounds.getRadius();
+        final Vector3d temp = new Vector3d(center);
+        viewTrans.set(temp);
+
+        // pull the eye back far enough to see the whole object
+        final double eyeDist = radius / Math.tan(Math.toRadians(40) / 2.0);
+        temp.x = 0.0;
+        temp.y = 0.0;
+        temp.z = eyeDist;
+        eyeTrans.set(temp);
+        viewTrans.mul(eyeTrans);
+
+        tgArray[0].setTransform(viewTrans);
+
+        return tgArray;
+    }
+
+    private String getStlBackground() {
+        return wv_location;
+    }
 
 }
