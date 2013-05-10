@@ -676,7 +676,7 @@ public class STLObject
     
     // Scale the object by s permanently (i.e. don't just apply a transform).
     
-    private void recursiveSetScale(Object value, double s, boolean zOnly) 
+    private void recursiveSetScale(Object value, double x, double y, double z, boolean zOnly) 
     {
         if( value instanceof SceneGraphObject != false ) 
         {
@@ -692,17 +692,17 @@ public class STLObject
                 java.util.Enumeration<?> enumKids = g.getAllChildren( );
                 
                 while(enumKids.hasMoreElements( ))
-                    recursiveSetScale( enumKids.nextElement( ), s, zOnly );
+                    recursiveSetScale( enumKids.nextElement( ), x, y, z, zOnly );
             } else if ( sg instanceof Shape3D ) 
             {
-                    s3dScale((Shape3D)sg, s, zOnly);
+                    s3dScale((Shape3D)sg, x, y, z, zOnly);
             }
         }
     }
     
    // Scale a Shape3D permanently by s
     
-    private void s3dScale(Shape3D shape, double s, boolean zOnly)
+    private void s3dScale(Shape3D shape, double x, double y, double z, boolean zOnly)
     {
         GeometryArray g = (GeometryArray)shape.getGeometry();
         Point3d p3d = new Point3d();
@@ -712,9 +712,13 @@ public class STLObject
             {
                 g.getCoordinate(i, p3d);
                 if(zOnly)
-                	p3d.z = s*p3d.z;
+                	p3d.z = z*p3d.z;
                 else
-                	p3d.scale(s);
+                {
+                	p3d.x *= x;
+                	p3d.y *= y;
+                	p3d.z *= z;
+                }
                 g.setCoordinate(i, p3d);
             }
         }
@@ -959,7 +963,7 @@ public class STLObject
     
    // Rescale the STL object (for inch -> mm conversion) and stretching heights
     
-    public void rScale(double s, boolean zOnly)
+    public void rScale(double x, double y, double z, boolean zOnly)
     {
         if(mouse == null && !zOnly)
             return;
@@ -988,9 +992,13 @@ public class STLObject
         // Rescale the box
         
         if(zOnly)
-        	extent.z = s*extent.z;
+        	extent.z = z*extent.z;
         else
-        	extent.scale(s);
+        {
+        	extent.x *= x;
+        	extent.y *= y;
+        	extent.z *= z;
+        }
         
         // Add a new translation to put the bottom left corner
         // back at the origin.
@@ -1019,10 +1027,15 @@ public class STLObject
         while(things.hasMoreElements()) 
         {
         	Object value = things.nextElement();
-        	recursiveSetScale(value, s, zOnly);
+        	recursiveSetScale(value, x, y, z, zOnly);
         }
 
 
+    }
+    
+    public void rScale(double s, boolean zOnly)
+    {
+    	rScale(s, s, s, zOnly);
     }
     
     // Apply X, Y or Z 90 degree clicks to us if we're the active (i.e. mouse
@@ -1072,6 +1085,14 @@ public class STLObject
             return;
         
         rScale(Preferences.inchesToMillimetres(), false);
+    }
+    
+    public void rescale(double x, double y, double z)
+    {
+        if(mouse == null)
+            return;
+        
+        rScale(x, y, z, false);
     }
     
     /**

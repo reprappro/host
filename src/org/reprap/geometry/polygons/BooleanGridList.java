@@ -159,6 +159,7 @@ public class BooleanGridList
 						e = att.getExtruder();
 						shells = e.getShells();					
 					}
+					System.out.println("Shells: " + shells);
 //					if(shellOverride > 0)
 //						shells = shellOverride;
 					if(outline)

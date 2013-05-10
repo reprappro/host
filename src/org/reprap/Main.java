@@ -180,6 +180,14 @@ public class Main {
 			}});
         manipMenu.add(inToMM);
         
+        JMenuItem rescale = new JMenuItem("Scale in X, Y and Z", KeyEvent.VK_S);
+        rescale.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
+        rescale.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				onRescale();
+			}});
+        manipMenu.add(rescale);
+        
         JMenuItem changeMaterial = new JMenuItem("Change material", KeyEvent.VK_M);
         changeMaterial.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, ActionEvent.CTRL_MASK));
         changeMaterial.addActionListener(new ActionListener() {
@@ -478,6 +486,12 @@ public class Main {
     private void oninToMM() {
     	  builder.inToMM();
       } 
+    
+    private void onRescale() 
+    {    
+    	//System.out.println("B");
+  	  builder.rescale();
+    } 
     
     private void onChangeMaterial() {
   	  builder.changeMaterial();

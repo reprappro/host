@@ -279,6 +279,130 @@ class MaterialRadioButtons extends JPanel {
 	
 }
 
+
+/**
+ * Little class to put up a radiobutton menu so you can set
+ * what material something is to be made from.
+ * 
+ * @author adrian
+ *
+ */
+class ScaleXYZ extends JPanel {
+	private static final long serialVersionUID = 1L;
+	private static JDialog dialog;
+	private static JTextField xv, yv, zv;
+	private static double x, y, z;
+	private static boolean called = false;
+	
+	private ScaleXYZ(double xi, double yi, double zi)
+	{
+		super(new BorderLayout());
+		//System.out.println("C");
+		if(!called)
+		{
+			x = xi;
+			y = yi;
+			z = zi;
+			called = true;
+		}
+		JPanel radioPanel;
+		radioPanel = new JPanel(new GridLayout(0, 1));
+		radioPanel.setSize(300,200);
+		
+		JLabel jLabel0 = new JLabel();
+	    radioPanel.add(jLabel0);
+	    jLabel0.setText("Rescale selected object");
+		jLabel0.setHorizontalAlignment(SwingConstants.CENTER);
+		
+	    JLabel jLabel2 = new JLabel();
+	    radioPanel.add(jLabel2);
+	    jLabel2.setText(" X ");
+		jLabel2.setHorizontalAlignment(SwingConstants.CENTER);
+		xv = new JTextField(""+x);
+	    xv.setSize(20, 10);
+		xv.setHorizontalAlignment(SwingConstants.CENTER);
+		radioPanel.add(xv);
+		
+	    JLabel jLabel3 = new JLabel();
+	    radioPanel.add(jLabel3);
+	    jLabel3.setText(" Y ");
+		jLabel3.setHorizontalAlignment(SwingConstants.CENTER);
+		yv = new JTextField(""+y);
+	    yv.setSize(20, 10);
+		yv.setHorizontalAlignment(SwingConstants.CENTER);
+		radioPanel.add(yv);
+		
+	    JLabel jLabel4 = new JLabel();
+	    radioPanel.add(jLabel4);
+	    jLabel4.setText(" Z ");
+		jLabel4.setHorizontalAlignment(SwingConstants.CENTER);
+		zv = new JTextField(""+z);
+	    zv.setSize(20, 10);
+		zv.setHorizontalAlignment(SwingConstants.CENTER);
+		radioPanel.add(zv);
+		
+		JButton okButton = new JButton();
+		radioPanel.add(okButton);
+		okButton.setText("OK");
+		okButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				OKHandler();
+			}
+		});
+		JButton cancelButton = new JButton();
+		radioPanel.add(cancelButton);
+		cancelButton.setText("Cancel");
+		cancelButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				cancelHandler();
+			}
+		});
+		
+		add(radioPanel, BorderLayout.LINE_START);
+		setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
+	}
+	
+	public static double x() { return x; }
+	public static double y() { return y; }
+	public static double z() { return z; }
+	
+	public static void OKHandler()
+	{
+		//System.out.println("Copies: " + copies.getText());
+		x = Double.parseDouble(xv.getText().trim());
+		y = Double.parseDouble(yv.getText().trim());
+		z = Double.parseDouble(zv.getText().trim());
+		dialog.dispose();
+	}
+	public static void cancelHandler()
+	{
+		//System.out.println("Copies: " + copies.getText());
+		x = 1;
+		y = 1;
+		z = 1;
+		dialog.dispose();
+	}
+    
+    public static void createAndShowGUI() 
+    {
+    	//System.out.println("A");
+    	JFrame f = new JFrame();
+    	dialog = new JDialog(f, "scale");
+        dialog.setLocation(500, 400);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+        //Create and set up the content pane.
+        JComponent newContentPane = new ScaleXYZ(1.0, 1.0, 1.0);
+        newContentPane.setOpaque(true); //content panes must be opaque
+        dialog.setContentPane(newContentPane);
+
+        //Display the window.
+        dialog.pack();
+        dialog.setModalityType(JDialog.DEFAULT_MODALITY_TYPE);
+        dialog.setVisible(true);
+    }	 
+}
+
 //************************************************************************
 
 /**
@@ -624,6 +748,15 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 	public void inToMM() {
 		if (lastPicked != null)
 			lastPicked.inToMM();
+	}
+	
+	public void rescale() 
+	{
+		if (lastPicked == null)
+			return;
+
+		ScaleXYZ.createAndShowGUI();
+		lastPicked.rescale(ScaleXYZ.x(), ScaleXYZ.y(), ScaleXYZ.z());
 	}
 	
 	public void doReorder()

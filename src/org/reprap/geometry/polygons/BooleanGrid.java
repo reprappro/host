@@ -1651,7 +1651,7 @@ public class BooleanGrid
 		for(int i = 0; i < 8; i++)
 		{
 			// Can't use neighbour.realPoint as that adds swCorner...
-			//  We have to normailze neighbour, to get answers proportional to cosines
+			//  We have to normalise neighbour, to get answers proportional to cosines
 			double s = Point2D.mul(p, new Point2D(neighbour[i].x, neighbour[i].y).norm()); 
 			if(s > score)
 			{
@@ -1880,6 +1880,284 @@ public class BooleanGrid
 	}
 	
 	/**
+	 * Run over the entire pattern removing the following two types of 2x2 cells:
+	 * 
+	 *    . 1     1 .
+	 *    1 .     . 1
+	 *    
+	 * by deleting the topmost point.
+	 */
+	private void clearSaddles()
+	{
+		
+	}
+	
+	/**
+	 * Run marching squares round the polygon starting with the 2x2 march pattern at start
+	 * @param start
+	 * @return
+	 */
+//	private iPolygon marchRound(iPoint start)
+//	{
+//		iPolygon result = new iPolygon(true);
+//		
+//		iPoint here = new iPoint(start);
+//		iPoint pix;
+//		int m;
+//		boolean step = true;
+//		
+//		do
+//		{
+//			m = marchPattern(here);
+//			//pix = new iPoint(here);
+//			switch(m)
+//			{
+//			case 1:
+//				if(!vGet(here))
+//				{
+//					result.add(here);
+//					vSet(here,true);
+//				}
+//				break;
+//			case 2:
+//				pix = here.add(neighbour[3]);
+//				if(!vGet(pix))
+//				{
+//					result.add(pix);
+//					vSet(pix,true);
+//				}
+//				break;
+//			case 3:
+//				if(!vGet(here))
+//				{
+//					result.add(here);
+//					vSet(here,true);
+//				}
+//				pix = here.add(neighbour[3]);
+//				if(!vGet(pix))
+//				{
+//					result.add(pix);
+//					vSet(pix,true);
+//				}					
+//				break;
+//			case 4:
+//				pix = here.add(neighbour[1]);
+//				if(!vGet(pix))
+//				{
+//					result.add(pix);
+//					vSet(pix,true);
+//				}				
+//				break;
+//			case 5:
+//				if(!vGet(here))
+//				{
+//					result.add(here);
+//					vSet(here,true);
+//				}				
+//				pix = here.add(neighbour[1]);
+//				if(!vGet(pix))
+//				{
+//					result.add(pix);
+//					vSet(pix,true);
+//				}				
+//				break;
+//			case 6:
+//				Debug.e("BooleanGrid.marchRound() - dud 2x2 grid: " + m + " at " + 
+//						here.toString() + "\n" + printNearby(here,4) + "\n\n");
+//				step = false;
+//				pix = here.add(neighbour[3]);
+//				set(pix, false);
+//				vSet(pix, false);
+//				pix = here.add(neighbour[1]);
+//				set(pix, false);
+//				vSet(pix, false);
+//				here = result.point(result.size() - 1);
+//				if(!get(here))
+//				{
+//					if(result.size() > 1)
+//					{
+//						result.remove(result.size() - 1);
+//						here = result.point(result.size() - 1);
+//						if(!get(here))
+//						{
+//							Debug.e("BooleanGrid.marchRound() - backtracked to an unfilled point!" + printNearby(here,4) + "\n\n");
+//							result.remove(result.size() - 1);
+//							here = result.point(result.size() - 1);
+//						}
+//					} else
+//					{
+//						here = start;
+//					}
+//				}
+//				break;
+//
+//			case 7:
+//				pix = here.add(neighbour[1]);
+//				if(!vGet(pix))
+//				{
+//					result.add(pix);
+//					vSet(pix,true);
+//				}
+//				pix = here.add(neighbour[3]);
+//				if(!vGet(pix))
+//				{
+//					result.add(pix);
+//					vSet(pix,true);
+//				}						
+//				break;
+//			case 8:
+//				pix = here.add(neighbour[2]);
+//				if(!vGet(pix))
+//				{
+//					result.add(pix);
+//					vSet(pix,true);
+//				}						
+//				break;
+//			case 9:
+//				Debug.e("BooleanGrid.marchRound() - dud 2x2 grid: " + m + " at " + 
+//						here.toString() + "\n" + printNearby(here,4) + "\n\n");
+//				step = false;
+//				set(here, false);
+//				vSet(here, false);
+//				pix = here.add(neighbour[2]);
+//				set(pix, false);
+//				vSet(pix, false);				
+//				here = result.point(result.size() - 1);
+//				if(!get(here))
+//				{
+//					if(result.size() > 1)
+//					{
+//						result.remove(result.size() - 1);
+//						here = result.point(result.size() - 1);
+//						if(!get(here))
+//						{
+//							Debug.e("BooleanGrid.marchRound() - backtracked to an unfilled point!" + printNearby(here,4) + "\n\n");
+//							result.remove(result.size() - 1);
+//							here = result.point(result.size() - 1);
+//						}
+//					}else
+//					{
+//						here = start;
+//					}
+//				}
+//				
+//				break;
+//
+//			case 10:
+//				pix = here.add(neighbour[3]);
+//				if(!vGet(pix))
+//				{
+//					result.add(pix);
+//					vSet(pix,true);
+//				}
+//				pix = here.add(neighbour[2]);
+//				if(!vGet(pix))
+//				{
+//					result.add(pix);
+//					vSet(pix,true);
+//				}						
+//				break;
+//			case 11:
+//				if(!vGet(here))
+//				{
+//					result.add(here);
+//					vSet(here,true);
+//				}
+//				pix = here.add(neighbour[2]);
+//				if(!vGet(pix))
+//				{
+//					result.add(pix);
+//					vSet(pix,true);
+//				}						
+//				break;
+//			case 12:
+//				pix = here.add(neighbour[2]);
+//				if(!vGet(pix))
+//				{
+//					result.add(pix);
+//					vSet(pix,true);
+//				}
+//				pix = here.add(neighbour[1]);
+//				if(!vGet(pix))
+//				{
+//					result.add(pix);
+//					vSet(pix,true);
+//				}							
+//				break;
+//			case 13:
+//				pix = here.add(neighbour[2]);
+//				if(!vGet(pix))
+//				{
+//					result.add(pix);
+//					vSet(pix,true);
+//				}
+//				if(!vGet(here))
+//				{
+//					result.add(here);
+//					vSet(here,true);
+//				}					
+//				break;
+//			case 14:
+//				pix = here.add(neighbour[3]);
+//				if(!vGet(pix))
+//				{
+//					result.add(pix);
+//					vSet(pix,true);
+//				}
+//				pix = here.add(neighbour[1]);
+//				if(!vGet(pix))
+//				{
+//					result.add(pix);
+//					vSet(pix,true);
+//				}						
+//				break;
+//			
+//			default:
+//				Debug.e("BooleanGrid.marchRound() - dud 2x2 grid: " + m + " at " + 
+//						here.toString() + "\n" + printNearby(here,4) + "\n\n");
+//				return result;
+//			}
+//			if(step)
+//				here = here.add(neighbour[march[m]]);
+//			step = true;
+//		} while(!here.coincidesWith(start));
+//		
+//		return result;
+//	}
+	
+	/**
+	 * A single step of marching squares
+	 * 
+	 * See this useful web page:
+	 * 
+	 * http://devblog.phillipspiess.com/2010/02/23/better-know-an-algorithm-1-marching-squares/
+	 * 
+	 * @param here
+	 * @param previous
+	 * @return
+	 */
+	private int step(iPoint here, int previous)
+	{
+		int m = marchPattern(here);
+		int result = march[m];
+		if(m == 6)
+		{
+			if(previous == 5)
+				result = 7;
+			else
+				result = 3;
+		}
+		if(m == 9)
+		{
+			if(previous == 3)
+				result = 5;
+			else
+				result = 1;
+		}
+		return result;
+	}
+	
+	/**
 	 * Run marching squares round the polygon starting with the 2x2 march pattern at start
 	 * @param start
 	 * @return
@@ -1889,224 +2167,16 @@ public class BooleanGrid
 		iPolygon result = new iPolygon(true);
 		
 		iPoint here = new iPoint(start);
-		iPoint pix;
-		int m;
-		boolean step = true;
+		int next;
+		int previous = 3;
 		
 		do
 		{
-			m = marchPattern(here);
-			//pix = new iPoint(here);
-			switch(m)
-			{
-			case 1:
-				if(!vGet(here))
-				{
-					result.add(here);
-					vSet(here,true);
-				}
-				break;
-			case 2:
-				pix = here.add(neighbour[3]);
-				if(!vGet(pix))
-				{
-					result.add(pix);
-					vSet(pix,true);
-				}
-				break;
-			case 3:
-				if(!vGet(here))
-				{
-					result.add(here);
-					vSet(here,true);
-				}
-				pix = here.add(neighbour[3]);
-				if(!vGet(pix))
-				{
-					result.add(pix);
-					vSet(pix,true);
-				}					
-				break;
-			case 4:
-				pix = here.add(neighbour[1]);
-				if(!vGet(pix))
-				{
-					result.add(pix);
-					vSet(pix,true);
-				}				
-				break;
-			case 5:
-				if(!vGet(here))
-				{
-					result.add(here);
-					vSet(here,true);
-				}				
-				pix = here.add(neighbour[1]);
-				if(!vGet(pix))
-				{
-					result.add(pix);
-					vSet(pix,true);
-				}				
-				break;
-			case 6:
-				Debug.e("BooleanGrid.marchRound() - dud 2x2 grid: " + m + " at " + 
-						here.toString() + "\n" + printNearby(here,4) + "\n\n");
-				step = false;
-				pix = here.add(neighbour[3]);
-				set(pix, false);
-				vSet(pix, false);
-				pix = here.add(neighbour[1]);
-				set(pix, false);
-				vSet(pix, false);
-				here = result.point(result.size() - 1);
-				if(!get(here))
-				{
-					if(result.size() > 1)
-					{
-						result.remove(result.size() - 1);
-						here = result.point(result.size() - 1);
-						if(!get(here))
-						{
-							Debug.e("BooleanGrid.marchRound() - backtracked to an unfilled point!" + printNearby(here,4) + "\n\n");
-							result.remove(result.size() - 1);
-							here = result.point(result.size() - 1);
-						}
-					} else
-					{
-						here = start;
-					}
-				}
-				break;
-
-			case 7:
-				pix = here.add(neighbour[1]);
-				if(!vGet(pix))
-				{
-					result.add(pix);
-					vSet(pix,true);
-				}
-				pix = here.add(neighbour[3]);
-				if(!vGet(pix))
-				{
-					result.add(pix);
-					vSet(pix,true);
-				}						
-				break;
-			case 8:
-				pix = here.add(neighbour[2]);
-				if(!vGet(pix))
-				{
-					result.add(pix);
-					vSet(pix,true);
-				}						
-				break;
-			case 9:
-				Debug.e("BooleanGrid.marchRound() - dud 2x2 grid: " + m + " at " + 
-						here.toString() + "\n" + printNearby(here,4) + "\n\n");
-				step = false;
-				set(here, false);
-				vSet(here, false);
-				pix = here.add(neighbour[2]);
-				set(pix, false);
-				vSet(pix, false);				
-				here = result.point(result.size() - 1);
-				if(!get(here))
-				{
-					if(result.size() > 1)
-					{
-						result.remove(result.size() - 1);
-						here = result.point(result.size() - 1);
-						if(!get(here))
-						{
-							Debug.e("BooleanGrid.marchRound() - backtracked to an unfilled point!" + printNearby(here,4) + "\n\n");
-							result.remove(result.size() - 1);
-							here = result.point(result.size() - 1);
-						}
-					}else
-					{
-						here = start;
-					}
-				}
-				
-				break;
-
-			case 10:
-				pix = here.add(neighbour[3]);
-				if(!vGet(pix))
-				{
-					result.add(pix);
-					vSet(pix,true);
-				}
-				pix = here.add(neighbour[2]);
-				if(!vGet(pix))
-				{
-					result.add(pix);
-					vSet(pix,true);
-				}						
-				break;
-			case 11:
-				if(!vGet(here))
-				{
-					result.add(here);
-					vSet(here,true);
-				}
-				pix = here.add(neighbour[2]);
-				if(!vGet(pix))
-				{
-					result.add(pix);
-					vSet(pix,true);
-				}						
-				break;
-			case 12:
-				pix = here.add(neighbour[2]);
-				if(!vGet(pix))
-				{
-					result.add(pix);
-					vSet(pix,true);
-				}
-				pix = here.add(neighbour[1]);
-				if(!vGet(pix))
-				{
-					result.add(pix);
-					vSet(pix,true);
-				}							
-				break;
-			case 13:
-				pix = here.add(neighbour[2]);
-				if(!vGet(pix))
-				{
-					result.add(pix);
-					vSet(pix,true);
-				}
-				if(!vGet(here))
-				{
-					result.add(here);
-					vSet(here,true);
-				}					
-				break;
-			case 14:
-				pix = here.add(neighbour[3]);
-				if(!vGet(pix))
-				{
-					result.add(pix);
-					vSet(pix,true);
-				}
-				pix = here.add(neighbour[1]);
-				if(!vGet(pix))
-				{
-					result.add(pix);
-					vSet(pix,true);
-				}						
-				break;
-			
-			default:
-				Debug.e("BooleanGrid.marchRound() - dud 2x2 grid: " + m + " at " + 
-						here.toString() + "\n" + printNearby(here,4) + "\n\n");
-				return result;
-			}
-			if(step)
-				here = here.add(neighbour[march[m]]);
-			step = true;
+			next = step(here, previous);
+			result.add(here);
+			vSet(here, true);
+			here = here.add(neighbour[next]);
+			previous = next;
 		} while(!here.coincidesWith(start));
 		
 		return result;
