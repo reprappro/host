@@ -20,9 +20,10 @@ or, on Windows:
 
 If you get a load of usage instructions, Java is installed.
 
-If you haven't got Java, see:
+If you haven't got Java, download the Java JDK:
 
-	http://www.java.com/en/download/help/download_options.xml
+	http://www.oracle.com/technetwork/java/javase/downloads/index.html
+
 
 If you are running 64-bit Linux you will also have to install the Java 3D JNI library.  For example, in the Ubuntu Software Centre, search for and install "libjava3d-jni".
 
