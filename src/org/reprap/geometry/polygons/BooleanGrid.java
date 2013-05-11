@@ -719,7 +719,7 @@ public class BooleanGrid
 	 */
 	private static final double pixSize = Preferences.machineResolution()*0.6;
 	private static final double realResolution = pixSize*1.5;
-	private static final double rSwell = 0.5; // mm by which to swell rectangles to give margins round stuff
+	private static final double rSwell = 2.0; // mm by which to swell rectangles to give margins round stuff
 	//private static final int searchDepth = 3;
 	
 	/**
@@ -1519,85 +1519,85 @@ public class BooleanGrid
 	 */
 	private void deWhisker()
 	{
-		push("deWhisker... ");
-		
-		for(int i=bits.nextSetBit(0); i>=0; i=bits.nextSetBit(i+1)) 
-		{
-			iPoint here = pixel(i);
-			if(neighbourCount(here) < 3)
-				set(here, false);
-		}
-		
-		for(int x = 0; x < rec.size.x - 1; x++)
-			for(int y = 0; y < rec.size.y - 1; y++)
-			{
-				iPoint start = new iPoint(x, y);
-				int m = marchPattern(start);
-				if(m == 6 || m == 9)
-				{
-					if(poll(start, 3) > 0.5)
-					{
-						set(start, true);
-						set(start.add(neighbour[1]), true);
-						set(start.add(neighbour[2]), true);
-						set(start.add(neighbour[2]), true);
-					} else
-					{
-						set(start, false);
-						set(start.add(neighbour[1]), false);
-						set(start.add(neighbour[2]), false);
-						set(start.add(neighbour[2]), false);						
-					}
-				}
-			}		
-//		int n;
-//		for(int passes = 0; passes < 2; passes++)
+//		push("deWhisker... ");
+//		
+//		for(int i=bits.nextSetBit(0); i>=0; i=bits.nextSetBit(i+1)) 
 //		{
-//			int i = findUnvisitedEdgeIndex(0);
-//			while(i >= 0)
-//			{
-//				iPoint p = pixel(i);
-//				int filterIndex = 0;
-//				for(n = 0; n < 8; n++)
-//					if(get(p.add(neighbour[n])))
-//						filterIndex = filterIndex | (1<<n);
-//				if(thinFilter[filterIndex])
-//				{
-//					//printNearby(p, 3);
-//					set(p, false);
-//					//printNearby(p, 3);
-//				} else
-//					i++;
-//				
-////				for(n = 0; n < 8; n++)
-////					blockSize[n] = 0;
-////				boolean last = get(p.add(neighbour[7]));
-////				boolean here;
-////				int nCount = 0;
-////				int blockCount = 0;
-////				for(n = 0; n < 8; n++)
-////				{
-////					here = get(p.add(neighbour[n]));
-////					if(here)
-////						nCount++;
-////					if(here && !last)
-////						blockCount++;
-////					if(here && last)
-////						blockSize[n]++;
-////					last = here;
-////				}
-////
-////				if(blockCount > 1 || nCount < 2)
-////				{
-////					printNearby(p, 3);
-////					set(p, false);
-////					printNearby(p, 3);
-////				}
-//				i = findUnvisitedEdgeIndex(i);
-//			}
-//			//System.out.println("end pass " + passes);
+//			iPoint here = pixel(i);
+//			if(neighbourCount(here) < 3)
+//				set(here, false);
 //		}
-		pop();
+//		
+//		for(int x = 0; x < rec.size.x - 1; x++)
+//			for(int y = 0; y < rec.size.y - 1; y++)
+//			{
+//				iPoint start = new iPoint(x, y);
+//				int m = marchPattern(start);
+//				if(m == 6 || m == 9)
+//				{
+//					if(poll(start, 3) > 0.5)
+//					{
+//						set(start, true);
+//						set(start.add(neighbour[1]), true);
+//						set(start.add(neighbour[2]), true);
+//						set(start.add(neighbour[2]), true);
+//					} else
+//					{
+//						set(start, false);
+//						set(start.add(neighbour[1]), false);
+//						set(start.add(neighbour[2]), false);
+//						set(start.add(neighbour[2]), false);						
+//					}
+//				}
+//			}		
+////		int n;
+////		for(int passes = 0; passes < 2; passes++)
+////		{
+////			int i = findUnvisitedEdgeIndex(0);
+////			while(i >= 0)
+////			{
+////				iPoint p = pixel(i);
+////				int filterIndex = 0;
+////				for(n = 0; n < 8; n++)
+////					if(get(p.add(neighbour[n])))
+////						filterIndex = filterIndex | (1<<n);
+////				if(thinFilter[filterIndex])
+////				{
+////					//printNearby(p, 3);
+////					set(p, false);
+////					//printNearby(p, 3);
+////				} else
+////					i++;
+////				
+//////				for(n = 0; n < 8; n++)
+//////					blockSize[n] = 0;
+//////				boolean last = get(p.add(neighbour[7]));
+//////				boolean here;
+//////				int nCount = 0;
+//////				int blockCount = 0;
+//////				for(n = 0; n < 8; n++)
+//////				{
+//////					here = get(p.add(neighbour[n]));
+//////					if(here)
+//////						nCount++;
+//////					if(here && !last)
+//////						blockCount++;
+//////					if(here && last)
+//////						blockSize[n]++;
+//////					last = here;
+//////				}
+//////
+//////				if(blockCount > 1 || nCount < 2)
+//////				{
+//////					printNearby(p, 3);
+//////					set(p, false);
+//////					printNearby(p, 3);
+//////				}
+////				i = findUnvisitedEdgeIndex(i);
+////			}
+////			//System.out.println("end pass " + passes);
+////		}
+//		pop();
 	}
 	
 	/**
@@ -1763,7 +1763,8 @@ public class BooleanGrid
 	/**
 	 * Recursive flood-fill of solid pixels from p to return a BooleanGrid of 
 	 * just the shape connected to that pixel.
-	 * @param p
+	 * TODO - replace with more efficient scan-line algorithm
+	 * @param pp
 	 * @return
 	 */
 	public BooleanGrid floodCopy(Point2D pp)
@@ -1780,7 +1781,7 @@ public class BooleanGrid
 		// We implement our own floodfill stack, rather than using recursion to
 		// avoid having to specify a big Java stack just for this one function.
 		
-		int top = 400000;
+		int top = 4000000;
 		iPoint[] stack = new iPoint[top];
 		int sp = 0;
 		stack[sp] = p;
@@ -1793,7 +1794,7 @@ public class BooleanGrid
 
 			result.set(p, true);
 			
-			for(int i = 1; i < 8; i = i+2)
+			for(int i = 1; i < 8; i += 2)
 			{
 				q = p.add(neighbour[i]);
 				if(this.get(q) && !result.get(q))
@@ -1811,6 +1812,8 @@ public class BooleanGrid
 		
 		return result;
 	}
+	
+
 	
 	/**
 	 * Calculate the 4-bit marching squares value for a point

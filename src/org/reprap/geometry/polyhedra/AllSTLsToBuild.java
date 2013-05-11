@@ -1044,7 +1044,7 @@ public class AllSTLsToBuild
 				if(cen2 == null)
 				{
 					Debug.d("AllSTLsToBuild.bridges(): Second land found with no centroid.");
-					
+					//System.out.println("One land");
 					// No second land implies a ring of support - just infill it.
 					
 					result.hatchedPolygons.add(bridge.hatch(layerConditions.getHatchDirection(bridge.attribute().getExtruder(), false), 
@@ -1060,7 +1060,7 @@ public class AllSTLsToBuild
 				} else
 				{
 					// Wipe this land from the land pattern
-
+					//System.out.println("Two lands");
 					landPattern = BooleanGrid.difference(landPattern, land2);
 
 					// (Roughly) what direction does the bridge go in?
@@ -1082,7 +1082,7 @@ public class AllSTLsToBuild
 							int vertex2 = vertex1+1;
 							if(vertex2 >= polygon.size()) // We know the polygon must be closed...
 								vertex2 = 0;
-							Point2D edge = Point2D.sub(polygon.point(vertex2), polygon.point(vertex1));
+							Point2D edge = Point2D.sub(polygon.point(vertex2), polygon.point(vertex1)).norm(); //****
 
 							if((sp = Math.abs(Point2D.mul(edge, centroidDirection))) > spMax)
 							{
