@@ -311,7 +311,7 @@ class ScaleXYZ extends JPanel {
 		
 		JLabel jLabel0 = new JLabel();
 	    radioPanel.add(jLabel0);
-	    jLabel0.setText("Rescale selected object");
+	    jLabel0.setText("Rescale selected object (NB Meshlab is quicker)");
 		jLabel0.setHorizontalAlignment(SwingConstants.CENTER);
 		
 	    JLabel jLabel2 = new JLabel();

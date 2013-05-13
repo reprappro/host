@@ -77,7 +77,7 @@ import org.reprap.Attributes;
 import org.reprap.Preferences;
 import org.reprap.Extruder;
 import org.reprap.geometry.LayerRules;
-import org.reprap.geometry.polygons.PolygonAttributes;
+//import org.reprap.geometry.polygons.PolygonAttributes;
 import org.reprap.machines.VelocityProfile;
 import org.reprap.utilities.Debug;
 
@@ -112,7 +112,7 @@ public class Polygon
 	private Attributes att = null;
 	
 	
-	private PolygonAttributes pa = null;
+	//private PolygonAttributes pa = null;
 	
 	/**
 	 * The minimum enclosing X-Y box round the polygon
@@ -163,7 +163,7 @@ public class Polygon
 		valveEnd = -1;
 		extrudeEndDistance2 = 0;
 		valveEndDistance2 = 0;
-		pa = null;
+		//pa = null;
 	}
 	
 	/**
@@ -193,14 +193,14 @@ public class Polygon
 		return points.get(i);
 	}
 	
-	/**
-	 * Get the polygon attribute (may be null)
-	 * @return
-	 */
-	public PolygonAttributes getPolygonAttribute()
-	{
-		return pa;
-	}
+//	/**
+//	 * Get the polygon attribute (may be null)
+//	 * @return
+//	 */
+//	public PolygonAttributes getPolygonAttribute()
+//	{
+//		return pa;
+//	}
 	
 	/**
 	 * Get the speed
@@ -328,20 +328,20 @@ public class Polygon
 		valveEnd  = p.valveEnd;
 		extrudeEndDistance2 = p.extrudeEndDistance2;
 		valveEndDistance2 = p.valveEndDistance2;
-		if(p.pa != null)
-			pa = new PolygonAttributes(p.pa);
-		else
-			pa = null;
+//		if(p.pa != null)
+//			pa = new PolygonAttributes(p.pa);
+//		else
+//			pa = null;
 	}
 	
-	/**
-	 * Set the polygon attribute
-	 * @return
-	 */
-	public void setPolygonAttribute(PolygonAttributes p)
-	{
-		pa = p;
-	}
+//	/**
+//	 * Set the polygon attribute
+//	 * @return
+//	 */
+//	public void setPolygonAttribute(PolygonAttributes p)
+//	{
+//		pa = p;
+//	}
 	
 	/**
 	 * Add a new point to the polygon

@@ -1289,7 +1289,9 @@ public abstract class GenericExtruder implements Extruder
     	if(getFeedDiameter() < 0)
     		return distance;
     	
-    	return distance*getExtrusionHeight()*getExtrusionSize()/(getFeedDiameter()*getFeedDiameter()*Math.PI/4);
+    	double r = distance*getExtrusionHeight()*getExtrusionSize()/(getFeedDiameter()*getFeedDiameter()*Math.PI/4);
+    	//Debug.g("d/D: " + r/distance + ", m: " + getMaterial());
+    	return r;
     }
     
     /**

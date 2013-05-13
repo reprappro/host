@@ -93,7 +93,6 @@ public class Attributes {
 	/**
 	 * Find my extruder in the list (if not known) or just
 	 * return it (if known).
-	 * @param es The extruders currently in the printer.
 	 * @return my extruder
 	 */
 	public Extruder getExtruder()

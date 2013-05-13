@@ -1277,7 +1277,6 @@ public class AllSTLsToBuild
 		infill.hatchedPolygons.add(infill.insides.hatch(layerRules, false, null, false));
 		infill.surfaces = neededThisLayer(infill.surfaces, false, false);
 		infill.hatchedPolygons.add(infill.surfaces.hatch(layerRules, true, null, false));
-		
 	
 		return infill.hatchedPolygons;
 	}

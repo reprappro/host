@@ -18,12 +18,15 @@ public class Debug {
 	
 	static private Debug db = null;
 	
+	private String gCodeMessage = null;
+	
 	private Debug() {}
 	
 	public static void refreshPreferences()
 	{
 		if(db == null)
 			db = new Debug();
+		db.gCodeMessage = null;
 		try {
 			// Try to load debug setting from properties file
 			db.debug = Preferences.loadGlobalBool("Debug");
@@ -94,5 +97,17 @@ public class Debug {
 		System.out.flush();
 	}
 	
-
+	static public void g(String s)
+	{
+		initialiseIfNeedBe();
+		db.gCodeMessage = s;
+	}
+	
+	static public String g()
+	{
+		initialiseIfNeedBe();
+		String r = db.gCodeMessage;
+		db.gCodeMessage = null;
+		return r;
+	}
 }

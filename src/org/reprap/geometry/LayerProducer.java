@@ -15,7 +15,7 @@ import org.reprap.Preferences;
 import org.reprap.geometry.polygons.Point2D;
 //import org.reprap.geometry.polygons.RrCSGPolygonList;
 import org.reprap.geometry.polygons.Polygon;
-import org.reprap.geometry.polygons.PolygonAttributes;
+//import org.reprap.geometry.polygons.PolygonAttributes;
 import org.reprap.geometry.polygons.PolygonList;
 import org.reprap.geometry.polygons.Rectangle;
 import org.reprap.utilities.Debug;
@@ -351,7 +351,7 @@ public class LayerProducer {
 	private void plot(Polygon p, boolean firstOneInLayer, boolean firstOneThisMaterial) throws Exception
 	{
 		Attributes att = p.getAttributes();
-		PolygonAttributes pAtt = p.getPolygonAttribute();
+		//PolygonAttributes pAtt = p.getPolygonAttribute();
 		Printer printer = layerConditions.getPrinter();
 		double outlineFeedrate = att.getExtruder().getOutlineFeedrate();
 		double infillFeedrate = att.getExtruder().getInfillFeedrate();
@@ -453,10 +453,10 @@ public class LayerProducer {
 		boolean valveOff = false;
 		boolean oldexoff;
 		
-		double oldFeedFactor = att.getExtruder().getExtrudeRatio();
+		//double oldFeedFactor = att.getExtruder().getExtrudeRatio();
 		
-		if(pAtt != null)
-			att.getExtruder().setExtrudeRatio(oldFeedFactor*pAtt.getBridgeThin());
+		//if(pAtt != null)
+		//.getExtruder().setExtrudeRatio(oldFeedFactor*pAtt.getBridgeThin());
 		
 		for(int i = 1; i < p.size(); i++)
 		{
@@ -472,7 +472,7 @@ public class LayerProducer {
 
 			if(acc)
 				currentFeedrate = p.speed(i);
-
+			//Debug.g(printer.getExtruder().getMaterial());
 			oldexoff = extrudeOff;
 			extrudeOff = (i > p.extrudeEnd() && extrudeBackLength > 0) || i == p.size()-1;
 			valveOff = (i > p.valveEnd() && valveBackLength > 0) || i == p.size()-1;			
@@ -483,7 +483,7 @@ public class LayerProducer {
 
 		// Restore sanity
 		
-		att.getExtruder().setExtrudeRatio(oldFeedFactor);
+		//att.getExtruder().setExtrudeRatio(oldFeedFactor);
 		
 		if(p.isClosed())
 			move(p.point(0), p.point(0), false, false, true);

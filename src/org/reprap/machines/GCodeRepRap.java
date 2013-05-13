@@ -99,6 +99,7 @@ public class GCodeRepRap extends GenericRepRap {
 		double dy = y - currentY;
 		
 		double extrudeLength = extruders[extruder].getDistance(Math.sqrt(dx*dx + dy*dy));
+		//Debug.g(extruders[extruder].getMaterial());
 		String se = "";
 
 		if(extrudeLength > 0)
@@ -1100,6 +1101,7 @@ public class GCodeRepRap extends GenericRepRap {
 			}
 			forceSelection = false;
 		}
+		super.selectExtruder(materialIndex, true, update, next); // just to make sure
 	}
 	
 	

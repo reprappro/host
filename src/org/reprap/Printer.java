@@ -132,6 +132,7 @@ public interface Printer {
 	 * @throws Exception 
 	 */
 	public void selectExtruder(Attributes att, Point2D next) throws Exception;
+	//public void selectExtruder(Attributes att) throws Exception;
 	
 	/**
 	 * Select a specific material to print with
@@ -139,6 +140,7 @@ public interface Printer {
 	 * @throws Exception 
 	 */
 	public void selectExtruder(int extr, boolean really, boolean update, Point2D next) throws Exception;
+	//public void selectExtruder(int extr) throws Exception;
 	
 	/**
 	 * Start a production run (as opposed to moving the machine about

@@ -834,6 +834,9 @@ public class GCodeReaderAndWriter
 		
 		if(fileOutStream != null)
 		{
+			String g = Debug.g();
+			if(g != null)
+				cmd += "; " + g;
 			fileOutStream.println(cmd);
 			Debug.c("G-code: " + cmd + " written to file");
 		} else
