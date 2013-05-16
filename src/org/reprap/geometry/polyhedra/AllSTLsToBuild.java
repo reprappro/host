@@ -1478,8 +1478,6 @@ public class AllSTLsToBuild
 		{
 			if(extruders[extruderID].getID() != extruderID)
 				Debug.e("AllSTLsToBuild.slice(): extruder " + extruderID + "out of sequence: " + extruders[extruderID].getID());
-			edges[extruderID] = new ArrayList<LineSegment>();
-			csgs[extruderID] = new ArrayList<CSG3D>();
 		}
 		
 		// Generate all the edges for STLObject i at this z
@@ -1498,51 +1496,60 @@ public class AllSTLsToBuild
 			Attributes attr = (Attributes)(bg1.getUserData());
 			atts[attr.getExtruder().getID()] = attr;
 			CSG3D csg = stlObject.getCSG(i);
+			for(extruderID = 0; extruderID < extruders.length; extruderID++)
+			{
+				edges[extruderID] = new ArrayList<LineSegment>();
+				csgs[extruderID] = new ArrayList<CSG3D>();
+			}
 			if(csg != null)
 				csgs[attr.getExtruder().getID()].add(csg.transform(m4));
 			else
-				recursiveSetEdges(attr.getPart(), trans, z, attr, edges);
-		}
-		
-		// Turn them into lists of polygons, one for each extruder, then
-		// turn those into pixelmaps.
-		
-		for(extruderID = 0; extruderID < edges.length; extruderID++)
-		{
-			// Deal with CSG shapes (much simpler and faster).
-			
-			for(int i = 0; i < csgs[extruderID].size(); i++)
-			{
-				csgp = CSG2D.slice(csgs[extruderID].get(i), z);
-				result.add(new BooleanGrid(csgp, rectangles.get(stlIndex), atts[extruderID]));
-			}
-			
-			// Deal with STL-generated edges
-			
-			if(edges[extruderID].size() > 0)
-			{
-				pgl = simpleCull(edges[extruderID]);
+				//recursiveSetEdges(attr.getPart(), trans, z, attr, edges);
+				recursiveSetEdges(bg1, trans, z, attr, edges);
 
-				if(pgl.size() > 0)
+
+			// Turn them into lists of polygons, one for each extruder, then
+			// turn those into pixelmaps.
+
+			for(extruderID = 0; extruderID < edges.length; extruderID++)
+			{
+				// Deal with CSG shapes (much simpler and faster).
+
+				for(int j = 0; j < csgs[extruderID].size(); j++)
 				{
-					// Remove wrinkles
+					csgp = CSG2D.slice(csgs[extruderID].get(j), z);
+					result.add(new BooleanGrid(csgp, rectangles.get(stlIndex), atts[extruderID]));
+				}
 
-					pgl = pgl.simplify(Preferences.gridRes()*1.5);
+				// Deal with STL-generated edges
 
-					// Fix small radii
+				if(edges[extruderID].size() > 0)
+				{
+					pgl = simpleCull(edges[extruderID]);
 
-					pgl = pgl.arcCompensate();
+					if(pgl.size() > 0)
+					{
+						// Remove wrinkles
 
-					csgp = pgl.toCSG(Preferences.tiny());
+						pgl = pgl.simplify(Preferences.gridRes()*1.5);
 
-					// We use the plan rectangle of the entire stl object to store the bitmap, even though this slice may be
-					// much smaller than the whole.  This allows booleans on slices to be computed much more
-					// quickly as each is in the same rectangle so the bit patterns match exactly.  But it does use more memory.
+						// Fix small radii
 
-					result.add(new BooleanGrid(csgp, rectangles.get(stlIndex), pgl.polygon(0).getAttributes()));
+						pgl = pgl.arcCompensate();
+
+						csgp = pgl.toCSG(Preferences.tiny());
+
+						// We use the plan rectangle of the entire stl object to store the bitmap, even though this slice may be
+						// much smaller than the whole.  This allows booleans on slices to be computed much more
+						// quickly as each is in the same rectangle so the bit patterns match exactly.  But it does use more memory.
+
+						result.add(new BooleanGrid(csgp, rectangles.get(stlIndex), pgl.polygon(0).getAttributes()));
+					}
 				}
 			}
 		}
+		
+		result = result.unionDuplicates();
 		
 		// We may need this later...
 		
