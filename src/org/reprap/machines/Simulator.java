@@ -149,6 +149,19 @@ public class Simulator extends GenericRepRap {
 		//super.loadGCodeFileForMaking();
 		return null;
 	}
+	/**
+	 * Turn the fan on
+	 */
+	public void fanOn()
+	{
+	}
+	
+	/**
+	 * Turn the fan off
+	 */
+	public void fanOff()
+	{
+	}
 	
 	/**
 	 * Set an output file

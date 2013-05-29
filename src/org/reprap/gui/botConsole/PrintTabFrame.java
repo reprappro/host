@@ -1275,7 +1275,7 @@ private void loadRFO(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadRFO
 }//GEN-LAST:event_loadRFO
 
 private void preferences(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_preferences
-	org.reprap.gui.Preferences prefs = new org.reprap.gui.Preferences();
+	org.reprap.gui.RepRapPreferences prefs = new org.reprap.gui.RepRapPreferences();
 	prefs.setVisible(true);	// prefs.show();
 }//GEN-LAST:event_preferences
 

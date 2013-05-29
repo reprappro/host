@@ -51,7 +51,7 @@ enum Category
 	number, string, bool;
 }
 
-public class Preferences extends JFrame {
+public class RepRapPreferences extends JFrame {
 	private static final long serialVersionUID = 1L;
 	// Load of arrays for all the stuff...
 	
@@ -67,7 +67,7 @@ public class Preferences extends JFrame {
 	
 	public static void main(String[] args) 
 	{
-		new Preferences();
+		new RepRapPreferences();
 	}
 	
 
@@ -158,7 +158,7 @@ public class Preferences extends JFrame {
 	 * 
 	 * @param frame
 	 */
-	public Preferences() 
+	public RepRapPreferences() 
 	{
 		
 		// Start with everything that isn't an extruder value.

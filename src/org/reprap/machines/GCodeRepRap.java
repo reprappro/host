@@ -773,6 +773,38 @@ public class GCodeRepRap extends GenericRepRap {
 	}
 	
 	/**
+	 * Turn the fan on
+	 */
+	public void fanOn()
+	{
+		String s = "M106 S255";
+		if(Debug.d())
+			s += " ; fan on";
+		try {
+			gcode.queue(s);
+		} catch (Exception e) {
+			Debug.e("GCodeRepRap.fanOn() has thrown:");
+			e.printStackTrace();
+		}		
+	}
+	
+	/**
+	 * Turn the fan off
+	 */
+	public void fanOff()
+	{
+		String s = "M106 S0";
+		if(Debug.d())
+			s += " ; fan off";
+		try {
+			gcode.queue(s);
+		} catch (Exception e) {
+			Debug.e("GCodeRepRap.fanOff() has thrown:");
+			e.printStackTrace();
+		}			
+	}
+	
+	/**
 	 * Print a file on the SD card
 	 * @param filename
 	 */

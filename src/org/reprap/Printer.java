@@ -427,6 +427,22 @@ public interface Printer {
 	public void waitTillNotBusy() throws IOException;
 	
 	/**
+	 * The layer at which to turn on the fan
+	 * @return
+	 */
+	public int getFanLayer();
+	
+	/**
+	 * Turn the fan on
+	 */
+	public void fanOn();
+	
+	/**
+	 * Turn the fan off
+	 */
+	public void fanOff();
+	
+	/**
 	 * Get the X stepper
 	 * @return
 	 */

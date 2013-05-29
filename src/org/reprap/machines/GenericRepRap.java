@@ -101,6 +101,10 @@ public abstract class GenericRepRap implements CartesianPrinter
 	 */
 	double distanceAtLastCall = 0;
 	
+	/**
+	 * The layer at which to turn the fan on.
+	 */
+	int fanLayer = -1;
 	
 	/**
 	 * Scale for each axis in steps/mm.
@@ -325,6 +329,8 @@ public abstract class GenericRepRap implements CartesianPrinter
 			
 			idleZ = true; //Preferences.loadGlobalBool("IdleZAxis");
 			
+			fanLayer = Preferences.loadGlobalInt("FanLayer");
+			
 			foundationLayers = Preferences.loadGlobalInt("FoundationLayers");
 			//dumpX = Preferences.loadGlobalDouble("DumpX(mm)");
 			//dumpY = Preferences.loadGlobalDouble("DumpY(mm)");
@@ -463,6 +469,11 @@ public abstract class GenericRepRap implements CartesianPrinter
 	{
 
 		lc.setFractionDone();
+		
+		// Turn the fan on?
+		
+		if((getFanLayer() == lc.getMachineLayer()) || (lc.getMachineLayer() == 1 && getFanLayer() == 0)) // 1/0 is a bit of a hack...
+			fanOn();
 
 		// Don't home the first layer
 		// The startup procedure has already done that
@@ -1221,6 +1232,11 @@ public abstract class GenericRepRap implements CartesianPrinter
 	 */
 	public void pause()
 	{
+	}
+	
+	public int getFanLayer()
+	{
+		return fanLayer;
 	}
 	
 	/**
