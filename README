@@ -35,6 +35,14 @@ which is this page if you are reading this README file on Github.  You will get 
 
 Unzip the download anywhere you like on your computer, say in a directory called my_download.
 
+Some versions of Windows have difficulties if there are spaces in any of the folder names in the tree where you put the download.  Replace them with the underscore.  For example, if you want to download into:
+
+  C:\Some Folder\MySubFolder\My Other Folder
+
+change the names to:
+
+  C:\Some_Folder\MySubFolder\My_Other_Folder
+
 
 To run the RepRapPro Slicer Software
 ====================================

@@ -20,9 +20,10 @@ or, on Windows:
 
 If you get a load of usage instructions, Java is installed.
 
-If you haven't got Java, see:
+If you haven't got Java, download the Java JDK:
 
-	http://www.java.com/en/download/help/download_options.xml
+	http://www.oracle.com/technetwork/java/javase/downloads/index.html
+
 
 If you are running 64-bit Linux you will also have to install the Java 3D JNI library.  For example, in the Ubuntu Software Centre, search for and install "libjava3d-jni".
 
@@ -95,7 +96,7 @@ when you first run this software it creates a copy in your space of all its conf
 
 All the configuration files are placed in a directory called .reprap in your home directory on your computer (note that the initial "." in the name means that this directory is hidden - you have to enable the viewing of hidden files to see it).
 
-If you decide you want to revert your configuration to the standard one rename the .reprap directory to, say, .reprap.old then run the software.  It will now not find .reprap, and so it will create you a new copy of the standard release of these files from your download.
+If you decide you want to revert your configuration to the standard one, then rename the .reprap directory to, say, .reprap.old then run the software.  It will now not find .reprap, and so it will create you a new .reprap containing copies of the standard files from your download.
 
 One thing you may well want to preserve even if you do this is the offsets of the heads in your Tricolor RepRap that you have set - these are unique to your machine.  (See here:
 
